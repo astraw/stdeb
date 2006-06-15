@@ -1,1 +1,4 @@
+===========================================================
+2006-06-14 Release 0.0.1, svn version 3
+
 2006-06-14 Initial import of repository and initial release.
