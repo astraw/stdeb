@@ -28,6 +28,9 @@ Files are available at the `download page`_.
 
 .. _download page: http://stdeb.python-hosting.com/wiki/Download
 
+The subversion repository is available at
+https://svn.stdeb.python-hosting.com/trunk
+
 Background
 ----------
 
