@@ -1,1 +1,1 @@
-__all__= ['stdeb']
+__all__= ['sdist_dsc']

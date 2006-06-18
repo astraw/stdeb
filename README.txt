@@ -1,25 +1,37 @@
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
-stdeb_ is a distutils command to Debian source packages from Python
-packages. It attempts to provide automatic defaults, but many aspects
-of the resulting package can be customized via a simple config file.
+stdeb_ ("setuptools debian") produces Debian source packages from
+Python packages via a new distutils command, ``sdist_dsc``, which
+produces a Debian source package of a Python package.  Automatic
+defaults are provided for the Debian package, but many aspects of the
+resulting package can be customized via a configuration file.
 
 .. _stdeb: http://stdeb.python-hosting.com/
 
-Instant summary
----------------
+Invocation
+----------
 
-::
+All methods eventually result in a call to the ``sdist_dsc`` distutils
+command. You may prefer to do so directly::
 
-  python -c "import stdeb; execfile('setup.py')" stdeb
+  python -c "import stdeb; execfile('setup.py')" sdist_dsc
 
-This command creates a Debian source package from unmodified Python
-packages. (``packagename_versionname.orig.tar.gz`` is created along
-with the ``packagename-versionname`` directory with all Debian-needed
-changes. These consist solely of a ``packagename-versionname/debian``
-subdirectory with auto-generated ``changelog``, ``compat``,
-``control``, and ``rules`` files.)
+Alternatively, two scripts are provided::
+
+  stdeb_run_setup [options] # calls "python setup.py sdist_dsc [options]"
+
+  py2dsc [options] mypackage-0.1.tar.gz # uses pre-built Python source package
+
+In all cases, a Debian source package is produced from unmodified
+Python packages. The following files are produced:
+
+ * ``packagename_versionname.orig.tar.gz``
+ * ``packagename_versionname-debianversion.dsc``
+ * ``packagename_versionname-debianversion.diff.gz``
+
+These can then be compiled into binary packages using the standard
+Debian machinery (e.g. dpkg-buildpackage).
 
 Download
 --------
@@ -38,22 +50,20 @@ For the average Python package, its source distribution
 (python_package.tar.gz created with ``python setup.py sdist``)
 contains nearly everything necessary to make a Debian source
 package. This near-equivalence encouraged me to write this little
-utility, which is a distutils extension which allows one to type
-``python setup.py stdeb`` to create a Debian source layout. This
-process is made significantly easier through the use of setuptools_.
+distutils extension, which executes the setup.py file to extract
+relevant information. This process is made significantly easier
+through the use of setuptools_.
 
 .. _setuptools: http://peak.telecommunity.com/DevCenter/setuptools
 
-Although it's not implemented, using setuptools might provide us with
-tools to make the job of "Debianizing" python console and gui scripts,
-for example, much easier.
+setuptools is used because of the opportunities it provides, although
+many of these features are currently un(der)-utilized. For example,
+setuptools could make the job of "Debianizing" python console and gui
+scripts much easier.
 
 I wrote this initially to Debianize several Python packages of my own,
 but I have the feeling it could be generally useful. It appears
-similar in theory to easydeb_, which I haven't (successfully) used. (I
-tried for 5 minutes, but the fatal flaw for me is that easydeb is GPL
-licensed.) `Logilab's Devtools`_ also appears to have a similar
-concept, but I couldn't even get beyond the French documentation.
+similar, at least in theory, to easydeb_ and `Logilab's Devtools`_.
 
 .. _easydeb: http://easy-deb.sourceforge.net/
 .. _Logilab's DevTools: http://www.logilab.org/projects/devtools
@@ -88,34 +98,34 @@ Here's an example .cfg file for my build of numpy_::
  Debian-Version: 0ads1
  
  [numpy]
+ Upstream-Version-Prefix: 0.9.8+
  Source: python-numpy
  Build-Depends: python-dev, refblas3-dev, lapack3-dev, python2.3-dev, python2.4-dev, python-setuptools, python2.3-setuptools, python2.4-setuptools
  Build-Conflicts: atlas3-base, atlas3-base-dev
 
 .. _numpy: http://scipy.org/NumPy
 
-Interaction with numpy distutils
---------------------------------
-
-numpy_ has it's own derivative of distutils that breaks the trick
-given in the Instant Summary. In order to get this working again,
-here's a simple trick::
-
-  python -c "import stdeb, sys;f='setup.py';sys.argv[0]=f;execfile(f)" stdeb
-
-(This works by setting ``sys.argv[0]`` to what numpy expects.)
-
 TODO
 ----
 
- * Make output meet `Debian Python Policy`_ specifications, or the
-   `new python policy`_. This will include several things,
-   including the ability to make custom changelogs, to make use of
-   project-supplied documentation (including license information),
-   and to make separate -doc binary packages.
- * Support python-central_ and/or python-support.
- * Create (better) documentation
- * Log output using standard distutils mechanisms
+* Make output meet `Debian Python Policy`_ specifications or the `new
+  python policy`_. This will include several things, including:
+
+  - the ability to make custom changelogs
+  - the ability to patch upstream source
+  - the ability to include project-supplied documentation (including
+    license information) as a -doc package
+  - the ability to include project-supplied examples, tests, and data
+    as a separate package
+  - much more not listed
+
+* Support python-central_ and/or python-support.
+
+* Create (better) documentation
+
+* Log output using standard distutils mechanisms
+
+* Allow distribution-specific configuration parameters (e.g. numpy-dapper)
 
 .. _debian python policy: http://www.debian.org/doc/packaging-manuals/python-policy/
 .. _new python policy: http://wiki.debian.org/DebianPython/NewPolicy
@@ -135,7 +145,10 @@ arcane details of Python packaging.
 License
 -------
 
-MIT-style license. Copyright (c) 2006 stdeb authors.
+MIT-style license. Copyright (c) 2006 stdeb authors. 
+
+See the LICENSE.txt file provided with the source distribution for
+full details.
 
 Authors
 -------
