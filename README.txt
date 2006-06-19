@@ -114,7 +114,7 @@ package of stdeb with stdeb. Here's a recipe to avoid it::
  # in the stdeb distribution directory (with setup.py)
  python setup.py sdist
  python setup.py build
- PYTHONPATH="build/lib" python stdeb/py2dsc.py dist/stdeb-0.0.2.tar.gz
+ PYTHONPATH="build/lib" python stdeb/py2dsc.py dist/stdeb-VERSION.tar.gz
 
 TODO
 ----
