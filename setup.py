@@ -4,7 +4,7 @@ from setuptools import setup
 from distutils.util import convert_path
 
 setup(name='stdeb',
-      version='0.0.2',
+      version='0.1',
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       description='Python to Debian source package conversion utility',
