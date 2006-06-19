@@ -9,6 +9,11 @@ resulting package can be customized via a configuration file.
 
 .. _stdeb: http://stdeb.python-hosting.com/
 
+News
+----
+
+2006-06-19: Version 0.1 Released. See the `download page`_.
+
 Invocation
 ----------
 
@@ -92,16 +97,36 @@ with the command-line option --extra-cfg-file.
 
 .. _ConfigParser: http://docs.python.org/lib/module-ConfigParser.html
 
-Here's an example .cfg file for my build of numpy_::
+Here's an example .cfg file which builds several packages::
 
  [DEFAULT]
  Debian-Version: 0ads1
- 
+
+ [setuptools]
+ Source: python-setuptools
+
  [numpy]
- Upstream-Version-Prefix: 0.9.8+
  Source: python-numpy
- Build-Depends: python-dev, refblas3-dev, lapack3-dev, python2.3-dev, python2.4-dev, python-setuptools, python2.3-setuptools, python2.4-setuptools
+ Upstream-Version-Prefix: 0.9.8+
+ Build-Depends: python-dev, refblas3-dev, lapack3-dev
  Build-Conflicts: atlas3-base, atlas3-base-dev
+
+ [matplotlib]
+ # matplotlib doesn't incorporate its SVN version number into sdist-built tarballs.
+ # Therefore, if building the SVN version, substitute the version into the
+ # "Upstream-Version-Suffix" variable and use py2dsc.
+ # (For some reason, "debuild -sa" won't build matplotlib because tk.h isn't found.)
+ Source: python-matplotlib
+ Upstream-Version-Suffix: .dev2500
+ Build-Depends: python-dev, python-numpy, python-numarray, python-numeric, python-gtk2-dev, tk8.4-dev, libwxgtk2.4-dev
+ Depends: python-gtk2, python-numpy, python-numeric, python-numarray
+ Suggests: gs-gpl
+
+ [scipy]
+ Source: python-scipy
+ Upstream-Version-Prefix: 0.4.9+
+ Build-Depends: python-numpy
+ Depends: python-numpy
 
 .. _numpy: http://scipy.org/NumPy
 
