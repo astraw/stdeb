@@ -84,7 +84,7 @@ def runit():
         attr = parser.get_attr_name(long)[:-1]
         if hasattr(optobj,attr):
             val = getattr(optobj,attr)
-            extra_args.append('--%s%s'%(long,repr(val)))
+            extra_args.append('--'+long+str(val))
 
     #args = [sys.executable,'setup.py','--dist-dir=%s'%abs_dist_dir]+extra_args
     args = [sys.executable,'-c',"import stdeb, sys; f='setup.py'; sys.argv[0]=f; execfile(f)",

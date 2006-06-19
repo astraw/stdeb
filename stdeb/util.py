@@ -30,6 +30,12 @@ def debianize_name(name):
     name = name.lower()
     return name
 
+def debianize_version(name):
+    "make name acceptable as a Debian package name"
+    name = name.replace('_','-')
+    name = name.lower()
+    return name
+
 def get_date_822():
     """return output of 822-date command"""
     args = ['/usr/bin/822-date']
@@ -164,6 +170,7 @@ class DebianInfo:
                                                )
         
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
+        cfg.read(cfg_files)
 
         debinfo = self # convert old code...
         debinfo.module_name = module_name
@@ -171,7 +178,10 @@ class DebianInfo:
         debinfo.package = parse_val(cfg,module_name,'Package')
         debinfo.pure_upstream_version = upstream_version 
         upstream_version_prefix = parse_val(cfg,module_name,'Upstream-Version-Prefix')
-        debinfo.upstream_version = upstream_version_prefix+debinfo.pure_upstream_version
+        upstream_version_suffix = parse_val(cfg,module_name,'Upstream-Version-Suffix')
+        debinfo.upstream_version = (upstream_version_prefix+
+                                    debianize_version(debinfo.pure_upstream_version)+
+                                    upstream_version_suffix)
         debinfo.packaging_version = parse_val(cfg,module_name,'Debian-Version')
         debinfo.full_version = '%s-%s'%(debinfo.upstream_version,
                                         debinfo.packaging_version)
@@ -276,6 +286,7 @@ Provides: ${python:Provides}
 
         defaults['Debian-Version']='1'
         defaults['Upstream-Version-Prefix']=''
+        defaults['Upstream-Version-Suffix']=''
 
         defaults['Maintainer'] = default_maintainer
 

@@ -105,6 +105,17 @@ Here's an example .cfg file for my build of numpy_::
 
 .. _numpy: http://scipy.org/NumPy
 
+Using stdeb on stdeb
+--------------------
+
+There is a chicken-and-egg problem when trying to make a Debian
+package of stdeb with stdeb. Here's a recipe to avoid it::
+
+ # in the stdeb distribution directory (with setup.py)
+ python setup.py sdist
+ python setup.py build
+ PYTHONPATH="build/lib" python stdeb/py2dsc.py dist/stdeb-0.0.2.tar.gz
+
 TODO
 ----
 
