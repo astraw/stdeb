@@ -1,3 +1,9 @@
+2006-06-21 Upstream .tar.gz files can be used exactly, allowing
+	   md5sums to match.
+
+2006-06-21 Expanded source directory is only deleted when commandline
+	   option is set.
+
 ===========================================================
 2006-06-14 Release 0.1, svn version 11
 

@@ -2,7 +2,7 @@ import setuptools, sys, os, shutil
 from setuptools import Command
 import pkg_resources
 
-from stdeb.util import expand_tarball, expand_zip
+from stdeb.util import expand_tarball, expand_zip, recursive_hardlink
 from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, stdeb_cmd_bool_opts
 
 __all__ = ['sdist_dsc']
@@ -19,6 +19,7 @@ class sdist_dsc(Command):
     
     def initialize_options (self):
         self.use_pycentral = 0
+        self.remove_expanded_source_dir = 0
         self.dist_dir = None
         self.default_distribution = None
         self.default_maintainer = None
@@ -71,7 +72,7 @@ class sdist_dsc(Command):
                              upstream_version = self.distribution.get_version(),
                              use_pycentral = self.use_pycentral,
                              has_ext_modules = self.distribution.has_ext_modules(),
-                             description = self.distribution.get_description(),
+                             description = self.distribution.get_description()[:60],
                              long_description = self.distribution.get_long_description(),
                              )
         ###############################################
@@ -83,17 +84,22 @@ class sdist_dsc(Command):
         if 1:
             repackaged_dirname = debinfo.source+'-'+debinfo.upstream_version
             fullpath_repackaged_dirname = os.path.join(self.dist_dir,repackaged_dirname)
+        orig_tgz_no_change = None
+        cleanup_dirs = []
         if self.use_premade_distfile is not None:
             expand_dir = os.path.join(self.dist_dir,'tmp_sdist_dsc')
+            cleanup_dirs.append(expand_dir)
             if os.path.exists(expand_dir):
                 shutil.rmtree(expand_dir)
             if not os.path.exists(self.dist_dir):
                 os.mkdir(self.dist_dir)
             os.mkdir(expand_dir)
 
+            is_tgz=False
             if self.use_premade_distfile.lower().endswith('.zip'):
                 expand_zip(self.use_premade_distfile,cwd=expand_dir)
             elif self.use_premade_distfile.lower().endswith('.tar.gz'):
+                is_tgz=True
                 expand_tarball(self.use_premade_distfile,cwd=expand_dir)
             else:
                 raise RuntimeError('could not guess format of original sdist file')
@@ -101,10 +107,25 @@ class sdist_dsc(Command):
             # now the sdist package is expanded in expand_dir
             expanded_root_files = os.listdir(expand_dir)
             assert len(expanded_root_files)==1
-            base_dir = os.path.join(expand_dir,expanded_root_files[0])
-            os.renames(base_dir, fullpath_repackaged_dirname)
+            distname_in_premade_distfile = expanded_root_files[0]
+            debianized_dirname = repackaged_dirname
+            original_dirname = os.path.split(distname_in_premade_distfile)[-1]
+            if debianized_dirname == original_dirname:
+                if is_tgz:
+                    orig_tgz_no_change = self.use_premade_distfile
+                else: print >> sys.stderr, "WARNING: non-.tar.gz files will be regenerated"
+            else:
+                print >> sys.stderr, """\
+WARNING: although "--use-premade-distfile=" was used,
+         the .orig.tar.gz file will be regenerated because
+         Debianized name ("%s") != Python name ("%s")"""%(debianized_dirname,original_dirname)
+            base_dir = os.path.join(expand_dir, distname_in_premade_distfile)
+            # hardlink instead of copy because source files only temporary anyway
+            recursive_hardlink(base_dir, fullpath_repackaged_dirname)
             del base_dir
+            keep_distfile_info = ( distname_in_premade_distfile,self.use_premade_distfile)
         else:
+            keep_distfile_info = None
             if os.path.exists(fullpath_repackaged_dirname):
                 shutil.rmtree(fullpath_repackaged_dirname)     
             # generate a new sdist
@@ -117,11 +138,19 @@ class sdist_dsc(Command):
             # move original source tree 
             if 1:
                 base_dir = self.distribution.get_fullname()
-                os.renames(base_dir, fullpath_repackaged_dirname)
+                if not os.path.exists(self.dist_dir):
+                    os.makedirs(self.dist_dir)
+                # don't hardlink, because we don't want patches to affect source
+                shutil.copytree(base_dir, fullpath_repackaged_dirname)
                 del base_dir
 
             
         ###############################################
         # 2. Build source tree and rename it to be in self.dist_dir
          
-        build_dsc(debinfo,self.dist_dir,repackaged_dirname)
+        build_dsc(debinfo,self.dist_dir,repackaged_dirname,
+                  orig_tgz_no_change=orig_tgz_no_change,
+                  remove_expanded_source_dir=self.remove_expanded_source_dir)
+
+        for rmdir in cleanup_dirs:
+            shutil.rmtree(rmdir)

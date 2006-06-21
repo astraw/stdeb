@@ -3,7 +3,7 @@ import ConfigParser
 import subprocess
 
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
-           'stdeb_cmdline_opts','stdeb_cmd_bool_opts']
+           'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink']
 
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
@@ -16,13 +16,39 @@ stdeb_cmdline_opts = [
      'maintainer name and email to use if not specified in .cfg (default from setup.py)'),
     ('extra-cfg-files=','x',
      'use .cfg files specified here (in addition to .egg-info/stdeb.cfg if present)'),
+    ('remove-expanded-source-dir=','r',
+     'remove the expanded source directory')
     ]
 
 stdeb_cmd_bool_opts = [
     'use-pycentral',
+    'remove-expanded-source-dir',
     ]
 
 class NotGiven: pass
+
+def recursive_hardlink(src,dst):
+    dst = os.path.abspath(dst)
+    orig_dir = os.path.abspath(os.curdir)
+    os.chdir(src)
+    try:
+        for root,dirs,files in os.walk(os.curdir):
+            for file in files:
+                fullpath = os.path.normpath(os.path.join(root,file))
+                dirname, fname = os.path.split(fullpath)
+                dstdir = os.path.normpath(os.path.join(dst,dirname))
+                if not os.path.exists(dstdir):
+                    os.mkdir(dstdir)
+                newpath = os.path.join(dstdir,fname)
+                if os.path.exists(newpath):
+                    if os.path.samefile(fullpath,newpath):
+                        continue
+                    else:
+                        os.unlink(newpath)
+                #print 'linking %s -> %s'%(fullpath,newpath)
+                os.link(fullpath,newpath)
+    finally:
+        os.chdir(orig_dir)
 
 def debianize_name(name):
     "make name acceptable as a Debian package name"
@@ -301,11 +327,12 @@ Provides: ${python:Provides}
 
         return defaults
 
-def build_dsc(debinfo,dist_dir,repackaged_dirname):
+def build_dsc(debinfo,dist_dir,repackaged_dirname,
+              orig_tgz_no_change=None,
+              remove_expanded_source_dir=0):
     """make debian source package"""
     if 1:    
         #    A. Find new dirname and delete any pre-existing contents
-        #repackaged_dirname = debinfo.source+'-'+debinfo.upstream_version
         fullpath_repackaged_dirname = os.path.join(dist_dir,repackaged_dirname)
 
             
@@ -315,8 +342,11 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname):
         #    Note that, for the final tarball, best practices suggest
         #    using "dpkg-source -b".  See
         #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
-        
-        if 0:
+
+        if orig_tgz_no_change is not None:
+            repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
+            os.link(orig_tgz_no_change,os.path.join(dist_dir,repackaged_orig_tarball))
+        elif 0:
             repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
             make_tarball(repackaged_orig_tarball,
                          repackaged_dirname,
@@ -330,7 +360,8 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname):
         # 4. create debian/ directory and contents
         
         debian_dir = os.path.join(fullpath_repackaged_dirname,'debian')
-        os.mkdir(debian_dir)
+        if not os.path.exists(debian_dir):
+            os.mkdir(debian_dir)
         
         #    A. debian/changelog
 
@@ -481,18 +512,21 @@ install-python%%:
         #    D. restore debianized tree
         os.rename(fullpath_repackaged_dirname+'.debianized',
                   fullpath_repackaged_dirname)
-        #    E. remove repackaged original tarball
-        #       (we re-generate it using best practices below)
-        os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))
+        if orig_tgz_no_change is None:
+            #    E. remove repackaged original tarball
+            #       (we re-generate it using best practices below)
+            os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))
 
-        if 1:
             ###############################################
             # 6. call "dpkg-source -b"
             # http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
             dpkg_source_b(repackaged_dirname,
                           repackaged_dirname+'.orig',
                           cwd=dist_dir)
+        else:
+            dpkg_source_b(repackaged_dirname,
+                          cwd=dist_dir)
+            
 
-            if 1:
-                # remove sourcecode tree
-                shutil.rmtree(fullpath_repackaged_dirname)
+        if remove_expanded_source_dir:
+            shutil.rmtree(fullpath_repackaged_dirname)
