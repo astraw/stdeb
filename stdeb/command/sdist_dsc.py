@@ -1,6 +1,7 @@
 import setuptools, sys, os, shutil
 from setuptools import Command
 import pkg_resources
+pkg_resources.require('setuptools>=0.6b2')
 
 from stdeb.util import expand_tarball, expand_zip, recursive_hardlink
 from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, stdeb_cmd_bool_opts
