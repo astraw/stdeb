@@ -111,15 +111,16 @@ class sdist_dsc(Command):
             distname_in_premade_distfile = expanded_root_files[0]
             debianized_dirname = repackaged_dirname
             original_dirname = os.path.split(distname_in_premade_distfile)[-1]
-            if debianized_dirname == original_dirname:
-                if is_tgz:
+            if is_tgz:
+                if debianized_dirname == original_dirname:
                     orig_tgz_no_change = self.use_premade_distfile
-                else: print >> sys.stderr, "WARNING: non-.tar.gz files will be regenerated"
-            else:
-                print >> sys.stderr, """\
+                else:
+                    print >> sys.stderr, """\
 WARNING: although "--use-premade-distfile=" was used,
          the .orig.tar.gz file will be regenerated because
          Debianized name ("%s") != Python name ("%s")"""%(debianized_dirname,original_dirname)
+            else:
+                print >> sys.stderr, "WARNING: .orig.tar.gz will be generated from .zip archive"
             base_dir = os.path.join(expand_dir, distname_in_premade_distfile)
             # hardlink instead of copy because source files only temporary anyway
             recursive_hardlink(base_dir, fullpath_repackaged_dirname)
@@ -148,7 +149,7 @@ WARNING: although "--use-premade-distfile=" was used,
             
         ###############################################
         # 2. Build source tree and rename it to be in self.dist_dir
-         
+
         build_dsc(debinfo,self.dist_dir,repackaged_dirname,
                   orig_tgz_no_change=orig_tgz_no_change,
                   remove_expanded_source_dir=self.remove_expanded_source_dir)
