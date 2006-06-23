@@ -38,7 +38,7 @@ def recursive_hardlink(src,dst):
                 dirname, fname = os.path.split(fullpath)
                 dstdir = os.path.normpath(os.path.join(dst,dirname))
                 if not os.path.exists(dstdir):
-                    os.mkdir(dstdir)
+                    os.makedirs(dstdir)
                 newpath = os.path.join(dstdir,fname)
                 if os.path.exists(newpath):
                     if os.path.samefile(fullpath,newpath):
