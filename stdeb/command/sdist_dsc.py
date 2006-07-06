@@ -148,7 +148,13 @@ WARNING: although "--use-premade-distfile=" was used,
 
             
         ###############################################
-        # 2. Build source tree and rename it to be in self.dist_dir
+        # 2. Find all directories
+
+        for pkgdir in self.distribution.packages or []:
+            debinfo.dirlist += ' ' + pkgdir.replace('.', '/')
+        
+        ###############################################
+        # 3. Build source tree and rename it to be in self.dist_dir
 
         build_dsc(debinfo,self.dist_dir,repackaged_dirname,
                   orig_tgz_no_change=orig_tgz_no_change,

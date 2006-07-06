@@ -68,10 +68,12 @@ scripts much easier.
 
 I wrote this initially to Debianize several Python packages of my own,
 but I have the feeling it could be generally useful. It appears
-similar, at least in theory, to easydeb_ and `Logilab's Devtools`_.
+similar, at least in theory, to easydeb_, `Logilab's Devtools`_, and
+bdist_dpkg_.
 
 .. _easydeb: http://easy-deb.sourceforge.net/
 .. _Logilab's DevTools: http://www.logilab.org/projects/devtools
+.. _bdist_dpkg: http://svn.python.org/view/sandbox/trunk/Lib/bdist_dpkg.py
 
 Prerequisites
 -------------
@@ -189,4 +191,14 @@ full details.
 Authors
 -------
 
-Andrew Straw, California Institute of Technology <strawman@astraw.com>
+Andrew Straw <strawman@astraw.com>, California Institute of
+Technology
+
+Additional Credits
+------------------
+
+* Andrew Kuchling for the postinst and prerm scripts.
+* WebFaction_ (aka `python-hosting`_) for hosting services.
+
+.. _WebFaction: http://webfaction.com/
+.. _python-hosting: http://python-hosting.com/

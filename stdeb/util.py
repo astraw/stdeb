@@ -1,3 +1,10 @@
+#
+# This module contains most of the code of stdeb.
+#
+# The postinst and prerm scripts are modified from the originals in
+# bdist_dpkg by Andrew Kuchling and available at:
+# http://svn.python.org/view/sandbox/trunk/Lib/bdist_dpkg.py
+#
 import sys, os, shutil
 import ConfigParser
 import subprocess
@@ -251,8 +258,6 @@ class DebianInfo:
         build_deps = [
             'python-all-dev',
             'python-setuptools',
-            #'python2.3-setuptools',
-            #'python2.4-setuptools',
             ]
         
         if use_pycentral:
@@ -297,7 +302,8 @@ Provides: ${python:Provides}
         if len(provides):
             debinfo.package_stanza_extras += ('Provides: ' +
                                               ', '.join( provides  )+'\n')
-
+        debinfo.dirlist = ""
+        
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
                            default_distribution=NotGiven,
@@ -499,6 +505,20 @@ install-python%%:
         fd.write('4\n')
         fd.close()
         
+        #    D. debian/postinst
+        postinst_fname = os.path.join(debian_dir,'postinst')
+        fd = open( postinst_fname, mode='w')
+        fd.write(POSTINST_FILE%debinfo.__dict__)
+        fd.close()
+        os.chmod(postinst_fname,0755)
+
+        #    E. debian/prerm
+        prerm_fname = os.path.join(debian_dir,'prerm')
+        fd = open( prerm_fname, mode='w')
+        fd.write(PRERM_FILE%debinfo.__dict__)
+        fd.close()
+        os.chmod(prerm_fname,0755)
+        
         ###############################################
         # 5. unpack original source tarball
 
@@ -530,3 +550,83 @@ install-python%%:
 
         if remove_expanded_source_dir:
             shutil.rmtree(fullpath_repackaged_dirname)
+
+
+
+
+
+
+
+POSTINST_FILE = """\
+#!/bin/sh 
+# postinst script for %(package)s
+#
+# see: dh_installdeb(1)
+
+set -e
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+#
+# quoting from the policy:
+#     Any necessary prompting should almost always be confined to the
+#     post-installation script, and should be protected with a conditional
+#     so that unnecessary prompting doesn't happen if a package's
+#     installation fails and the `postinst' is called with `abort-upgrade',
+#     `abort-remove' or `abort-deconfigure'.
+
+PACKAGE=%(package)s
+VERSION=%(pycentral_showversions)s
+LIB=/usr/lib/python$VERSION
+DIRLIST="%(dirlist)s"
+
+case "$1" in
+    configure|abort-upgrade|abort-remove|abort-deconfigure)
+        for i in $DIRLIST ; do
+            /usr/bin/python$VERSION -O $LIB/compileall.py -q $LIB/site-packages/$i
+            /usr/bin/python$VERSION $LIB/compileall.py -q $LIB/site-packages/$i
+        done
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
+"""
+
+PRERM_FILE = """\
+#!/bin/sh 
+# prerm script for %(package)s
+
+set -e
+
+VERSION=%(pycentral_showversions)s
+LIB=/usr/lib/python$VERSION
+DIRLIST="%(dirlist)s"
+
+case "$1" in
+    remove|upgrade|failed-upgrade)
+        for i in $DIRLIST ; do
+            find $LIB/site-packages/$i -name '*.py[co]' -exec rm \{\} \;
+        done
+    ;;
+
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
+"""

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 USAGE = """\
+stdeb_run_setup - Calls "python setup.py sdist_dsc" ensuring stdeb is available.
+
 usage: stdeb_run_setup [options]
 
 

@@ -1,3 +1,6 @@
+2006-07-05 Auto-generation of debian/postinst and debian/prerm scripts
+           that create and remove .pyc and .pyo files.
+
 2006-06-21 Upstream .tar.gz files can be used exactly, allowing
 	   md5sums to match.
 
