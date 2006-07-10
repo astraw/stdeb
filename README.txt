@@ -197,7 +197,6 @@ Technology
 Additional Credits
 ------------------
 
-* Andrew Kuchling for the postinst and prerm scripts.
 * WebFaction_ (aka `python-hosting`_) for hosting services.
 
 .. _WebFaction: http://webfaction.com/

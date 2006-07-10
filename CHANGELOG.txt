@@ -1,3 +1,9 @@
+2006-07-09 Ability to specify MIME-Desktop-Files, MIME-File, and 
+	   Shared-MIME-File in configuration file.
+
+2006-07-09 Use of dh_python for generation of postinst and prerm
+	   scripts.
+
 2006-07-05 Auto-generation of debian/postinst and debian/prerm scripts
            that create and remove .pyc and .pyo files.
 

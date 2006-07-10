@@ -1,11 +1,7 @@
 #
 # This module contains most of the code of stdeb.
 #
-# The postinst and prerm scripts are modified from the originals in
-# bdist_dpkg by Andrew Kuchling and available at:
-# http://svn.python.org/view/sandbox/trunk/Lib/bdist_dpkg.py
-#
-import sys, os, shutil
+import sys, os, shutil, sets
 import ConfigParser
 import subprocess
 
@@ -229,8 +225,7 @@ class DebianInfo:
 
         depends = []
 
-        if use_pycentral:
-            depends.append('${python:Depends}')
+        depends.append('${python:Depends}')
 
         if has_ext_modules:
             debinfo.architecture = 'any'
@@ -238,6 +233,41 @@ class DebianInfo:
         else:
             debinfo.architecture = 'all'
             
+        debinfo.mime_file = parse_val(cfg,module_name,'MIME-File')
+        
+        debinfo.shared_mime_file = parse_val(cfg,module_name,'Shared-MIME-File')
+
+        if debinfo.mime_file == '' and debinfo.shared_mime_file == '':
+            debinfo.dh_installmime_line = ''
+        else:
+            debinfo.dh_installmime_line = '\n        dh_installmime'
+            if debinfo.architecture == 'all':
+                debinfo.dh_installmime_line += ' -i'
+            else:
+                debinfo.dh_installmime_line += ' -a'
+        
+        mime_desktop_files = parse_vals(cfg,module_name,'MIME-Desktop-Files')
+        if len(mime_desktop_files):
+            debinfo.dh_desktop_line = '\n        dh_desktop'
+            if debinfo.architecture == 'all':
+                debinfo.dh_desktop_line += ' -i'
+            else:
+                debinfo.dh_desktop_line += ' -a'
+        else:
+            debinfo.dh_desktop_line = ''
+
+            
+        #    E. any mime .desktop files
+        debinfo.copy_files_lines = ''
+        debinfo.install_dirs = sets.Set()
+        for mime_desktop_file in mime_desktop_files:
+            dest_file = os.path.join('debian',
+                                     debinfo.package,
+                                     'usr/share/applications',
+                                     os.path.split(mime_desktop_file)[-1])
+            debinfo.install_dirs.add('usr/share/applications')
+            debinfo.copy_files_lines += '\n\tcp %s %s'%(mime_desktop_file,dest_file)
+
         depends.extend(parse_vals(cfg,module_name,'Depends') )
         debinfo.depends = ', '.join(depends)
         
@@ -331,6 +361,9 @@ Provides: ${python:Provides}
         defaults['Conflicts'] = ''
         defaults['Provides'] = ''
 
+        defaults['MIME-Desktop-Files'] = ''
+        defaults['MIME-File'] = ''
+        defaults['Shared-MIME-File'] = ''
         return defaults
 
 def build_dsc(debinfo,dist_dir,repackaged_dirname,
@@ -380,7 +413,81 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
         fd.close()
         
         #    B. debian/control
-        control = """\
+        control = CONTROL_FILE%debinfo.__dict__
+        fd = open( os.path.join(debian_dir,'control'), mode='w')
+        fd.write(control)
+        fd.close()
+        
+        #    C. debian/rules
+        if debinfo.architecture == 'all':
+            debinfo.rules_binary=RULES_BINARY_INDEP%debinfo.__dict__
+        else:
+            debinfo.rules_binary=RULES_BINARY_ARCH%debinfo.__dict__
+
+        rules = RULES_MAIN%debinfo.__dict__
+
+        rules = rules.replace('        ','\t')
+        rules_fname = os.path.join(debian_dir,'rules')
+        fd = open( rules_fname, mode='w')
+        fd.write(rules)
+        fd.close()
+        os.chmod(rules_fname,0755)
+
+        fd = open( os.path.join(debian_dir,
+                                debinfo.package+'.dirs'),
+                   mode='w')
+        for install_dir in debinfo.install_dirs:
+            fd.write(install_dir+'\n')
+        fd.close()
+
+        #    D. debian/compat
+        fd = open( os.path.join(debian_dir,'compat'), mode='w')
+        fd.write('4\n')
+        fd.close()
+
+        #    E. debian/package.mime
+        if debinfo.mime_file != '':
+            os.link( debinfo.mime_file,
+                     os.path.join(debian_dir,debinfo.package+'.mime'))
+        if debinfo.shared_mime_file != '':
+            os.link( debinfo.shared_mime_file,
+                     os.path.join(debian_dir,
+                                  debinfo.package+'.sharedmimeinfo'))
+
+        ###############################################
+        # 5. unpack original source tarball
+
+        #    A. move debianized tree away
+        os.rename(fullpath_repackaged_dirname,
+                  fullpath_repackaged_dirname+'.debianized')
+        #    B. expand repackaged original tarball
+        expand_tarball(repackaged_orig_tarball,cwd=dist_dir)
+        #    C. move original repackaged tree to .orig
+        os.rename(fullpath_repackaged_dirname,fullpath_repackaged_dirname+'.orig')
+        #    D. restore debianized tree
+        os.rename(fullpath_repackaged_dirname+'.debianized',
+                  fullpath_repackaged_dirname)
+        if orig_tgz_no_change is None:
+            #    E. remove repackaged original tarball
+            #       (we re-generate it using best practices below)
+            os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))
+
+            ###############################################
+            # 6. call "dpkg-source -b"
+            # http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
+            dpkg_source_b(repackaged_dirname,
+                          repackaged_dirname+'.orig',
+                          cwd=dist_dir)
+        else:
+            dpkg_source_b(repackaged_dirname,
+                          cwd=dist_dir)
+            
+
+        if remove_expanded_source_dir:
+            shutil.rmtree(fullpath_repackaged_dirname)
+
+
+CONTROL_FILE = """\
 Source: %(source)s
 Maintainer: %(maintainer)s
 Section: python
@@ -395,57 +502,9 @@ Recommends: %(recommends)s
 Suggests: %(suggests)s
 %(package_stanza_extras)sDescription: %(description)s
 %(long_description)s
-"""%debinfo.__dict__
-        fd = open( os.path.join(debian_dir,'control'), mode='w')
-        fd.write(control)
-        fd.close()
-        
-        #    C. debian/rules
-        if debinfo.architecture == 'all':
-            debinfo.rules_binary="""\
-binary-arch:
-        
-binary-indep: build install
-        dh_testdir -i
-        dh_testroot -i
-#        dh_installchangelogs -i changelog
-        dh_installdocs -i
-        dh_installexamples  -i
-#        dh_pycentral -i
-        dh_strip -i
-        dh_compress -i -X.py
-        dh_fixperms -i
-        dh_installdeb -i
-        dh_gencontrol -i
-        dh_md5sums -i
-        dh_builddeb -i
-
-binary: binary-indep binary-arch
-"""
-        else:
-            debinfo.rules_binary="""\
-binary-indep:
-
-binary-arch: build install
-        dh_testdir -a
-        dh_testroot -a
-#        dh_installchangelogs -a changelog
-        dh_installdocs -a
-        dh_installexamples  -a
-#        dh_pycentral -a
-        dh_strip -a
-        dh_compress -a -X.py
-        dh_fixperms -a
-        dh_installdeb -a
-        dh_shlibdeps -a
-        dh_gencontrol -a
-        dh_md5sums -a
-        dh_builddeb -a
-
-binary: binary-indep binary-arch
 """
 
-        rules = """\
+RULES_MAIN = """\
 #!/usr/bin/make -f
 
 # automatically generated by stdeb
@@ -491,142 +550,47 @@ install-python%%:
 %(rules_binary)s
 
 .PHONY: build clean binary-indep binary-arch binary install configure
-"""%debinfo.__dict__
-
-        rules = rules.replace('        ','\t')
-        rules_fname = os.path.join(debian_dir,'rules')
-        fd = open( rules_fname, mode='w')
-        fd.write(rules)
-        fd.close()
-        os.chmod(rules_fname,0755)
-
-        #    C. debian/compat
-        fd = open( os.path.join(debian_dir,'compat'), mode='w')
-        fd.write('4\n')
-        fd.close()
+"""
         
-        #    D. debian/postinst
-        postinst_fname = os.path.join(debian_dir,'postinst')
-        fd = open( postinst_fname, mode='w')
-        fd.write(POSTINST_FILE%debinfo.__dict__)
-        fd.close()
-        os.chmod(postinst_fname,0755)
-
-        #    E. debian/prerm
-        prerm_fname = os.path.join(debian_dir,'prerm')
-        fd = open( prerm_fname, mode='w')
-        fd.write(PRERM_FILE%debinfo.__dict__)
-        fd.close()
-        os.chmod(prerm_fname,0755)
+RULES_BINARY_INDEP="""\
+binary-arch:
         
-        ###############################################
-        # 5. unpack original source tarball
+binary-indep: build install
+        dh_testdir -i
+        dh_testroot -i
+        dh_python -i
+        dh_installdocs -i
+        dh_installdirs -i
+        dh_installexamples  -i%(dh_installmime_line)s
+        dh_strip -i%(copy_files_lines)s%(dh_desktop_line)s
+        dh_compress -i -X.py
+        dh_fixperms -i
+        dh_installdeb -i
+        dh_gencontrol -i
+        dh_md5sums -i
+        dh_builddeb -i
 
-        #    A. move debianized tree away
-        os.rename(fullpath_repackaged_dirname,
-                  fullpath_repackaged_dirname+'.debianized')
-        #    B. expand repackaged original tarball
-        expand_tarball(repackaged_orig_tarball,cwd=dist_dir)
-        #    C. move original repackaged tree to .orig
-        os.rename(fullpath_repackaged_dirname,fullpath_repackaged_dirname+'.orig')
-        #    D. restore debianized tree
-        os.rename(fullpath_repackaged_dirname+'.debianized',
-                  fullpath_repackaged_dirname)
-        if orig_tgz_no_change is None:
-            #    E. remove repackaged original tarball
-            #       (we re-generate it using best practices below)
-            os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))
-
-            ###############################################
-            # 6. call "dpkg-source -b"
-            # http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
-            dpkg_source_b(repackaged_dirname,
-                          repackaged_dirname+'.orig',
-                          cwd=dist_dir)
-        else:
-            dpkg_source_b(repackaged_dirname,
-                          cwd=dist_dir)
-            
-
-        if remove_expanded_source_dir:
-            shutil.rmtree(fullpath_repackaged_dirname)
-
-
-
-
-
-
-
-POSTINST_FILE = """\
-#!/bin/sh 
-# postinst script for %(package)s
-#
-# see: dh_installdeb(1)
-
-set -e
-
-# summary of how this script can be called:
-#        * <postinst> `configure' <most-recently-configured-version>
-#        * <old-postinst> `abort-upgrade' <new version>
-#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
-#          <new-version>
-#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
-#          <failed-install-package> <version> `removing'
-#          <conflicting-package> <version>
-# for details, see http://www.debian.org/doc/debian-policy/ or
-# the debian-policy package
-#
-# quoting from the policy:
-#     Any necessary prompting should almost always be confined to the
-#     post-installation script, and should be protected with a conditional
-#     so that unnecessary prompting doesn't happen if a package's
-#     installation fails and the `postinst' is called with `abort-upgrade',
-#     `abort-remove' or `abort-deconfigure'.
-
-PACKAGE=%(package)s
-VERSION=%(pycentral_showversions)s
-LIB=/usr/lib/python$VERSION
-DIRLIST="%(dirlist)s"
-
-case "$1" in
-    configure|abort-upgrade|abort-remove|abort-deconfigure)
-        for i in $DIRLIST ; do
-            /usr/bin/python$VERSION -O $LIB/compileall.py -q $LIB/site-packages/$i
-            /usr/bin/python$VERSION $LIB/compileall.py -q $LIB/site-packages/$i
-        done
-    ;;
-
-    *)
-        echo "postinst called with unknown argument \`$1'" >&2
-        exit 1
-    ;;
-esac
-
-exit 0
+binary: binary-indep binary-arch
 """
 
-PRERM_FILE = """\
-#!/bin/sh 
-# prerm script for %(package)s
+RULES_BINARY_ARCH="""\
+binary-indep:
 
-set -e
+binary-arch: build install
+        dh_testdir -a
+        dh_testroot -a
+        dh_python -a
+        dh_installdocs -a
+        dh_installdirs -a
+        dh_installexamples  -a%(dh_installmime_line)s
+        dh_strip -a%(copy_files_lines)s%(dh_desktop_line)s
+        dh_compress -a -X.py
+        dh_fixperms -a
+        dh_installdeb -a
+        dh_shlibdeps -a
+        dh_gencontrol -a
+        dh_md5sums -a
+        dh_builddeb -a
 
-VERSION=%(pycentral_showversions)s
-LIB=/usr/lib/python$VERSION
-DIRLIST="%(dirlist)s"
-
-case "$1" in
-    remove|upgrade|failed-upgrade)
-        for i in $DIRLIST ; do
-            find $LIB/site-packages/$i -name '*.py[co]' -exec rm \{\} \;
-        done
-    ;;
-
-    *)
-        echo "prerm called with unknown argument \`$1'" >&2
-        exit 1
-    ;;
-esac
-
-exit 0
+binary: binary-indep binary-arch
 """
