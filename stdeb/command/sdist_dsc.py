@@ -138,14 +138,16 @@ WARNING: although "--use-premade-distfile=" was used,
             self.run_command('sdist')
 
             # move original source tree 
+            if not os.path.exists(self.dist_dir):
+                os.makedirs(self.dist_dir)
             if 1:
                 base_dir = self.distribution.get_fullname()
-                if not os.path.exists(self.dist_dir):
-                    os.makedirs(self.dist_dir)
-                # don't hardlink, because we don't want patches to affect source
+                # Don't link, because this has to work across filesystems.
+                # (Also, we don't want patches to affect the source.)
                 shutil.copytree(base_dir, fullpath_repackaged_dirname)
+                # remove temporary copy
+                shutil.rmtree(base_dir)
                 del base_dir
-
             
         ###############################################
         # 2. Find all directories

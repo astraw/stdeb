@@ -514,7 +514,10 @@ export DH_VERBOSE=1
 PACKAGE_NAME=%(package)s
 MODULE_NAME=%(module_name)s
 
-DEB_UPSTREAM_VERSION=%(pure_upstream_version)s
+# Try 2 versions, which protects against getting name of .egg-info
+# directory wrong.  (This is a hack, but it seems to work.)
+DEB_UPSTREAM_VERSION1=%(pure_upstream_version)s
+DEB_UPSTREAM_VERSION2=%(upstream_version)s
 PYVERS=%(pycentral_showversions)s
 
 build: build-stamp
@@ -544,8 +547,12 @@ install-python%%:
         python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f)" install \
                 --no-compile --single-version-externally-managed \
                 --root $(CURDIR)/debian/${PACKAGE_NAME}         # install only one Egg dir (without python's version number)
-        mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${DEB_UPSTREAM_VERSION}-py$*.egg-info \
-        debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}.egg-info
+        if test -d debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${DEB_UPSTREAM_VERSION1}-py$*.egg-info; then \
+                mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${DEB_UPSTREAM_VERSION1}-py$*.egg-info \
+debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}.egg-info; fi;
+        if test -d debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${DEB_UPSTREAM_VERSION2}-py$*.egg-info; then \
+                mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${DEB_UPSTREAM_VERSION2}-py$*.egg-info \
+debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}.egg-info; fi;
 
 %(rules_binary)s
 
