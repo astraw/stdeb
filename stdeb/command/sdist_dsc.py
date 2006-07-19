@@ -55,8 +55,16 @@ class sdist_dsc(Command):
         
         #    B. find config files (if any)
         #         find .egg-info directory
-        egg_name = pkg_resources.safe_name(module_name)
-        egg_info_dirname = pkg_resources.to_filename(egg_name)+'.egg-info'
+        self.run_command('egg_info')
+        ei_cmd = self.distribution.get_command_obj('egg_info')
+        egg_info_dirname = ei_cmd.egg_info
+
+        #         find name of installed .egg-info directory (copied from install_egg_info.py)
+        installed_egg_info_dirname = pkg_resources.Distribution(
+            None, None, ei_cmd.egg_name, ei_cmd.egg_version
+            ).egg_name()+'.egg-info'
+        print 'XXX installed_egg_info_dirname',installed_egg_info_dirname
+        print '8'*80*4
         config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
         
         cfg_files = []
@@ -75,6 +83,7 @@ class sdist_dsc(Command):
                              has_ext_modules = self.distribution.has_ext_modules(),
                              description = self.distribution.get_description()[:60],
                              long_description = self.distribution.get_long_description(),
+                             installed_egg_info_dirname = installed_egg_info_dirname,
                              )
         ###############################################
         # 2. Build source tree and rename it to be in self.dist_dir
