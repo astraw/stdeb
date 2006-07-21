@@ -1,5 +1,4 @@
-2006-07-19 Get .egg-info directory locations from setuptools rather
-           than guessing (wrongly).
+2006-07-21 Don't bother trying to rename .egg-info directories.
 
 2006-07-09 Ability to specify MIME-Desktop-Files, MIME-File, and 
 	   Shared-MIME-File in configuration file.
