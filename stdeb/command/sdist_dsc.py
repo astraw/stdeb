@@ -55,8 +55,14 @@ class sdist_dsc(Command):
         
         #    B. find config files (if any)
         #         find .egg-info directory
-        self.run_command('egg_info')
         ei_cmd = self.distribution.get_command_obj('egg_info')
+        ei_cmd.tag_svn_revision = 0
+        ei_cmd.tag_build = None
+        
+        print >> sys.stderr, 'stdeb: setuptools issue workaround: set '\
+              'tag_svn_revision to 0 and tag_build to None'
+        
+        self.run_command('egg_info')
         egg_info_dirname = ei_cmd.egg_info
 
         #         find name of installed .egg-info directory (copied from install_egg_info.py)
@@ -125,7 +131,7 @@ class sdist_dsc(Command):
                     print >> sys.stderr, """\
 WARNING: although "--use-premade-distfile=" was used,
          the .orig.tar.gz file will be regenerated because
-         Debianized name ("%s") != Python name ("%s")"""%(debianized_dirname,original_dirname)
+         Debianized source name ("%s") != Python name ("%s")"""%(debianized_dirname,original_dirname)
             else:
                 print >> sys.stderr, "WARNING: .orig.tar.gz will be generated from .zip archive"
             base_dir = os.path.join(expand_dir, distname_in_premade_distfile)

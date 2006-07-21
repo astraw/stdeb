@@ -290,6 +290,11 @@ class DebianInfo:
 
         build_deps = [
             'python-all-dev',
+            
+            # svn commit #50703 should make life easier (#50707 is
+            # better comment), but bugs aren't all fixed yet.
+            # 'python-setuptools (>= 0.6c1)',
+            
             'python-setuptools',
             ]
         
@@ -387,7 +392,10 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
 
         if orig_tgz_no_change is not None:
             repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
-            os.link(orig_tgz_no_change,os.path.join(dist_dir,repackaged_orig_tarball))
+            repackaged_orig_tarball_path = os.path.join(dist_dir,repackaged_orig_tarball)
+            if os.path.exists(repackaged_orig_tarball_path):
+                os.unlink(repackaged_orig_tarball_path)
+            os.link(orig_tgz_no_change,repackaged_orig_tarball_path)
         elif 0:
             repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
             make_tarball(repackaged_orig_tarball,
@@ -545,8 +553,8 @@ install-python%%:
         python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f)" install \
                 --no-compile --single-version-externally-managed \
                 --root $(CURDIR)/debian/${PACKAGE_NAME}         # install only one Egg dir (without python's version number)
-        if test -d debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${INSTALLED_EGG_INFO_DIR}-py$*.egg-info; then \
-                mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${INSTALLED_EGG_INFO_DIR}-py$*.egg-info \
+        if test -d debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${INSTALLED_EGG_INFO_DIR}; then \
+                mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${INSTALLED_EGG_INFO_DIR} \
 debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}.egg-info; fi;
 
 %(rules_binary)s
