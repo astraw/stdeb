@@ -24,7 +24,7 @@ class sdist_dsc(Command):
         self.dist_dir = None
         self.default_distribution = None
         self.default_maintainer = None
-        self.extra_cfg_files = None
+        self.extra_cfg_file = None
         self.use_premade_distfile = None
         
     def finalize_options(self):
@@ -70,9 +70,8 @@ class sdist_dsc(Command):
         cfg_files = []
         if os.path.exists(config_fname):
             cfg_files.append(config_fname)
-        if self.extra_cfg_files is not None:
-            self.extra_cfg_files = self.extra_cfg_files.split()
-            cfg_files.extend(self.extra_cfg_files)
+        if self.extra_cfg_file is not None:
+            cfg_files.append(self.extra_cfg_file)
 
         debinfo = DebianInfo(cfg_files=cfg_files,
                              module_name = module_name,

@@ -17,7 +17,7 @@ stdeb_cmdline_opts = [
      "which distribution name to use if not specified in .cfg (default='experimental')"),
     ('default-maintainer=', 'm',
      'maintainer name and email to use if not specified in .cfg (default from setup.py)'),
-    ('extra-cfg-files=','x',
+    ('extra-cfg-file=','x',
      'use .cfg files specified here (in addition to .egg-info/stdeb.cfg if present)'),
     ('remove-expanded-source-dir=','r',
      'remove the expanded source directory')
