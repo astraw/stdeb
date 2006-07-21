@@ -63,8 +63,6 @@ class sdist_dsc(Command):
         installed_egg_info_dirname = pkg_resources.Distribution(
             None, None, ei_cmd.egg_name, ei_cmd.egg_version
             ).egg_name()+'.egg-info'
-        print 'XXX installed_egg_info_dirname',installed_egg_info_dirname
-        print '8'*80*4
         config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
         
         cfg_files = []
