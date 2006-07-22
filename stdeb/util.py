@@ -146,7 +146,26 @@ def dpkg_source_b(arg1,arg2=None,cwd=None):
         print >> sys.stderr, 'ERROR in',cwd
         print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
-
+    
+def apply_patch(patchfile,cwd=None):
+    "call 'patch < arg1'"
+    fd = open(patchfile,mode='r')
+    args = ['/usr/bin/patch',
+            '--posix', # keep empty files so dpkg-source removes contents
+            ]
+    res = subprocess.Popen(
+        args, cwd=cwd,
+        stdin=fd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        )
+    returncode = res.wait()
+    if returncode:
+        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
+        print >> sys.stderr, 'ERROR in',cwd
+        print >> sys.stderr, res.stderr.read()
+        raise RuntimeError('returncode %d'%returncode)
+    
 def parse_vals(cfg,section,option):
     """parse comma separated values in debian control file style from .cfg"""
     try:
@@ -319,6 +338,8 @@ class DebianInfo:
             debinfo.source_stanza_extras += ('Build-Conflicts: '+
                                               ', '.join( build_conflicts )+'\n')
 
+        debinfo.patch_file = parse_val(cfg,module_name,'Stdeb-Patch-File')
+
         if use_pycentral:
             debinfo.source_stanza_extras += 'XS-Python-Version: all\n'
             debinfo.package_stanza_extras = """\
@@ -359,6 +380,7 @@ Provides: ${python:Provides}
 
         defaults['Build-Depends'] = ''
         defaults['Build-Conflicts'] = ''
+        defaults['Stdeb-Patch-File'] = ''
         defaults['Depends'] = ''
         defaults['Suggests'] = ''
         defaults['Recommends'] = ''
@@ -375,124 +397,122 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
               orig_tgz_no_change=None,
               remove_expanded_source_dir=0):
     """make debian source package"""
-    if 1:    
-        #    A. Find new dirname and delete any pre-existing contents
-        fullpath_repackaged_dirname = os.path.join(dist_dir,repackaged_dirname)
+    #    A. Find new dirname and delete any pre-existing contents
+    fullpath_repackaged_dirname = os.path.join(dist_dir,repackaged_dirname)
 
-            
-        ###############################################
-        # 3. make temporary original source tarball
+
+    ###############################################
+    # 1. make temporary original source tarball
+
+    #    Note that, for the final tarball, best practices suggest
+    #    using "dpkg-source -b".  See
+    #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
+
+    if orig_tgz_no_change is not None:
+        repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
+        repackaged_orig_tarball_path = os.path.join(dist_dir,repackaged_orig_tarball)
+        if os.path.exists(repackaged_orig_tarball_path):
+            os.unlink(repackaged_orig_tarball_path)
+        os.link(orig_tgz_no_change,repackaged_orig_tarball_path)
+    else:
+        repackaged_orig_tarball = 'orig.tar'
+        make_tarball(repackaged_orig_tarball,
+                     repackaged_dirname,
+                     cwd=dist_dir)
+
+    # 2. apply patch
+    if debinfo.patch_file != '':
+        apply_patch(debinfo.patch_file, cwd=fullpath_repackaged_dirname)
         
-        #    Note that, for the final tarball, best practices suggest
-        #    using "dpkg-source -b".  See
+    ###############################################
+    # 2. create debian/ directory and contents
+
+    debian_dir = os.path.join(fullpath_repackaged_dirname,'debian')
+    if not os.path.exists(debian_dir):
+        os.mkdir(debian_dir)
+
+    #    A. debian/changelog
+
+    fd = open( os.path.join(debian_dir,'changelog'), mode='w')
+    fd.write('%(source)s (%(full_version)s) %(distname)s; urgency=low\n'%debinfo.__dict__)
+    fd.write('\n')
+    fd.write('  * source package automatically created by stdeb\n')
+    fd.write('\n')
+    fd.write(' -- %(maintainer)s  %(date822)s\n'%debinfo.__dict__)
+    fd.close()
+
+    #    B. debian/control
+    control = CONTROL_FILE%debinfo.__dict__
+    fd = open( os.path.join(debian_dir,'control'), mode='w')
+    fd.write(control)
+    fd.close()
+
+    #    C. debian/rules
+    if debinfo.architecture == 'all':
+        debinfo.rules_binary=RULES_BINARY_INDEP%debinfo.__dict__
+    else:
+        debinfo.rules_binary=RULES_BINARY_ARCH%debinfo.__dict__
+
+    rules = RULES_MAIN%debinfo.__dict__
+
+    rules = rules.replace('        ','\t')
+    rules_fname = os.path.join(debian_dir,'rules')
+    fd = open( rules_fname, mode='w')
+    fd.write(rules)
+    fd.close()
+    os.chmod(rules_fname,0755)
+
+    fd = open( os.path.join(debian_dir,
+                            debinfo.package+'.dirs'),
+               mode='w')
+    for install_dir in debinfo.install_dirs:
+        fd.write(install_dir+'\n')
+    fd.close()
+
+    #    D. debian/compat
+    fd = open( os.path.join(debian_dir,'compat'), mode='w')
+    fd.write('4\n')
+    fd.close()
+
+    #    E. debian/package.mime
+    if debinfo.mime_file != '':
+        os.link( debinfo.mime_file,
+                 os.path.join(debian_dir,debinfo.package+'.mime'))
+    if debinfo.shared_mime_file != '':
+        os.link( debinfo.shared_mime_file,
+                 os.path.join(debian_dir,
+                              debinfo.package+'.sharedmimeinfo'))
+
+    ###############################################
+    # 3. unpack original source tarball
+
+    #    A. move debianized tree away
+    os.rename(fullpath_repackaged_dirname,
+              fullpath_repackaged_dirname+'.debianized')
+    #    B. expand repackaged original tarball
+    expand_tarball(repackaged_orig_tarball,cwd=dist_dir)
+    #    C. move original repackaged tree to .orig
+    os.rename(fullpath_repackaged_dirname,fullpath_repackaged_dirname+'.orig')
+    #    D. restore debianized tree
+    os.rename(fullpath_repackaged_dirname+'.debianized',
+              fullpath_repackaged_dirname)
+    if orig_tgz_no_change is None:
+        # No original tarball (that we want to keep)
+        #    i.  Remove temporarily repackaged original tarball
+        os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))
+        #    ii. Re-generate tarball using best practices see
         #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
+        #    call "dpkg-source -b new_dirname orig_dirname"
+        dpkg_source_b(repackaged_dirname,
+                      repackaged_dirname+'.orig',
+                      cwd=dist_dir)
+    else:
+        dpkg_source_b(repackaged_dirname,
+                      cwd=dist_dir)
 
-        if orig_tgz_no_change is not None:
-            repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
-            repackaged_orig_tarball_path = os.path.join(dist_dir,repackaged_orig_tarball)
-            if os.path.exists(repackaged_orig_tarball_path):
-                os.unlink(repackaged_orig_tarball_path)
-            os.link(orig_tgz_no_change,repackaged_orig_tarball_path)
-        elif 0:
-            repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
-            make_tarball(repackaged_orig_tarball,
-                         repackaged_dirname,
-                         cwd=dist_dir)
-        else:
-            repackaged_orig_tarball = 'orig.tar'
-            make_tarball(repackaged_orig_tarball,
-                         repackaged_dirname,
-                         cwd=dist_dir)
-        ###############################################
-        # 4. create debian/ directory and contents
-        
-        debian_dir = os.path.join(fullpath_repackaged_dirname,'debian')
-        if not os.path.exists(debian_dir):
-            os.mkdir(debian_dir)
-        
-        #    A. debian/changelog
 
-        fd = open( os.path.join(debian_dir,'changelog'), mode='w')
-        fd.write('%(source)s (%(full_version)s) %(distname)s; urgency=low\n'%debinfo.__dict__)
-        fd.write('\n')
-        fd.write('  * source package automatically created by stdeb\n')
-        fd.write('\n')
-        fd.write(' -- %(maintainer)s  %(date822)s\n'%debinfo.__dict__)
-        fd.close()
-        
-        #    B. debian/control
-        control = CONTROL_FILE%debinfo.__dict__
-        fd = open( os.path.join(debian_dir,'control'), mode='w')
-        fd.write(control)
-        fd.close()
-        
-        #    C. debian/rules
-        if debinfo.architecture == 'all':
-            debinfo.rules_binary=RULES_BINARY_INDEP%debinfo.__dict__
-        else:
-            debinfo.rules_binary=RULES_BINARY_ARCH%debinfo.__dict__
-
-        rules = RULES_MAIN%debinfo.__dict__
-
-        rules = rules.replace('        ','\t')
-        rules_fname = os.path.join(debian_dir,'rules')
-        fd = open( rules_fname, mode='w')
-        fd.write(rules)
-        fd.close()
-        os.chmod(rules_fname,0755)
-
-        fd = open( os.path.join(debian_dir,
-                                debinfo.package+'.dirs'),
-                   mode='w')
-        for install_dir in debinfo.install_dirs:
-            fd.write(install_dir+'\n')
-        fd.close()
-
-        #    D. debian/compat
-        fd = open( os.path.join(debian_dir,'compat'), mode='w')
-        fd.write('4\n')
-        fd.close()
-
-        #    E. debian/package.mime
-        if debinfo.mime_file != '':
-            os.link( debinfo.mime_file,
-                     os.path.join(debian_dir,debinfo.package+'.mime'))
-        if debinfo.shared_mime_file != '':
-            os.link( debinfo.shared_mime_file,
-                     os.path.join(debian_dir,
-                                  debinfo.package+'.sharedmimeinfo'))
-
-        ###############################################
-        # 5. unpack original source tarball
-
-        #    A. move debianized tree away
-        os.rename(fullpath_repackaged_dirname,
-                  fullpath_repackaged_dirname+'.debianized')
-        #    B. expand repackaged original tarball
-        expand_tarball(repackaged_orig_tarball,cwd=dist_dir)
-        #    C. move original repackaged tree to .orig
-        os.rename(fullpath_repackaged_dirname,fullpath_repackaged_dirname+'.orig')
-        #    D. restore debianized tree
-        os.rename(fullpath_repackaged_dirname+'.debianized',
-                  fullpath_repackaged_dirname)
-        if orig_tgz_no_change is None:
-            #    E. remove repackaged original tarball
-            #       (we re-generate it using best practices below)
-            os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))
-
-            ###############################################
-            # 6. call "dpkg-source -b"
-            # http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
-            dpkg_source_b(repackaged_dirname,
-                          repackaged_dirname+'.orig',
-                          cwd=dist_dir)
-        else:
-            dpkg_source_b(repackaged_dirname,
-                          cwd=dist_dir)
-            
-
-        if remove_expanded_source_dir:
-            shutil.rmtree(fullpath_repackaged_dirname)
+    if remove_expanded_source_dir:
+        shutil.rmtree(fullpath_repackaged_dirname)
 
 
 CONTROL_FILE = """\
@@ -547,7 +567,7 @@ install-python%%:
 # Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py files expect that.
         python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f)" install \
                 --no-compile --single-version-externally-managed \
-                --root $(CURDIR)/debian/${PACKAGE_NAME}         # install only one Egg dir (without python's version number)
+                --root $(CURDIR)/debian/${PACKAGE_NAME}
 
 %(rules_binary)s
 

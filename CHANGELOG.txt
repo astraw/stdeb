@@ -1,3 +1,6 @@
+2006-07-21 Allow patches to upstream source via Stdeb-Patch-File in
+           .cfg file.
+
 2006-07-21 Don't bother trying to rename .egg-info directories.
 
 2006-07-09 Ability to specify MIME-Desktop-Files, MIME-File, and 

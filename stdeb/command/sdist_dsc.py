@@ -86,15 +86,14 @@ class sdist_dsc(Command):
         ###############################################
         # 2. Build source tree and rename it to be in self.dist_dir
 
-
-
-        #    B. create source archive in new directory
-        if 1:
-            repackaged_dirname = debinfo.source+'-'+debinfo.upstream_version
-            fullpath_repackaged_dirname = os.path.join(self.dist_dir,repackaged_dirname)
+        #    A. create source archive in new directory
+        repackaged_dirname = debinfo.source+'-'+debinfo.upstream_version
+        fullpath_repackaged_dirname = os.path.join(self.dist_dir,repackaged_dirname)
+            
         orig_tgz_no_change = None
         cleanup_dirs = []
         if self.use_premade_distfile is not None:
+        #      i. from premade sdist file
             expand_dir = os.path.join(self.dist_dir,'tmp_sdist_dsc')
             cleanup_dirs.append(expand_dir)
             if os.path.exists(expand_dir):
@@ -134,6 +133,7 @@ WARNING: although "--use-premade-distfile=" was used,
             del base_dir
             keep_distfile_info = ( distname_in_premade_distfile,self.use_premade_distfile)
         else:
+        #      ii. from source
             keep_distfile_info = None
             if os.path.exists(fullpath_repackaged_dirname):
                 shutil.rmtree(fullpath_repackaged_dirname)     
@@ -157,13 +157,13 @@ WARNING: although "--use-premade-distfile=" was used,
                 del base_dir
             
         ###############################################
-        # 2. Find all directories
+        # 3. Find all directories
 
         for pkgdir in self.distribution.packages or []:
             debinfo.dirlist += ' ' + pkgdir.replace('.', '/')
         
         ###############################################
-        # 3. Build source tree and rename it to be in self.dist_dir
+        # 4. Build source tree and rename it to be in self.dist_dir
 
         build_dsc(debinfo,self.dist_dir,repackaged_dirname,
                   orig_tgz_no_change=orig_tgz_no_change,
