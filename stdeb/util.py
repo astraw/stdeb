@@ -1,7 +1,7 @@
 #
 # This module contains most of the code of stdeb.
 #
-import sys, os, shutil, sets
+import sys, os, shutil, sets, select
 import ConfigParser
 import subprocess
 
@@ -148,9 +148,10 @@ def dpkg_source_b(arg1,arg2=None,cwd=None):
         raise RuntimeError('returncode %d'%returncode)
     
 def apply_patch(patchfile,cwd=None):
-    "call 'patch < arg1'"
+    "call 'patch -p0 --posix < arg1'"
     fd = open(patchfile,mode='r')
-    args = ['/usr/bin/patch',
+    
+    args = ['/usr/bin/patch','-p0',
             '--posix', # keep empty files so dpkg-source removes contents
             ]
     res = subprocess.Popen(
@@ -159,11 +160,26 @@ def apply_patch(patchfile,cwd=None):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         )
-    returncode = res.wait()
+    returncode=None
+    while returncode is None:
+        returncode = res.poll()
+        ready = select.select( [res.stdout,res.stderr],[],[],0.1)
+        # XXX figure out how to do this without reading byte-by-byte
+        if res.stdout in ready[0]:
+            sys.stdout.write(res.stdout.read(1))
+            sys.stdout.flush()
+        if res.stderr in ready[0]:
+            sys.stderr.write(res.stderr.read(1))
+            sys.stderr.flush()
+    # finish outputting file
+    sys.stdout.write(res.stdout.read())
+    sys.stdout.flush()
+    sys.stderr.write(res.stderr.read())
+    sys.stderr.flush()
+            
     if returncode:
         print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
         print >> sys.stderr, 'ERROR in',cwd
-        print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
     
 def parse_vals(cfg,section,option):
