@@ -374,6 +374,11 @@ Provides: ${python:Provides}
         if len(provides):
             debinfo.package_stanza_extras += ('Provides: ' +
                                               ', '.join( provides  )+'\n')
+            
+        replaces = parse_vals(cfg,module_name,'Replaces')
+        if len(replaces):
+            debinfo.package_stanza_extras += ('Replaces: ' +
+                                              ', '.join( replaces  )+'\n')
         debinfo.dirlist = ""
         
     def _make_cfg_defaults(self,
@@ -403,6 +408,7 @@ Provides: ${python:Provides}
 
         defaults['Conflicts'] = ''
         defaults['Provides'] = ''
+        defaults['Replaces'] = ''
 
         defaults['MIME-Desktop-Files'] = ''
         defaults['MIME-File'] = ''
