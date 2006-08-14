@@ -6,24 +6,30 @@ import ConfigParser
 import subprocess
 
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
-           'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink']
+           'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink',
+           'apply_patch']
 
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
      "directory to put final built distributions in (default='deb_dist')"),
     ('use-pycentral=', 'c', # not tested yet
      'use pycentral support for multiple Python versions (NOT TESTED)'),
+    ('patch-already-applied=','a',
+     'patch was already applied (used when py2dsc calls sdist_dsc)'),
     ('default-distribution=', 'z',
      "which distribution name to use if not specified in .cfg (default='experimental')"),
     ('default-maintainer=', 'm',
      'maintainer name and email to use if not specified in .cfg (default from setup.py)'),
     ('extra-cfg-file=','x',
-     'use .cfg files specified here (in addition to .egg-info/stdeb.cfg if present)'),
+     'additional .cfg file (in addition to .egg-info/stdeb.cfg if present)'),
+    ('patch-file=','p',
+     'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
     ('remove-expanded-source-dir=','r',
-     'remove the expanded source directory')
+     'remove the expanded source directory'),
     ]
 
 stdeb_cmd_bool_opts = [
+    'patch-already-applied',
     'use-pycentral',
     'remove-expanded-source-dir',
     ]
@@ -147,13 +153,19 @@ def dpkg_source_b(arg1,arg2=None,cwd=None):
         print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
     
-def apply_patch(patchfile,cwd=None):
-    "call 'patch -p0 --posix < arg1'"
+def apply_patch(patchfile,cwd=None,posix=False):
+    "call 'patch -p0 [--posix] < arg1'
+
+    posix mode is sometimes necessary. It keeps empty files so that
+    dpkg-source removes their contents.
+    
+    "
     fd = open(patchfile,mode='r')
     
-    args = ['/usr/bin/patch','-p0',
-            '--posix', # keep empty files so dpkg-source removes contents
-            ]
+    args = ['/usr/bin/patch','-p0',]
+    if posix:
+        args.append('--posix')
+
     res = subprocess.Popen(
         args, cwd=cwd,
         stdin=fd,
@@ -217,6 +229,7 @@ class DebianInfo:
                  has_ext_modules=NotGiven,
                  description=NotGiven,
                  long_description=NotGiven,
+                 patch_file=None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError("module_name must be supplied")
@@ -355,6 +368,12 @@ class DebianInfo:
                                               ', '.join( build_conflicts )+'\n')
 
         debinfo.patch_file = parse_val(cfg,module_name,'Stdeb-Patch-File')
+        
+        if patch_file is not None:
+            if debinfo.patch_file != '':
+                raise RuntimeError('A patch file was specified on the command line and in .cfg file.')
+            else:
+                debinfo.patch_file = patch_file
 
         if use_pycentral:
             debinfo.source_stanza_extras += 'XS-Python-Version: all\n'

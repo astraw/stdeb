@@ -11,7 +11,7 @@ import sys, os, shutil, subprocess
 from distutils.util import strtobool
 from distutils.fancy_getopt import FancyGetopt, translate_longopt
 from stdeb.util import DebianInfo, stdeb_cmdline_opts, stdeb_cmd_bool_opts
-from stdeb.util import expand_tarball, expand_zip
+from stdeb.util import expand_tarball, expand_zip, apply_patch
 
 class OptObj: pass
 
@@ -47,7 +47,9 @@ def runit():
     if os.path.exists(tmp_dist_dir):
         shutil.rmtree(tmp_dist_dir)
     os.makedirs(tmp_dist_dir)
-        
+    
+    patch_file = optobj.__dict__.get('patch_file',None)
+    
     expand_dir = os.path.join(tmp_dist_dir,'stdeb_tmp')
     if os.path.exists(expand_dir):
         shutil.rmtree(expand_dir)
@@ -69,33 +71,42 @@ def runit():
     fullpath_repackaged_dirname = os.path.join(tmp_dist_dir,repackaged_dirname)
     base_dir = os.path.join(expand_dir,expanded_root_files[0])
     if os.path.exists(fullpath_repackaged_dirname):
+        # prevent weird build errors if this dir exists
         shutil.rmtree(fullpath_repackaged_dirname)
     os.renames(base_dir, fullpath_repackaged_dirname)
     del base_dir # no longer useful
 
     ##############################################
+    if patch_file is not None:
+        apply_patch(patch_file, cwd=fullpath_repackaged_dirname)
+        patch_already_applied = 1
+    else:
+        patch_already_applied = 0
+    ##############################################
 
+    
     abs_dist_dir = os.path.abspath(final_dist_dir)
 
     extra_args = []
     for long in parser.long_opts:
-        if long=='dist-dir=':
-            continue # set by this invocation
+        if long in ['dist-dir=','patch-file=']:
+            continue # dealt with by this invocation
         attr = parser.get_attr_name(long)[:-1]
         if hasattr(optobj,attr):
             val = getattr(optobj,attr)
             extra_args.append('--'+long+str(val))
 
-    #args = [sys.executable,'setup.py','--dist-dir=%s'%abs_dist_dir]+extra_args
     args = [sys.executable,'-c',"import stdeb, sys; f='setup.py'; sys.argv[0]=f; execfile(f)",
             'sdist_dsc','--dist-dir=%s'%abs_dist_dir,
+            '--patch-already-applied=%s'%str(patch_already_applied),
             '--use-premade-distfile=%s'%os.path.abspath(sdist_file)]+extra_args
 
     print >> sys.stderr, '-='*20
-    print >> sys.stderr, "running the following command in in directory: %s\n%s"%(
+    print >> sys.stderr, "running the following command in directory: %s\n%s"%(
         fullpath_repackaged_dirname,
         ' '.join(args))
     print >> sys.stderr, '-='*20
+    
     res = subprocess.Popen(
         args,cwd=fullpath_repackaged_dirname,
         #stdout=subprocess.PIPE,

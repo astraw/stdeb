@@ -19,12 +19,14 @@ class sdist_dsc(Command):
     boolean_options = stdeb_cmd_bool_opts
     
     def initialize_options (self):
+        self.patch_already_applied = 0
         self.use_pycentral = 0
         self.remove_expanded_source_dir = 0
         self.dist_dir = None
         self.default_distribution = None
         self.default_maintainer = None
         self.extra_cfg_file = None
+        self.patch_file = None
         self.use_premade_distfile = None
         
     def finalize_options(self):
@@ -56,11 +58,12 @@ class sdist_dsc(Command):
         #    B. find config files (if any)
         #         find .egg-info directory
         ei_cmd = self.distribution.get_command_obj('egg_info')
-        ei_cmd.tag_svn_revision = 0
-        ei_cmd.tag_build = None
-        
-        print >> sys.stderr, 'stdeb: setuptools issue workaround: set '\
-              'tag_svn_revision to 0 and tag_build to None'
+        if 0:
+            ei_cmd.tag_svn_revision = 0
+            ei_cmd.tag_build = None
+
+            print >> sys.stderr, 'stdeb: setuptools issue workaround: '\
+                  'set tag_svn_revision to 0 and tag_build to None'
         
         self.run_command('egg_info')
         egg_info_dirname = ei_cmd.egg_info
@@ -82,7 +85,11 @@ class sdist_dsc(Command):
                              has_ext_modules = self.distribution.has_ext_modules(),
                              description = self.distribution.get_description()[:60],
                              long_description = self.distribution.get_long_description(),
+                             patch_file = self.patch_file,
                              )
+        if debinfo.patch_file != '' and self.patch_already_applied:
+            raise RuntimeError('A patch was already applied, but another patch is requested.')
+
         ###############################################
         # 2. Build source tree and rename it to be in self.dist_dir
 
@@ -92,8 +99,28 @@ class sdist_dsc(Command):
             
         orig_tgz_no_change = None
         cleanup_dirs = []
+
+        # copy source tree
+        if os.path.exists(fullpath_repackaged_dirname):
+            shutil.rmtree(fullpath_repackaged_dirname)
+        os.mkdir(fullpath_repackaged_dirname)
+        orig_dir = os.path.abspath(os.curdir)
+        for src in os.listdir(orig_dir):
+            if src != self.dist_dir:
+                dst = os.path.join(fullpath_repackaged_dirname,src)
+                if os.path.isdir(src):
+                    shutil.copytree(src, dst )
+                else:
+                    shutil.copy2(src, dst )
+        # remove .pyc files which dpkg-source cannot package
+        for root, dirs, files in os.walk(fullpath_repackaged_dirname):
+            for name in files:
+                if name.endswith('.pyc'):
+                    fullpath = os.path.join(root,name)
+                    os.unlink(fullpath)
+                    
         if self.use_premade_distfile is not None:
-        #      i. from premade sdist file
+        # ensure premade sdist can actually be used
             expand_dir = os.path.join(self.dist_dir,'tmp_sdist_dsc')
             cleanup_dirs.append(expand_dir)
             if os.path.exists(expand_dir):
@@ -124,37 +151,19 @@ class sdist_dsc(Command):
                     print >> sys.stderr, """\
 WARNING: although "--use-premade-distfile=" was used,
          the .orig.tar.gz file will be regenerated because
-         Debianized source name ("%s") != Python name ("%s")"""%(debianized_dirname,original_dirname)
+         Debianized directory name ("%s") != directory name in original .tar.gz ("%s")"""%(debianized_dirname,original_dirname)
             else:
                 print >> sys.stderr, "WARNING: .orig.tar.gz will be generated from .zip archive"
-            base_dir = os.path.join(expand_dir, distname_in_premade_distfile)
-            # hardlink instead of copy because source files only temporary anyway
-            recursive_hardlink(base_dir, fullpath_repackaged_dirname)
-            del base_dir
-            keep_distfile_info = ( distname_in_premade_distfile,self.use_premade_distfile)
-        else:
-        #      ii. from source
-            keep_distfile_info = None
-            if os.path.exists(fullpath_repackaged_dirname):
-                shutil.rmtree(fullpath_repackaged_dirname)     
-            # generate a new sdist
-            if 1:
-                self.distribution.get_command_obj('sdist').keep_temp=True
-            if 0:
-                self.distribution.get_command_obj('sdist').dist_dir=self.dist_dir
-            self.run_command('sdist')
 
-            # move original source tree 
-            if not os.path.exists(self.dist_dir):
-                os.makedirs(self.dist_dir)
-            if 1:
-                base_dir = self.distribution.get_fullname()
-                # Don't link, because this has to work across filesystems.
-                # (Also, we don't want patches to affect the source.)
-                shutil.copytree(base_dir, fullpath_repackaged_dirname)
-                # remove temporary copy
-                shutil.rmtree(base_dir)
-                del base_dir
+            if orig_tgz_no_change is not None:
+                # Because we deleted all .pyc files above, if the
+                # original source dist has them, we will have
+                # (wrongly) deleted them. So, quit loudly rather
+                # than fail silently.
+                for root, dirs, files in os.walk(fullpath_repackaged_dirname):
+                    for name in files:
+                        if name.endswith('.pyc'):
+                            raise RuntimeError('original source dist cannot contain .pyc files')
             
         ###############################################
         # 3. Find all directories
