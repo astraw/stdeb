@@ -154,12 +154,12 @@ def dpkg_source_b(arg1,arg2=None,cwd=None):
         raise RuntimeError('returncode %d'%returncode)
     
 def apply_patch(patchfile,cwd=None,posix=False):
-    "call 'patch -p0 [--posix] < arg1'
+    """call 'patch -p0 [--posix] < arg1'
 
     posix mode is sometimes necessary. It keeps empty files so that
     dpkg-source removes their contents.
     
-    "
+    """
     fd = open(patchfile,mode='r')
     
     args = ['/usr/bin/patch','-p0',]
