@@ -1,3 +1,8 @@
+2006-08-13 Generate source by copying tree, not "python setup.py
+           sdist"
+
+2006-08-13 Patches can be applied prior to first call to setup.py
+
 2006-07-21 Allow patches to upstream source via Stdeb-Patch-File in
            .cfg file.
 
