@@ -100,13 +100,14 @@ class sdist_dsc(Command):
         orig_tgz_no_change = None
         cleanup_dirs = []
 
+        exclude_dirs = ['.svn']
         # copy source tree
         if os.path.exists(fullpath_repackaged_dirname):
             shutil.rmtree(fullpath_repackaged_dirname)
-        os.mkdir(fullpath_repackaged_dirname)
+        os.makedirs(fullpath_repackaged_dirname)
         orig_dir = os.path.abspath(os.curdir)
         for src in os.listdir(orig_dir):
-            if src != self.dist_dir:
+            if src not in exclude_dirs+[self.dist_dir,'build','dist']:
                 dst = os.path.join(fullpath_repackaged_dirname,src)
                 if os.path.isdir(src):
                     shutil.copytree(src, dst )
@@ -118,6 +119,10 @@ class sdist_dsc(Command):
                 if name.endswith('.pyc'):
                     fullpath = os.path.join(root,name)
                     os.unlink(fullpath)
+            for name in dirs:
+                if name in exclude_dirs:
+                    fullpath = os.path.join(root,name)
+                    shutil.rmtree(fullpath)
                     
         if self.use_premade_distfile is not None:
         # ensure premade sdist can actually be used
