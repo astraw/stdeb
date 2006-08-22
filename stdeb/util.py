@@ -4,10 +4,12 @@
 import sys, os, shutil, sets, select
 import ConfigParser
 import subprocess
+import tempfile
 
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink',
-           'apply_patch']
+           'apply_patch','repack_tarball_with_debianized_dirname',
+           'expand_sdist_file']
 
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
@@ -23,6 +25,8 @@ stdeb_cmdline_opts = [
     ('extra-cfg-file=','x',
      'additional .cfg file (in addition to .egg-info/stdeb.cfg if present)'),
     ('patch-file=','p',
+     'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
+    ('patch-level=','l',
      'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
     ('remove-expanded-source-dir=','r',
      'remove the expanded source directory'),
@@ -136,6 +140,37 @@ def expand_zip(zip_fname,cwd=None):
         print >> sys.stderr, 'ERROR in',cwd
         print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
+
+def expand_sdist_file(sdist_file,cwd=None):
+    lower_sdist_file = sdist_file.lower()
+    if lower_sdist_file.endswith('.zip'):
+        expand_zip(sdist_file,cwd=cwd)
+    elif lower_sdist_file.endswith('.tar.bz2'):
+        expand_tarball(sdist_file,cwd=cwd)
+    elif lower_sdist_file.endswith('.tar.gz'):
+        expand_tarball(sdist_file,cwd=cwd)
+    else:
+        raise RuntimeError('could not guess format of original sdist file')
+
+def repack_tarball_with_debianized_dirname( orig_sdist_file,
+                                            repacked_sdist_file,
+                                            debianized_dirname,
+                                            original_dirname ):
+    working_dir = tempfile.mkdtemp()
+    expand_sdist_file( orig_sdist_file, cwd=working_dir )
+    fullpath_original_dirname = os.path.join(working_dir,original_dirname)
+    fullpath_debianized_dirname = os.path.join(working_dir,debianized_dirname)
+    
+    # ensure sdist looks like sdist:
+    assert os.path.exists( fullpath_original_dirname )
+    assert len(os.listdir(working_dir))==1
+    
+    if fullpath_original_dirname != fullpath_debianized_dirname:
+        # rename original dirname to debianized dirname
+        os.rename(fullpath_original_dirname,
+                  fullpath_debianized_dirname)
+    make_tarball(repacked_sdist_file,debianized_dirname,cwd=working_dir)
+    shutil.rmtree(working_dir)
     
 def dpkg_source_b(arg1,arg2=None,cwd=None):
     "call dpkg-source -b arg1 [arg2]"
@@ -154,19 +189,24 @@ def dpkg_source_b(arg1,arg2=None,cwd=None):
         print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
     
-def apply_patch(patchfile,cwd=None,posix=False):
-    """call 'patch -p0 [--posix] < arg1'
+def apply_patch(patchfile,cwd=None,posix=False,level=0):
+    """call 'patch -p[level] [--posix] < arg1'
 
     posix mode is sometimes necessary. It keeps empty files so that
     dpkg-source removes their contents.
     
     """
+    if not os.path.exists(patchfile):
+        raise RuntimeError('patchfile "%s" does not exist'%patchfile)
     fd = open(patchfile,mode='r')
-    
-    args = ['/usr/bin/patch','-p0',]
+
+    level_str = '-p%d'%level
+    args = ['/usr/bin/patch',level_str]
     if posix:
         args.append('--posix')
 
+    print >> sys.stderr, 'PATCH COMMAND:',' '.join(args),'<',patchfile
+    print >> sys.stderr, '  PATCHING in dir:',cwd
     res = subprocess.Popen(
         args, cwd=cwd,
         stdin=fd,
@@ -231,6 +271,7 @@ class DebianInfo:
                  description=NotGiven,
                  long_description=NotGiven,
                  patch_file=None,
+                 patch_level=None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError("module_name must be supplied")
@@ -376,6 +417,18 @@ class DebianInfo:
             else:
                 debinfo.patch_file = patch_file
 
+        debinfo.patch_level = parse_val(cfg,module_name,'Stdeb-Patch-Level')
+        if debinfo.patch_level != '':
+            if patch_level is not None:
+                raise RuntimeError('A patch level was specified on the command line and in .cfg file.')
+            else:
+                debinfo.patch_level = int(debinfo.patch_level)
+        else:
+            if patch_level is not None:
+                debinfo.patch_level = patch_level
+            else:
+                debinfo.patch_level = 0
+
         if use_pycentral:
             debinfo.source_stanza_extras += 'XS-Python-Version: all\n'
             debinfo.package_stanza_extras = """\
@@ -422,6 +475,7 @@ Provides: ${python:Provides}
         defaults['Build-Depends'] = ''
         defaults['Build-Conflicts'] = ''
         defaults['Stdeb-Patch-File'] = ''
+        defaults['Stdeb-Patch-Level'] = ''
         defaults['Depends'] = ''
         defaults['Suggests'] = ''
         defaults['Recommends'] = ''
@@ -436,7 +490,7 @@ Provides: ${python:Provides}
         return defaults
 
 def build_dsc(debinfo,dist_dir,repackaged_dirname,
-              orig_tgz_no_change=None,
+              orig_sdist=None,
               remove_expanded_source_dir=0):
     """make debian source package"""
     #    A. Find new dirname and delete any pre-existing contents
@@ -450,31 +504,31 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     #    using "dpkg-source -b".  See
     #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
 
-    if orig_tgz_no_change is not None:
+    if orig_sdist is not None:
         repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
         repackaged_orig_tarball_path = os.path.join(dist_dir,repackaged_orig_tarball)
         if os.path.exists(repackaged_orig_tarball_path):
             os.unlink(repackaged_orig_tarball_path)
-        os.link(orig_tgz_no_change,repackaged_orig_tarball_path)
+        os.link(orig_sdist,repackaged_orig_tarball_path)
     else:
         repackaged_orig_tarball = 'orig.tar'
         make_tarball(repackaged_orig_tarball,
                      repackaged_dirname,
                      cwd=dist_dir)
 
-    # 2. apply patch
+    # apply patch
     if debinfo.patch_file != '':
-        apply_patch(debinfo.patch_file, cwd=fullpath_repackaged_dirname)
+        apply_patch(debinfo.patch_file,
+                    level=debinfo.patch_level,
+                    cwd=fullpath_repackaged_dirname)
         
     ###############################################
     # 2. create debian/ directory and contents
-
     debian_dir = os.path.join(fullpath_repackaged_dirname,'debian')
     if not os.path.exists(debian_dir):
         os.mkdir(debian_dir)
 
     #    A. debian/changelog
-
     fd = open( os.path.join(debian_dir,'changelog'), mode='w')
     fd.write('%(source)s (%(full_version)s) %(distname)s; urgency=low\n'%debinfo.__dict__)
     fd.write('\n')
@@ -538,7 +592,7 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
               fullpath_repackaged_dirname)
-    if orig_tgz_no_change is None:
+    if orig_sdist is None:
         # No original tarball (that we want to keep)
         #    i.  Remove temporarily repackaged original tarball
         os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))

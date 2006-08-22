@@ -11,7 +11,7 @@ import sys, os, shutil, subprocess
 from distutils.util import strtobool
 from distutils.fancy_getopt import FancyGetopt, translate_longopt
 from stdeb.util import DebianInfo, stdeb_cmdline_opts, stdeb_cmd_bool_opts
-from stdeb.util import expand_tarball, expand_zip, apply_patch
+from stdeb.util import expand_sdist_file, apply_patch
 
 class OptObj: pass
 
@@ -49,6 +49,7 @@ def runit():
     os.makedirs(tmp_dist_dir)
     
     patch_file = optobj.__dict__.get('patch_file',None)
+    patch_level = int(optobj.__dict__.get('patch_level',0))
     
     expand_dir = os.path.join(tmp_dist_dir,'stdeb_tmp')
     if os.path.exists(expand_dir):
@@ -57,14 +58,7 @@ def runit():
         os.mkdir(tmp_dist_dir)
     os.mkdir(expand_dir)
 
-    if sdist_file.lower().endswith('.zip'):
-        expand_zip(os.path.abspath(sdist_file),cwd=expand_dir)
-    elif sdist_file.lower().endswith('.tar.bz2'):
-        expand_tarball(os.path.abspath(sdist_file),cwd=expand_dir)
-    elif sdist_file.lower().endswith('.tar.gz'):
-        expand_tarball(os.path.abspath(sdist_file),cwd=expand_dir)
-    else:
-        raise RuntimeError('could not guess format of original sdist file')
+    expand_sdist_file(os.path.abspath(sdist_file),cwd=expand_dir)
 
     # now the sdist package is expanded in expand_dir
     expanded_root_files = os.listdir(expand_dir)
@@ -80,7 +74,9 @@ def runit():
 
     ##############################################
     if patch_file is not None:
-        apply_patch(patch_file, cwd=fullpath_repackaged_dirname)
+        apply_patch(patch_file,
+                    level=patch_level,
+                    cwd=fullpath_repackaged_dirname)
         patch_already_applied = 1
     else:
         patch_already_applied = 0

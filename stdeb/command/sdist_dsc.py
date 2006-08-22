@@ -3,8 +3,9 @@ from setuptools import Command
 import pkg_resources
 pkg_resources.require('setuptools>=0.6b2')
 
-from stdeb.util import expand_tarball, expand_zip, recursive_hardlink
+from stdeb.util import expand_sdist_file, recursive_hardlink
 from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, stdeb_cmd_bool_opts
+from stdeb.util import repack_tarball_with_debianized_dirname
 
 __all__ = ['sdist_dsc']
     
@@ -27,6 +28,7 @@ class sdist_dsc(Command):
         self.default_maintainer = None
         self.extra_cfg_file = None
         self.patch_file = None
+        self.patch_level = None
         self.use_premade_distfile = None
         
     def finalize_options(self):
@@ -34,6 +36,8 @@ class sdist_dsc(Command):
             self.dist_dir = 'deb_dist'
         if self.default_distribution is None:
             self.default_distribution = 'experimental'
+        if self.patch_level is not None:
+            self.patch_level = int(self.patch_level)
 
     def run(self):
         ###############################################
@@ -86,6 +90,7 @@ class sdist_dsc(Command):
                              description = self.distribution.get_description()[:60],
                              long_description = self.distribution.get_long_description(),
                              patch_file = self.patch_file,
+                             patch_level = self.patch_level,
                              )
         if debinfo.patch_file != '' and self.patch_already_applied:
             raise RuntimeError('A patch was already applied, but another patch is requested.')
@@ -97,7 +102,7 @@ class sdist_dsc(Command):
         repackaged_dirname = debinfo.source+'-'+debinfo.upstream_version
         fullpath_repackaged_dirname = os.path.join(self.dist_dir,repackaged_dirname)
             
-        orig_tgz_no_change = None
+        source_tarball = None
         cleanup_dirs = []
 
         exclude_dirs = ['.svn']
@@ -134,14 +139,11 @@ class sdist_dsc(Command):
                 os.mkdir(self.dist_dir)
             os.mkdir(expand_dir)
 
+            expand_sdist_file(self.use_premade_distfile,cwd=expand_dir)
+            
             is_tgz=False
-            if self.use_premade_distfile.lower().endswith('.zip'):
-                expand_zip(self.use_premade_distfile,cwd=expand_dir)
-            elif self.use_premade_distfile.lower().endswith('.tar.gz'):
+            if self.use_premade_distfile.lower().endswith('.tar.gz'):
                 is_tgz=True
-                expand_tarball(self.use_premade_distfile,cwd=expand_dir)
-            else:
-                raise RuntimeError('could not guess format of original sdist file')
 
             # now the sdist package is expanded in expand_dir
             expanded_root_files = os.listdir(expand_dir)
@@ -149,18 +151,32 @@ class sdist_dsc(Command):
             distname_in_premade_distfile = expanded_root_files[0]
             debianized_dirname = repackaged_dirname
             original_dirname = os.path.split(distname_in_premade_distfile)[-1]
+            do_repack=False
             if is_tgz:
                 if debianized_dirname == original_dirname:
-                    orig_tgz_no_change = self.use_premade_distfile
+                    source_tarball = self.use_premade_distfile
                 else:
                     print >> sys.stderr, """\
 WARNING: although "--use-premade-distfile=" was used,
          the .orig.tar.gz file will be regenerated because
          Debianized directory name ("%s") != directory name in original .tar.gz ("%s")"""%(debianized_dirname,original_dirname)
+                    do_repack=True
             else:
-                print >> sys.stderr, "WARNING: .orig.tar.gz will be generated from .zip archive"
+                print >> sys.stderr, 'WARNING: .orig.tar.gz will be generated from sdist archive ("%s") because it '\
+                      'is not a .tar.gz file'%(self.use_premade_distfile,)
+                do_repack=True
 
-            if orig_tgz_no_change is not None:
+            if do_repack:
+                tmp_dir = os.path.join(self.dist_dir, 'tmp_repacking_dir' )
+                os.makedirs( tmp_dir )
+                cleanup_dirs.append(tmp_dir)
+                source_tarball = os.path.join(tmp_dir,'repacked_sdist.tar.gz')
+                repack_tarball_with_debianized_dirname( self.use_premade_distfile,
+                                                        source_tarball,
+                                                        debianized_dirname,
+                                                        original_dirname )
+
+            if source_tarball is not None:
                 # Because we deleted all .pyc files above, if the
                 # original source dist has them, we will have
                 # (wrongly) deleted them. So, quit loudly rather
@@ -180,7 +196,7 @@ WARNING: although "--use-premade-distfile=" was used,
         # 4. Build source tree and rename it to be in self.dist_dir
 
         build_dsc(debinfo,self.dist_dir,repackaged_dirname,
-                  orig_tgz_no_change=orig_tgz_no_change,
+                  orig_sdist=source_tarball,
                   remove_expanded_source_dir=self.remove_expanded_source_dir)
 
         for rmdir in cleanup_dirs:

@@ -1,3 +1,8 @@
+2006-08-22 patching source works when --premade-distfile option is
+           given but distfile must be regenerated
+
+2006-08-22 patch level supported via --patch-level option
+
 2006-08-22 Add support for bzip2 tarballs
 
 2006-08-13 Generate source by copying tree, not "python setup.py
