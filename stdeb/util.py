@@ -107,6 +107,7 @@ def make_tarball(tarball_fname,directory,cwd=None):
 def expand_tarball(tarball_fname,cwd=None):
     "expand a tarball"
     if tarball_fname.endswith('.gz'): opts = 'xzf'
+    elif tarball_fname.endswith('.bz2'): opts = 'xjf'
     else: opts = 'xf'
     args = ['/bin/tar',opts,tarball_fname]
     res = subprocess.Popen(

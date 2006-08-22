@@ -59,6 +59,8 @@ def runit():
 
     if sdist_file.lower().endswith('.zip'):
         expand_zip(os.path.abspath(sdist_file),cwd=expand_dir)
+    elif sdist_file.lower().endswith('.tar.bz2'):
+        expand_tarball(os.path.abspath(sdist_file),cwd=expand_dir)
     elif sdist_file.lower().endswith('.tar.gz'):
         expand_tarball(os.path.abspath(sdist_file),cwd=expand_dir)
     else:
