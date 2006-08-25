@@ -62,13 +62,7 @@ class sdist_dsc(Command):
         #    B. find config files (if any)
         #         find .egg-info directory
         ei_cmd = self.distribution.get_command_obj('egg_info')
-        if 0:
-            ei_cmd.tag_svn_revision = 0
-            ei_cmd.tag_build = None
 
-            print >> sys.stderr, 'stdeb: setuptools issue workaround: '\
-                  'set tag_svn_revision to 0 and tag_build to None'
-        
         self.run_command('egg_info')
         egg_info_dirname = ei_cmd.egg_info
 
