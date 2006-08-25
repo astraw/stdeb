@@ -1,3 +1,5 @@
+2006-08-25 added Forced-Upstream-Version field in .cfg file
+
 2006-08-22 patching source works when --premade-distfile option is
            given but distfile must be regenerated
 

@@ -295,12 +295,19 @@ class DebianInfo:
         debinfo.module_name = module_name
         debinfo.source = parse_val(cfg,module_name,'Source')
         debinfo.package = parse_val(cfg,module_name,'Package')
-        pure_upstream_version = upstream_version 
-        upstream_version_prefix = parse_val(cfg,module_name,'Upstream-Version-Prefix')
-        upstream_version_suffix = parse_val(cfg,module_name,'Upstream-Version-Suffix')
-        debinfo.upstream_version = (upstream_version_prefix+
-                                    debianize_version(pure_upstream_version)+
-                                    upstream_version_suffix)
+        forced_upstream_version = parse_val(cfg,module_name,'Forced-Upstream-Version')
+        if forced_upstream_version == '':
+            upstream_version_prefix = parse_val(cfg,module_name,'Upstream-Version-Prefix')
+            upstream_version_suffix = parse_val(cfg,module_name,'Upstream-Version-Suffix')
+            debinfo.upstream_version = (upstream_version_prefix+
+                                        debianize_version(upstream_version)+
+                                        upstream_version_suffix)
+        else:
+            if debianize_version(forced_upstream_version) != forced_upstream_version:
+                raise ValueError('forced upstream version ("%s") not a '\
+                                 'Debian-compatible version (e.g. "%s")'%(
+                    forced_upstream_version,debianize_version(forced_upstream_version)))
+            debinfo.upstream_version = forced_upstream_version
         debinfo.packaging_version = parse_val(cfg,module_name,'Debian-Version')
         debinfo.full_version = '%s-%s'%(debinfo.upstream_version,
                                         debinfo.packaging_version)
@@ -467,6 +474,8 @@ Provides: ${python:Provides}
         defaults['Distribution']=default_distribution
 
         defaults['Debian-Version']='1'
+        defaults['Forced-Upstream-Version']=''
+        
         defaults['Upstream-Version-Prefix']=''
         defaults['Upstream-Version-Suffix']=''
 
