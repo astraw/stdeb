@@ -23,6 +23,7 @@ class sdist_dsc(Command):
         self.patch_already_applied = 0
         self.use_pycentral = 0
         self.remove_expanded_source_dir = 0
+        self.patch_posix = 0
         self.dist_dir = None
         self.default_distribution = None
         self.default_maintainer = None
@@ -191,6 +192,7 @@ WARNING: although "--use-premade-distfile=" was used,
 
         build_dsc(debinfo,self.dist_dir,repackaged_dirname,
                   orig_sdist=source_tarball,
+                  patch_posix = self.patch_posix,
                   remove_expanded_source_dir=self.remove_expanded_source_dir)
 
         for rmdir in cleanup_dirs:

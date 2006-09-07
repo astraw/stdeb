@@ -28,6 +28,8 @@ stdeb_cmdline_opts = [
      'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
     ('patch-level=','l',
      'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
+    ('patch-posix=','q',
+     'apply the patch with --posix mode'),
     ('remove-expanded-source-dir=','r',
      'remove the expanded source directory'),
     ]
@@ -36,6 +38,7 @@ stdeb_cmd_bool_opts = [
     'patch-already-applied',
     'use-pycentral',
     'remove-expanded-source-dir',
+    'patch-posix',
     ]
 
 class NotGiven: pass
@@ -172,9 +175,10 @@ def repack_tarball_with_debianized_dirname( orig_sdist_file,
     make_tarball(repacked_sdist_file,debianized_dirname,cwd=working_dir)
     shutil.rmtree(working_dir)
     
-def dpkg_source_b(arg1,arg2=None,cwd=None):
-    "call dpkg-source -b arg1 [arg2]"
-    args = ['/usr/bin/dpkg-source','-b',arg1]
+def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
+    "call dpkg-source -b|x arg1 [arg2]"
+    assert b_or_x in ['-b','-x']
+    args = ['/usr/bin/dpkg-source',b_or_x,arg1]
     if arg2 is not None:
         args.append(arg2)
     res = subprocess.Popen(
@@ -500,6 +504,7 @@ Provides: ${python:Provides}
 
 def build_dsc(debinfo,dist_dir,repackaged_dirname,
               orig_sdist=None,
+              patch_posix=0,
               remove_expanded_source_dir=0):
     """make debian source package"""
     #    A. Find new dirname and delete any pre-existing contents
@@ -528,6 +533,7 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     # apply patch
     if debinfo.patch_file != '':
         apply_patch(debinfo.patch_file,
+                    posix=patch_posix,
                     level=debinfo.patch_level,
                     cwd=fullpath_repackaged_dirname)
         
@@ -601,23 +607,30 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
               fullpath_repackaged_dirname)
+    
     if orig_sdist is None:
+        print >> sys.stderr, 'No original tarball, regenerating'
         # No original tarball (that we want to keep)
         #    i.  Remove temporarily repackaged original tarball
         os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))
         #    ii. Re-generate tarball using best practices see
         #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
         #    call "dpkg-source -b new_dirname orig_dirname"
-        dpkg_source_b(repackaged_dirname,
-                      repackaged_dirname+'.orig',
-                      cwd=dist_dir)
+        dpkg_source('-b',repackaged_dirname,
+                    repackaged_dirname+'.orig',
+                    cwd=dist_dir)
     else:
-        dpkg_source_b(repackaged_dirname,
-                      cwd=dist_dir)
+        dpkg_source('-b',repackaged_dirname,
+                    cwd=dist_dir)
 
-
-    if remove_expanded_source_dir:
+    if 1:
         shutil.rmtree(fullpath_repackaged_dirname)
+        
+    if not remove_expanded_source_dir:
+        # expand the debian source package
+        dsc_name = debinfo.source + '_' + debinfo.full_version + '.dsc'
+        dpkg_source('-x',dsc_name,
+                    cwd=dist_dir)
 
 
 CONTROL_FILE = """\

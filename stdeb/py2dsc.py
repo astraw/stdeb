@@ -50,6 +50,7 @@ def runit():
     
     patch_file = optobj.__dict__.get('patch_file',None)
     patch_level = int(optobj.__dict__.get('patch_level',0))
+    patch_posix = int(optobj.__dict__.get('patch_posix',0))
     
     expand_dir = os.path.join(tmp_dist_dir,'stdeb_tmp')
     if os.path.exists(expand_dir):
@@ -74,9 +75,11 @@ def runit():
 
     ##############################################
     if patch_file is not None:
+        print >> sys.stderr, 'py2dsc applying patch',patch_file
         apply_patch(patch_file,
+                    posix=patch_posix,
                     level=patch_level,
-                    cwd=fullpath_repackaged_dirname)
+                    cwd=tmp_dist_dir)
         patch_already_applied = 1
     else:
         patch_already_applied = 0
@@ -100,6 +103,9 @@ def runit():
             '--use-premade-distfile=%s'%os.path.abspath(sdist_file)]+extra_args
 
     print >> sys.stderr, '-='*20
+    print >> sys.stderr, "Note that the .cfg file(s), if present, have not been "\
+          "read at this stage. If options are necessary, pass them from the "\
+          "command line"
     print >> sys.stderr, "running the following command in directory: %s\n%s"%(
         fullpath_repackaged_dirname,
         ' '.join(args))
