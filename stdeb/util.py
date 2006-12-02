@@ -80,7 +80,10 @@ def debianize_version(name):
 
 def get_date_822():
     """return output of 822-date command"""
-    args = ['/usr/bin/822-date']
+    cmd = '/usr/bin/822-date'
+    if not os.path.exists(cmd):
+        raise ValueError('822-date command does not appear to exist at file %s (install package dpkg-dev)'%cmd)
+    args = [cmd]
     res = subprocess.Popen(
         args,
         stdout=subprocess.PIPE,
