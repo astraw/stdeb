@@ -315,9 +315,15 @@ class DebianInfo:
                                  'Debian-compatible version (e.g. "%s")'%(
                     forced_upstream_version,debianize_version(forced_upstream_version)))
             debinfo.upstream_version = forced_upstream_version
+        debinfo.packaging_version_prefix = parse_val(cfg,module_name,'Debian-Version-Prefix')
         debinfo.packaging_version = parse_val(cfg,module_name,'Debian-Version')
-        debinfo.full_version = '%s-%s'%(debinfo.upstream_version,
-                                        debinfo.packaging_version)
+        debinfo.dsc_version = '%s-%s'%(
+            debinfo.upstream_version,
+            debinfo.packaging_version)
+        debinfo.full_version = '%s%s-%s'%(
+            debinfo.packaging_version_prefix,
+            debinfo.upstream_version,
+            debinfo.packaging_version)
         debinfo.distname = parse_val(cfg,module_name,'Distribution')
         debinfo.maintainer = parse_val(cfg,module_name,'Maintainer')
         debinfo.date822 = get_date_822()
@@ -631,7 +637,7 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
         
     if not remove_expanded_source_dir:
         # expand the debian source package
-        dsc_name = debinfo.source + '_' + debinfo.full_version + '.dsc'
+        dsc_name = debinfo.source + '_' + debinfo.dsc_version + '.dsc'
         dpkg_source('-x',dsc_name,
                     cwd=dist_dir)
 
