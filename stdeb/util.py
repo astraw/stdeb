@@ -486,6 +486,7 @@ Provides: ${python:Provides}
 
         defaults['Distribution']=default_distribution
 
+        defaults['Debian-Version-Prefix']=''
         defaults['Debian-Version']='1'
         defaults['Forced-Upstream-Version']=''
         
