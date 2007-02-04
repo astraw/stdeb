@@ -674,7 +674,7 @@ build-stamp: $(PYVERS:%%=build-python%%)
         touch $@
 build-python%%:
 # Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py files expect that.
-        python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f)" build
+        python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f})" build
         touch $@
 clean:
         dh_testdir
@@ -693,7 +693,7 @@ install-prereq:
 
 install-python%%:
 # Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py files expect that.
-        python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f)" install \
+        python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f})" install \
                 --no-compile --single-version-externally-managed \
                 --root $(CURDIR)/debian/${PACKAGE_NAME}
 
