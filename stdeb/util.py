@@ -333,6 +333,15 @@ class DebianInfo:
             current = sys.version[:3]
             debinfo.pycentral_showversions=current
 
+        build_deps = [
+            'python-all-dev',
+            
+            # svn commit #50703 should make life easier (#50707 is
+            # better comment), but bugs aren't all fixed yet.
+            # 'python-setuptools (>= 0.6c1)',
+            
+            'python-setuptools',
+            ]
         depends = []
 
         depends.append('${python:Depends}')
@@ -340,6 +349,7 @@ class DebianInfo:
         if has_ext_modules:
             debinfo.architecture = 'any'
             depends.append('${shlibs:Depends}')
+            build_deps.extend(['gcc','libc6-dev'])
         else:
             debinfo.architecture = 'all'
             
@@ -393,17 +403,6 @@ class DebianInfo:
             debinfo.long_description = '\n'.join(ld2)
         else:
             debinfo.long_description = ''
-
-
-        build_deps = [
-            'python-all-dev',
-            
-            # svn commit #50703 should make life easier (#50707 is
-            # better comment), but bugs aren't all fixed yet.
-            # 'python-setuptools (>= 0.6c1)',
-            
-            'python-setuptools',
-            ]
         
         if use_pycentral:
             build_deps.extend(  [
