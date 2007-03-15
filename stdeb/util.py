@@ -349,7 +349,6 @@ class DebianInfo:
         if has_ext_modules:
             debinfo.architecture = 'any'
             depends.append('${shlibs:Depends}')
-            build_deps.extend(['gcc','libc6-dev'])
         else:
             debinfo.architecture = 'all'
             
