@@ -315,13 +315,15 @@ class DebianInfo:
                                  'Debian-compatible version (e.g. "%s")'%(
                     forced_upstream_version,debianize_version(forced_upstream_version)))
             debinfo.upstream_version = forced_upstream_version
-        debinfo.packaging_version_prefix = parse_val(cfg,module_name,'Debian-Version-Prefix')
+        debinfo.epoch = parse_val(cfg,module_name,'Epoch')
+        if debinfo.epoch != '' and not debinfo.epoch.endswith(':'):
+            debinfo.epoch = debinfo.epoch + ':'
         debinfo.packaging_version = parse_val(cfg,module_name,'Debian-Version')
         debinfo.dsc_version = '%s-%s'%(
             debinfo.upstream_version,
             debinfo.packaging_version)
         debinfo.full_version = '%s%s-%s'%(
-            debinfo.packaging_version_prefix,
+            debinfo.epoch,
             debinfo.upstream_version,
             debinfo.packaging_version)
         debinfo.distname = parse_val(cfg,module_name,'Distribution')
@@ -484,7 +486,7 @@ Provides: ${python:Provides}
 
         defaults['Distribution']=default_distribution
 
-        defaults['Debian-Version-Prefix']=''
+        defaults['Epoch']=''
         defaults['Debian-Version']='1'
         defaults['Forced-Upstream-Version']=''
         
