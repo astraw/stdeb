@@ -1,3 +1,8 @@
+2007-03-28 Removed versioned Python interpreter from packages in
+           /usr/bin and /usr/lib. Bump version to 0.2.a1
+
+2007-03-15 pycentral support enabled by default
+
 2007-02-04 fix for cases in which setup.py wants __file__ variable
 
 2006-09-07 added --patch-posix to support posix-mode patches
