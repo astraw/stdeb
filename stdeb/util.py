@@ -554,11 +554,12 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
 
     #    A. debian/changelog
     fd = open( os.path.join(debian_dir,'changelog'), mode='w')
-    fd.write('%(source)s (%(full_version)s) %(distname)s; urgency=low\n'%debinfo.__dict__)
-    fd.write('\n')
-    fd.write('  * source package automatically created by stdeb\n')
-    fd.write('\n')
-    fd.write(' -- %(maintainer)s  %(date822)s\n'%debinfo.__dict__)
+    fd.write("""\
+%(source)s (%(full_version)s) %(distname)s; urgency=low
+
+  * source package automatically created by stdeb %(stdeb_version)s
+
+ -- %(maintainer)s  %(date822)s\n"""%debinfo.__dict__)
     fd.close()
 
     #    B. debian/control
