@@ -36,7 +36,7 @@ class sdist_dsc(Command):
         if self.dist_dir is None:
             self.dist_dir = 'deb_dist'
         if self.default_distribution is None:
-            self.default_distribution = 'experimental'
+            self.default_distribution = 'unstable'
         if self.patch_level is not None:
             self.patch_level = int(self.patch_level)
 

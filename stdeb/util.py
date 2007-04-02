@@ -20,7 +20,7 @@ stdeb_cmdline_opts = [
     ('patch-already-applied=','a',
      'patch was already applied (used when py2dsc calls sdist_dsc)'),
     ('default-distribution=', 'z',
-     "which distribution name to use if not specified in .cfg (default='experimental')"),
+     "which distribution name to use if not specified in .cfg (default='unstable')"),
     ('default-maintainer=', 'm',
      'maintainer name and email to use if not specified in .cfg (default from setup.py)'),
     ('extra-cfg-file=','x',
