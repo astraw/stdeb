@@ -2,9 +2,10 @@ import setuptools
 from setuptools import setup
 
 from distutils.util import convert_path
+import stdeb
 
 setup(name='stdeb',
-      version='0.1',
+      version=stdeb.__version__,
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       description='Python to Debian source package conversion utility',
