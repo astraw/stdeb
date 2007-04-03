@@ -12,8 +12,10 @@ resulting package can be customized via a configuration file.
 News
 ----
 
- * 2007-04-02: Version 0.2.a1 Released. See the `download page`_. This version uses python-central_ by default.
+ * 2007-04-02: Version 0.2.a1 Released. See the `download page`_. This version uses python-central_ by default. See the `Changelog for 0.2.a1`_
  * 2006-06-19: Version 0.1 Released. See the `download page`_.
+
+.. _Changelog for 0.2.a1: http://stdeb.python-hosting.com/file/tags/release-0.2.a1/CHANGELOG.txt
 
 Invocation
 ----------
