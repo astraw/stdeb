@@ -12,6 +12,9 @@ resulting package can be customized via a configuration file.
 News
 ----
 
+2007-04-02: Version 0.2.a1 Released. See the `download page`_. This
+	    version uses python-central_ by default.
+
 2006-06-19: Version 0.1 Released. See the `download page`_.
 
 Invocation
@@ -54,16 +57,15 @@ Background
 For the average Python package, its source distribution
 (python_package.tar.gz created with ``python setup.py sdist``)
 contains nearly everything necessary to make a Debian source
-package. This near-equivalence encouraged me to write this little
-distutils extension, which executes the setup.py file to extract
-relevant information. This process is made significantly easier
-through the use of setuptools_.
+package. This near-equivalence encouraged me to write this distutils
+extension, which executes the setup.py file to extract relevant
+information. This process is made significantly easier through the use
+of setuptools_.
 
 .. _setuptools: http://peak.telecommunity.com/DevCenter/setuptools
 
-setuptools is used because of the opportunities it provides, although
-many of these features are currently un(der)-utilized. For example,
-setuptools could make the job of "Debianizing" python console and gui
+setuptools is used because of some nice features.  For example,
+setuptools makes the job of "Debianizing" python console and gui
 scripts much easier.
 
 I wrote this initially to Debianize several Python packages of my own,
@@ -120,20 +122,18 @@ TODO
   python policy`_. This will include several things, including:
 
   - the ability to make custom changelogs
-  - the ability to patch upstream source
+  - the ability to patch upstream source (added in 0.2.a1 release)
   - the ability to include project-supplied documentation (including
     license information) as a -doc package
   - the ability to include project-supplied examples, tests, and data
     as a separate package
   - much more not listed
 
-* Support python-central_ and/or python-support.
+* Support python-central_ and/or python-support. (added in 0.2.a1 release)
 
 * Create (better) documentation
 
 * Log output using standard distutils mechanisms
-
-* Allow distribution-specific configuration parameters (e.g. numpy-dapper)
 
 * Refactor the source code to have a simpler, more sane design
 
