@@ -150,6 +150,13 @@ maintainer if the project generates any interest. Secondarily, I would
 appreciate advice from Debian developers or Ubuntu MOTUs about the
 arcane details of Python packaging.
 
+Mailing list
+------------
+
+Please address all questions to the distutils-SIG_
+
+.. _distutils-SIG: http://mail.python.org/mailman/listinfo/distutils-sig
+
 License
 -------
 
