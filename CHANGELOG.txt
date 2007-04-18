@@ -1,3 +1,6 @@
+2007-04-18 Fix bug where .egg-info renaming failed when upstream
+           version contained '-'.
+
 = Release 0.2.a1 (2007-04-02) =
 
 2007-04-02 Make default distribution 'unstable'

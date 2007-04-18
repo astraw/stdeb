@@ -274,6 +274,7 @@ class DebianInfo:
                  default_distribution=NotGiven,
                  default_maintainer=NotGiven,
                  upstream_version=NotGiven,
+                 egg_version_filename=NotGiven,
                  no_pycentral=NotGiven,
                  has_ext_modules=NotGiven,
                  description=NotGiven,
@@ -317,6 +318,7 @@ class DebianInfo:
                                  'Debian-compatible version (e.g. "%s")'%(
                     forced_upstream_version,debianize_version(forced_upstream_version)))
             debinfo.upstream_version = forced_upstream_version
+        debinfo.egg_version_filename = egg_version_filename
         debinfo.epoch = parse_val(cfg,module_name,'Epoch')
         if debinfo.epoch != '' and not debinfo.epoch.endswith(':'):
             debinfo.epoch = debinfo.epoch + ':'
@@ -668,7 +670,7 @@ RULES_MAIN = """\
 
 PACKAGE_NAME=%(package)s
 MODULE_NAME=%(module_name)s
-DEB_UPSTREAM_VERSION=%(upstream_version)s
+EGG_VERSION_FILENAME=%(egg_version_filename)s
 
 PYVERS=%(pycentral_showversions)s
 
@@ -696,10 +698,10 @@ install-prereq:
 
 install-python%%:
 # Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py files expect that.
-        python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \
-                --no-compile --single-version-externally-managed \
+        python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
+                --no-compile --single-version-externally-managed \\
                 --root $(CURDIR)/debian/${PACKAGE_NAME}
-        mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${DEB_UPSTREAM_VERSION}-py$*.egg-info \
+        mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}-${EGG_VERSION_FILENAME}-py$*.egg-info \\
                 debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${MODULE_NAME}.egg-info
 
 %(rules_binary)s
