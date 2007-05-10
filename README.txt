@@ -31,7 +31,8 @@ Alternatively, two scripts are provided::
   py2dsc [options] mypackage-0.1.tar.gz # uses pre-built Python source package
 
 In all cases, a Debian source package is produced from unmodified
-Python packages. The following files are produced:
+Python packages. The following files are produced in a newly created
+subdirectory ``deb_dist``:
 
  * ``packagename_versionname.orig.tar.gz``
  * ``packagename_versionname-debianversion.dsc``
@@ -39,6 +40,31 @@ Python packages. The following files are produced:
 
 These can then be compiled into binary packages using the standard
 Debian machinery (e.g. dpkg-buildpackage).
+
+A complete example
+------------------
+
+The following will generate a directory ``bzr-0.16/deb_dist``
+containing the files ``bzr_0.16.0-1.diff.gz``, ``bzr_0.16.0-1.dsc``
+and ``bzr_0.16.0.orig.tar.gz``, which, together, are a debian source
+package::
+
+  wget http://bazaar-vcs.org/releases/src/bzr-0.16.tar.gz
+  tar xzf bzr-0.16.tar.gz
+  cd bzr-0.16/
+  python -c "import stdeb; execfile('setup.py')" sdist_dsc
+
+The source generated in the above way is also extracted (using
+``dpkg-source -x``) and placed in the ``deb_dist`` subdirectory. To
+continue the example above::
+
+  cd deb_dist/bzr-0.16.0
+  dpkg-buildpackage -rfakeroot -uc -us
+
+Finally, the generated package can be installed:: 
+
+  cd ..
+  sudo dpkg -i python-bzr_0.16.0-1_all.deb
 
 Download
 --------
