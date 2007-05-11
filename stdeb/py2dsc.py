@@ -97,7 +97,7 @@ def runit():
             val = getattr(optobj,attr)
             extra_args.append('--'+long+str(val))
 
-    args = [sys.executable,'-c',"import stdeb, sys; f='setup.py'; sys.argv[0]=f; execfile(f)",
+    args = [sys.executable,'-c',"import stdeb, sys; f='setup.py'; sys.argv[0]=f; execfile(f,{'__file__':f,'__name__':'__main__'})",
             'sdist_dsc','--dist-dir=%s'%abs_dist_dir,
             '--patch-already-applied=%s'%str(patch_already_applied),
             '--use-premade-distfile=%s'%os.path.abspath(sdist_file)]+extra_args

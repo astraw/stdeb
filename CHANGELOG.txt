@@ -1,3 +1,5 @@
+2007-05-11 Fix py2dsc script to properly set __file__ and __name__.
+
 2007-04-18 Fix bug where .egg-info renaming failed when upstream
            version contained '-'.
 
