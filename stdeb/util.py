@@ -187,14 +187,11 @@ def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
         args.append(arg2)
     res = subprocess.Popen(
         args, cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
         )
     returncode = res.wait()
     if returncode:
         print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
         print >> sys.stderr, 'ERROR in',cwd
-        print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
     
 def apply_patch(patchfile,cwd=None,posix=False,level=0):
