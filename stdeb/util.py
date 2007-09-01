@@ -349,6 +349,7 @@ class DebianInfo:
         else:
             debinfo.architecture = 'all'
             
+        debinfo.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         debinfo.mime_file = parse_val(cfg,module_name,'MIME-File')
         
         debinfo.shared_mime_file = parse_val(cfg,module_name,'Shared-MIME-File')
@@ -412,7 +413,6 @@ class DebianInfo:
                 'python-all-dev',
                 'debhelper (>=5)',
                 ])
-
 
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
         debinfo.build_depends = ', '.join(build_deps)
@@ -495,6 +495,8 @@ Provides: ${python:Provides}
 
         defaults['Maintainer'] = default_maintainer
 
+        defaults['Copyright-File'] = ''
+        
         defaults['Build-Depends'] = ''
         defaults['Build-Conflicts'] = ''
         defaults['Stdeb-Patch-File'] = ''
@@ -604,6 +606,11 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
         os.link( debinfo.shared_mime_file,
                  os.path.join(debian_dir,
                               debinfo.package+'.sharedmimeinfo'))
+
+    #    F. debian/copyright
+    if debinfo.copyright_file != '':
+        os.link( debinfo.copyright_file,
+                 os.path.join(debian_dir,'copyright'))
 
     ###############################################
     # 3. unpack original source tarball
