@@ -1,3 +1,6 @@
+2007-10-29 Allow upstream tarball to have different name from debian
+           .orig.tar.gz but keep md5sum.
+
 2007-05-28 Fix bug where python distribution name contained '-' but
            setuptools renamed this to '_'.
 

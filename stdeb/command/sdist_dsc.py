@@ -152,14 +152,7 @@ class sdist_dsc(Command):
             original_dirname = os.path.split(distname_in_premade_distfile)[-1]
             do_repack=False
             if is_tgz:
-                if debianized_dirname == original_dirname:
-                    source_tarball = self.use_premade_distfile
-                else:
-                    print >> sys.stderr, """\
-WARNING: although "--use-premade-distfile=" was used,
-         the .orig.tar.gz file will be regenerated because
-         Debianized directory name ("%s") != directory name in original .tar.gz ("%s")"""%(debianized_dirname,original_dirname)
-                    do_repack=True
+                source_tarball = self.use_premade_distfile
             else:
                 print >> sys.stderr, 'WARNING: .orig.tar.gz will be generated from sdist archive ("%s") because it '\
                       'is not a .tar.gz file'%(self.use_premade_distfile,)
@@ -174,7 +167,6 @@ WARNING: although "--use-premade-distfile=" was used,
                                                         source_tarball,
                                                         debianized_dirname,
                                                         original_dirname )
-
             if source_tarball is not None:
                 # Because we deleted all .pyc files above, if the
                 # original source dist has them, we will have

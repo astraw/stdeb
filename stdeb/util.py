@@ -481,7 +481,8 @@ Provides: ${python:Provides}
                            ):
         defaults = {}
 
-        defaults['Source']=debianize_name(module_name)
+        #defaults['Source']=debianize_name(module_name)
+        defaults['Source']='python-%s'%(debianize_name(module_name),)
         defaults['Package']='python-%s'%(debianize_name(module_name),)
 
         defaults['Distribution']=default_distribution
@@ -619,9 +620,21 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     os.rename(fullpath_repackaged_dirname,
               fullpath_repackaged_dirname+'.debianized')
     #    B. expand repackaged original tarball
-    expand_tarball(repackaged_orig_tarball,cwd=dist_dir)
-    #    C. move original repackaged tree to .orig
-    os.rename(fullpath_repackaged_dirname,fullpath_repackaged_dirname+'.orig')
+    tmp_dir = os.path.join(dist_dir,'tmp-expand')
+    os.mkdir(tmp_dir)
+    try:
+        expand_tarball(orig_sdist,cwd=tmp_dir)
+        orig_tarball_top_contents = os.listdir(tmp_dir) 
+        assert len(orig_tarball_top_contents)==1 # make sure original tarball has exactly one directory
+        orig_dirname = orig_tarball_top_contents[0]
+        fullpath_orig_dirname = os.path.join(tmp_dir,orig_dirname)
+        
+        #    C. move original repackaged tree to .orig
+        os.rename(fullpath_orig_dirname,fullpath_repackaged_dirname+'.orig')
+        
+    finally:
+        shutil.rmtree(tmp_dir)
+        
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
               fullpath_repackaged_dirname)
@@ -639,6 +652,7 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
                     cwd=dist_dir)
     else:
         dpkg_source('-b',repackaged_dirname,
+                    repackaged_orig_tarball,
                     cwd=dist_dir)
 
     if 1:
