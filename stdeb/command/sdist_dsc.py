@@ -176,6 +176,8 @@ class sdist_dsc(Command):
                     for name in files:
                         if name.endswith('.pyc'):
                             raise RuntimeError('original source dist cannot contain .pyc files')
+        else:
+            raise NotImplementedError("the code path is broken right now") # haven't figured out why
             
         ###############################################
         # 3. Find all directories
