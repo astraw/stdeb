@@ -76,10 +76,10 @@ def debianize_name(name):
 def debianize_version(name):
     "make name acceptable as a Debian package name"
     name = name.replace('_','-')
-    
+
     # XXX should use setuptools' version sorting and do this properly:
     name = name.replace('.dev','~dev')
-    
+
     name = name.lower()
     return name
 
@@ -101,7 +101,7 @@ def get_date_822():
         raise RuntimeError('returncode %d'%returncode)
     result = res.stdout.read().strip()
     return result
-    
+
 def make_tarball(tarball_fname,directory,cwd=None):
     "create a tarball from a directory"
     if tarball_fname.endswith('.gz'): opts = 'czf'
@@ -118,7 +118,7 @@ def make_tarball(tarball_fname,directory,cwd=None):
         print >> sys.stderr, 'ERROR in',cwd
         print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
-    
+
 def expand_tarball(tarball_fname,cwd=None):
     "expand a tarball"
     if tarball_fname.endswith('.gz'): opts = 'xzf'
@@ -136,7 +136,7 @@ def expand_tarball(tarball_fname,cwd=None):
         print >> sys.stderr, 'ERROR in',cwd
         print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
-    
+
 def expand_zip(zip_fname,cwd=None):
     "expand a zip"
     args = ['/usr/bin/unzip',zip_fname]
@@ -171,18 +171,18 @@ def repack_tarball_with_debianized_dirname( orig_sdist_file,
     expand_sdist_file( orig_sdist_file, cwd=working_dir )
     fullpath_original_dirname = os.path.join(working_dir,original_dirname)
     fullpath_debianized_dirname = os.path.join(working_dir,debianized_dirname)
-    
+
     # ensure sdist looks like sdist:
     assert os.path.exists( fullpath_original_dirname )
     assert len(os.listdir(working_dir))==1
-    
+
     if fullpath_original_dirname != fullpath_debianized_dirname:
         # rename original dirname to debianized dirname
         os.rename(fullpath_original_dirname,
                   fullpath_debianized_dirname)
     make_tarball(repacked_sdist_file,debianized_dirname,cwd=working_dir)
     shutil.rmtree(working_dir)
-    
+
 def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
     "call dpkg-source -b|x arg1 [arg2]"
     assert b_or_x in ['-b','-x']
@@ -197,13 +197,13 @@ def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
         print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
         print >> sys.stderr, 'ERROR in',cwd
         raise RuntimeError('returncode %d'%returncode)
-    
+
 def apply_patch(patchfile,cwd=None,posix=False,level=0):
     """call 'patch -p[level] [--posix] < arg1'
 
     posix mode is sometimes necessary. It keeps empty files so that
     dpkg-source removes their contents.
-    
+
     """
     if not os.path.exists(patchfile):
         raise RuntimeError('patchfile "%s" does not exist'%patchfile)
@@ -238,12 +238,12 @@ def apply_patch(patchfile,cwd=None,posix=False,level=0):
     sys.stdout.flush()
     sys.stderr.write(res.stderr.read())
     sys.stderr.flush()
-            
+
     if returncode:
         print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
         print >> sys.stderr, 'ERROR in',cwd
         raise RuntimeError('returncode %d'%returncode)
-    
+
 def parse_vals(cfg,section,option):
     """parse comma separated values in debian control file style from .cfg"""
     try:
@@ -293,12 +293,12 @@ class DebianInfo:
         if has_ext_modules is NotGiven: raise ValueError("has_ext_modules must be supplied")
         if description is NotGiven: raise ValueError("description must be supplied")
         if long_description is NotGiven: raise ValueError("long_description must be supplied")
-        
+
         cfg_defaults = self._make_cfg_defaults(module_name=module_name,
                                                default_distribution=default_distribution,
                                                default_maintainer=default_maintainer,
                                                )
-        
+
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
         cfg.read(cfg_files)
 
@@ -352,10 +352,10 @@ class DebianInfo:
             depends.append('${shlibs:Depends}')
         else:
             debinfo.architecture = 'all'
-            
+
         debinfo.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         debinfo.mime_file = parse_val(cfg,module_name,'MIME-File')
-        
+
         debinfo.shared_mime_file = parse_val(cfg,module_name,'Shared-MIME-File')
 
         if debinfo.mime_file == '' and debinfo.shared_mime_file == '':
@@ -366,7 +366,7 @@ class DebianInfo:
                 debinfo.dh_installmime_line += ' -i'
             else:
                 debinfo.dh_installmime_line += ' -a'
-        
+
         mime_desktop_files = parse_vals(cfg,module_name,'MIME-Desktop-Files')
         if len(mime_desktop_files):
             debinfo.dh_desktop_line = '\n        dh_desktop'
@@ -378,7 +378,7 @@ class DebianInfo:
             debinfo.dh_desktop_line = ''
 
         debinfo.fix_scripts = RULES_FIX_SCRIPTS%debinfo.__dict__
-            
+
         #    E. any mime .desktop files
         debinfo.copy_files_lines = ''
         debinfo.install_dirs = sets.Set()
@@ -392,7 +392,7 @@ class DebianInfo:
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
         debinfo.depends = ', '.join(depends)
-        
+
         debinfo.description = description
         if long_description != 'UNKNOWN':
             ld2=[]
@@ -405,7 +405,7 @@ class DebianInfo:
             debinfo.long_description = '\n'.join(ld2)
         else:
             debinfo.long_description = ''
-        
+
         if not no_pycentral:
             build_deps.extend(  [
                 'python-all-dev (>= 2.3.5-11)',
@@ -425,14 +425,14 @@ class DebianInfo:
         debinfo.recommends = ', '.join( parse_vals(cfg,module_name,'Recommends') )
 
         debinfo.source_stanza_extras = ''
-        
+
         build_conflicts = parse_vals(cfg,module_name,'Build-Conflicts')
         if len(build_conflicts):
             debinfo.source_stanza_extras += ('Build-Conflicts: '+
                                               ', '.join( build_conflicts )+'\n')
 
         debinfo.patch_file = parse_val(cfg,module_name,'Stdeb-Patch-File')
-        
+
         if patch_file is not None:
             if debinfo.patch_file != '':
                 raise RuntimeError('A patch file was specified on the command line and in .cfg file.')
@@ -451,8 +451,10 @@ class DebianInfo:
             else:
                 debinfo.patch_level = 0
 
+        xs_python_version = parse_vals(cfg,module_name,'XS-Python-Version')
         if not no_pycentral:
-            debinfo.source_stanza_extras += 'XS-Python-Version: all\n'
+            debinfo.source_stanza_extras += ('XS-Python-Version: '+
+                                             ', '.join(xs_python_version)+'\n')
             debinfo.package_stanza_extras = """\
 XB-Python-Version: ${python:Versions}
 Provides: ${python:Provides}
@@ -461,7 +463,7 @@ Provides: ${python:Provides}
         else:
             debinfo.package_stanza_extras = ''
             debinfo.debhelper_command = 'dh_python'
-            
+
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         if len(conflicts):
             debinfo.package_stanza_extras += ('Conflicts: '+
@@ -471,13 +473,13 @@ Provides: ${python:Provides}
         if len(provides):
             debinfo.package_stanza_extras += ('Provides: ' +
                                               ', '.join( provides  )+'\n')
-            
+
         replaces = parse_vals(cfg,module_name,'Replaces')
         if len(replaces):
             debinfo.package_stanza_extras += ('Replaces: ' +
                                               ', '.join( replaces  )+'\n')
         debinfo.dirlist = ""
-        
+
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
                            default_distribution=NotGiven,
@@ -494,14 +496,14 @@ Provides: ${python:Provides}
         defaults['Epoch']=''
         defaults['Debian-Version']='1'
         defaults['Forced-Upstream-Version']=''
-        
+
         defaults['Upstream-Version-Prefix']=''
         defaults['Upstream-Version-Suffix']=''
 
         defaults['Maintainer'] = default_maintainer
 
         defaults['Copyright-File'] = ''
-        
+
         defaults['Build-Depends'] = ''
         defaults['Build-Conflicts'] = ''
         defaults['Stdeb-Patch-File'] = ''
@@ -509,6 +511,8 @@ Provides: ${python:Provides}
         defaults['Depends'] = ''
         defaults['Suggests'] = ''
         defaults['Recommends'] = ''
+
+        defaults['XS-Python-Version'] = 'all'
 
         defaults['Conflicts'] = ''
         defaults['Provides'] = ''
@@ -553,7 +557,7 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
                     posix=patch_posix,
                     level=debinfo.patch_level,
                     cwd=fullpath_repackaged_dirname)
-        
+
     ###############################################
     # 2. create debian/ directory and contents
     debian_dir = os.path.join(fullpath_repackaged_dirname,'debian')
@@ -628,21 +632,21 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     os.mkdir(tmp_dir)
     try:
         expand_tarball(orig_sdist,cwd=tmp_dir)
-        orig_tarball_top_contents = os.listdir(tmp_dir) 
+        orig_tarball_top_contents = os.listdir(tmp_dir)
         assert len(orig_tarball_top_contents)==1 # make sure original tarball has exactly one directory
         orig_dirname = orig_tarball_top_contents[0]
         fullpath_orig_dirname = os.path.join(tmp_dir,orig_dirname)
-        
+
         #    C. move original repackaged tree to .orig
         os.rename(fullpath_orig_dirname,fullpath_repackaged_dirname+'.orig')
-        
+
     finally:
         shutil.rmtree(tmp_dir)
-        
+
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
               fullpath_repackaged_dirname)
-    
+
     if orig_sdist is None:
         print >> sys.stderr, 'No original tarball, regenerating'
         # No original tarball (that we want to keep)
@@ -661,7 +665,7 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
 
     if 1:
         shutil.rmtree(fullpath_repackaged_dirname)
-        
+
     if not remove_expanded_source_dir:
         # expand the debian source package
         dsc_name = debinfo.source + '_' + debinfo.dsc_version + '.dsc'
@@ -733,10 +737,10 @@ install-python%%:
 
 .PHONY: build clean binary-indep binary-arch binary install configure
 """
-        
+
 RULES_BINARY_INDEP="""\
 binary-arch:
-        
+
 binary-indep: build install
         dh_testdir -i
         dh_testroot -i
