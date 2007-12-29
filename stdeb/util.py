@@ -70,6 +70,7 @@ def recursive_hardlink(src,dst):
 def debianize_name(name):
     "make name acceptable as a Debian package name"
     name = name.replace('_','')
+    name = name.replace('.','-')
     name = name.lower()
     return name
 
