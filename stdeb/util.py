@@ -68,9 +68,15 @@ def recursive_hardlink(src,dst):
         os.chdir(orig_dir)
 
 def debianize_name(name):
-    "make name acceptable as a Debian package name"
+    "make name acceptable as a Debian (binary) package name"
     name = name.replace('_','')
     name = name.replace('.','-')
+    name = name.lower()
+    return name
+
+def source_debianize_name(name):
+    "make name acceptable as a Debian source package name"
+    name = name.replace('_','')
     name = name.lower()
     return name
 
@@ -488,8 +494,8 @@ Provides: ${python:Provides}
                            ):
         defaults = {}
 
-        #defaults['Source']=debianize_name(module_name)
-        defaults['Source']='python-%s'%(debianize_name(module_name),)
+        defaults['Source']=source_debianize_name(module_name)
+        #defaults['Source']='python-%s'%(debianize_name(module_name),)
         defaults['Package']='python-%s'%(debianize_name(module_name),)
 
         defaults['Distribution']=default_distribution
