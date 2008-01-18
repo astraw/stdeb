@@ -94,7 +94,8 @@ def get_date_822():
     """return output of 822-date command"""
     cmd = '/usr/bin/822-date'
     if not os.path.exists(cmd):
-        raise ValueError('822-date command does not appear to exist at file %s (install package dpkg-dev)'%cmd)
+        raise ValueError('822-date command does not appear to exist at file '
+                         '%s (install package dpkg-dev)'%cmd)
     args = [cmd]
     res = subprocess.Popen(
         args,
@@ -147,6 +148,18 @@ def expand_tarball(tarball_fname,cwd=None):
 def expand_zip(zip_fname,cwd=None):
     "expand a zip"
     args = ['/usr/bin/unzip',zip_fname]
+    # Does it have a top dir
+    res = subprocess.Popen(
+        ['/usr/bin/unzip', '-l', zip_fname, '|', 'awk',  "'{print $4}'"],
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        )
+    contents = res.stdout.read()
+    commonprefix = os.path.commonprefix(contents)
+    if not commonprefix:
+        extdir = os.path.join(cwd, os.path.basename(zip_fname[:-4]))
+        args.extend(['-d', os.path.abspath(extdir)])
     res = subprocess.Popen(
         args, cwd=cwd,
         stdout=subprocess.PIPE,
