@@ -342,6 +342,7 @@ class DebianInfo:
             debinfo.packaging_version)
         debinfo.distname = parse_val(cfg,module_name,'Distribution')
         debinfo.maintainer = parse_val(cfg,module_name,'Maintainer')
+        debinfo.uploaders = parse_vals(cfg,module_name,'Uploaders')
         debinfo.date822 = get_date_822()
         if not no_pycentral:
             debinfo.pycentral_showversions='$(shell pyversions -vr)'
@@ -508,6 +509,7 @@ Provides: ${python:Provides}
         defaults['Upstream-Version-Suffix']=''
 
         defaults['Maintainer'] = default_maintainer
+        defaults['Uploaders'] = ''
 
         defaults['Copyright-File'] = ''
 
@@ -582,6 +584,10 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     fd.close()
 
     #    B. debian/control
+    if debinfo.uploaders:
+        debinfo.uploaders = 'Uploaders: %s\n' % ', '.join(debinfo.uploaders)
+    else:
+        debinfo.uploaders = ''
     control = CONTROL_FILE%debinfo.__dict__
     fd = open( os.path.join(debian_dir,'control'), mode='w')
     fd.write(control)
@@ -683,7 +689,7 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
 CONTROL_FILE = """\
 Source: %(source)s
 Maintainer: %(maintainer)s
-Section: python
+%(uploaders)sSection: python
 Priority: optional
 Build-Depends: %(build_depends)s
 Standards-Version: 3.7.2
