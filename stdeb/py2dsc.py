@@ -28,7 +28,7 @@ def runit():
         is_string = type(value) == str
         if option in bool_opts and is_string:
             setattr(optobj, option, strtobool(value))
-            
+
     if hasattr(optobj,'help'):
         print USAGE
         parser.set_option_table(stdeb_cmdline_opts)
@@ -40,18 +40,31 @@ def runit():
         print USAGE
         return 1
 
+
     sdist_file = args[0]
-    
+
+    if not os.path.isfile(sdist_file):
+        # Let's try PyPi
+        print >> sys.stderr, "Package not found, trying PyPi"
+        from setuptools.package_index import PackageIndex
+        from pkg_resources import Requirement
+        idx = PackageIndex()
+        package = Requirement.parse(args[0])
+        sdist_file = idx.fetch_distribution(package, '.',
+                                            force_scan=True,
+                                            source=True).location
+        print >> sys.stderr, sdist_file
+
     final_dist_dir = optobj.__dict__.get('dist_dir','deb_dist')
     tmp_dist_dir = os.path.join(final_dist_dir,'tmp_py2dsc')
     if os.path.exists(tmp_dist_dir):
         shutil.rmtree(tmp_dist_dir)
     os.makedirs(tmp_dist_dir)
-    
+
     patch_file = optobj.__dict__.get('patch_file',None)
     patch_level = int(optobj.__dict__.get('patch_level',0))
     patch_posix = int(optobj.__dict__.get('patch_posix',0))
-    
+
     expand_dir = os.path.join(tmp_dist_dir,'stdeb_tmp')
     if os.path.exists(expand_dir):
         shutil.rmtree(expand_dir)
@@ -85,7 +98,7 @@ def runit():
         patch_already_applied = 0
     ##############################################
 
-    
+
     abs_dist_dir = os.path.abspath(final_dist_dir)
 
     extra_args = []
@@ -110,7 +123,7 @@ def runit():
         fullpath_repackaged_dirname,
         ' '.join(args))
     print >> sys.stderr, '-='*20
-    
+
     res = subprocess.Popen(
         args,cwd=fullpath_repackaged_dirname,
         #stdout=subprocess.PIPE,
@@ -126,9 +139,9 @@ def runit():
 
     shutil.rmtree(tmp_dist_dir)
     return returncode
-    
+
 def main():
     sys.exit(runit())
-    
+
 if __name__=='__main__':
     main()
