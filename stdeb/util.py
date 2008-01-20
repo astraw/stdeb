@@ -15,9 +15,9 @@ __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
      "directory to put final built distributions in (default='deb_dist')"),
-    ('no-pycentral=', 'C',
+    ('no-pycentral', 'C',
      'do not use pycentral (support for multiple Python versions)'),
-    ('patch-already-applied=','a',
+    ('patch-already-applied','a',
      'patch was already applied (used when py2dsc calls sdist_dsc)'),
     ('default-distribution=', 'z',
      "which distribution name to use if not specified in .cfg (default='unstable')"),
@@ -29,9 +29,9 @@ stdeb_cmdline_opts = [
      'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
     ('patch-level=','l',
      'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
-    ('patch-posix=','q',
+    ('patch-posix','q',
      'apply the patch with --posix mode'),
-    ('remove-expanded-source-dir=','r',
+    ('remove-expanded-source-dir','r',
      'remove the expanded source directory'),
     ]
 
@@ -40,6 +40,7 @@ stdeb_cmd_bool_opts = [
     'no-pycentral',
     'remove-expanded-source-dir',
     'patch-posix',
+    'process-dependencies'
     ]
 
 class NotGiven: pass
@@ -284,7 +285,7 @@ def parse_val(cfg,section,option):
     if len(vals)==0:
         return ''
     else:
-        assert len(vals)==1
+        assert len(vals)==1, (section, option, vals, type(vals))
     return vals[0]
 
 class DebianInfo:
@@ -354,7 +355,7 @@ class DebianInfo:
             debinfo.upstream_version,
             debinfo.packaging_version)
         debinfo.distname = parse_val(cfg,module_name,'Distribution')
-        debinfo.maintainer = parse_val(cfg,module_name,'Maintainer')
+        debinfo.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
         debinfo.uploaders = parse_vals(cfg,module_name,'Uploaders')
         debinfo.date822 = get_date_822()
         if not no_pycentral:
@@ -362,6 +363,7 @@ class DebianInfo:
         else:
             current = sys.version[:3]
             debinfo.pycentral_showversions=current
+
 
         build_deps = ['python-setuptools (>= 0.6b3-1)']
         depends = []
@@ -456,14 +458,16 @@ class DebianInfo:
 
         if patch_file is not None:
             if debinfo.patch_file != '':
-                raise RuntimeError('A patch file was specified on the command line and in .cfg file.')
+                raise RuntimeError('A patch file was specified on the command '
+                                   'line and in .cfg file.')
             else:
                 debinfo.patch_file = patch_file
 
         debinfo.patch_level = parse_val(cfg,module_name,'Stdeb-Patch-Level')
         if debinfo.patch_level != '':
             if patch_level is not None:
-                raise RuntimeError('A patch level was specified on the command line and in .cfg file.')
+                raise RuntimeError('A patch level was specified on the command '
+                                   'line and in .cfg file.')
             else:
                 debinfo.patch_level = int(debinfo.patch_level)
         else:

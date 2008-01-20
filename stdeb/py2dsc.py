@@ -20,7 +20,7 @@ def runit():
     bool_opts = map(translate_longopt, stdeb_cmd_bool_opts)
     parser = FancyGetopt(stdeb_cmdline_opts+[
         ('help', 'h', "show detailed help message"),
-        ])
+        ]+[('process-dependencies', 'D', "process package dependencies")])
     optobj = OptObj()
     args = parser.getopt(object=optobj)
     for option in optobj.__dict__:
@@ -45,7 +45,7 @@ def runit():
 
     if not os.path.isfile(sdist_file):
         # Let's try PyPi
-        print >> sys.stderr, "Package not found, trying PyPi"
+        print >> sys.stderr, "Package %s not found, trying PyPi" % sdist_file
         from setuptools.package_index import PackageIndex
         from pkg_resources import Requirement
         idx = PackageIndex()
@@ -54,6 +54,23 @@ def runit():
                                             force_scan=True,
                                             source=True).location
         print >> sys.stderr, sdist_file
+
+    if hasattr(optobj, 'process_dependencies'):
+        backup_argv = sys.argv[:]
+        if bool(int(getattr(optobj, 'process_dependencies'))):
+            oldargv = sys.argv[:]
+            oldargv.pop(-1)
+            for req in idx.obtain(package).requires():
+                print >> sys.stderr
+                new_argv = oldargv + ["%s" % req]
+                print >> sys.stderr, "Bulding dependency package %s" % req
+                print >> sys.stderr, "  running %r" % new_argv
+                sys.argv = new_argv
+                runit()
+                print >> sys.stderr
+            print >> sys.stderr, "Completed building dependencies, " + \
+                    "continuing..."
+        sys.argv = backup_argv
 
     final_dist_dir = optobj.__dict__.get('dist_dir','deb_dist')
     tmp_dist_dir = os.path.join(final_dist_dir,'tmp_py2dsc')
@@ -105,14 +122,20 @@ def runit():
     for long in parser.long_opts:
         if long in ['dist-dir=','patch-file=']:
             continue # dealt with by this invocation
-        attr = parser.get_attr_name(long)[:-1]
+        attr = parser.get_attr_name(long).rstrip('=')
         if hasattr(optobj,attr):
             val = getattr(optobj,attr)
-            extra_args.append('--'+long+str(val))
+            if long.replace('-', '_') in bool_opts:
+                extra_args.append('--%s' % long)
+            else:
+                extra_args.append('--'+long+str(val))
 
-    args = [sys.executable,'-c',"import stdeb, sys; f='setup.py'; sys.argv[0]=f; execfile(f,{'__file__':f,'__name__':'__main__'})",
+    if patch_already_applied == 1:
+        extra_args.append('--patch-already-applied')
+
+    args = [sys.executable,'-c',"import stdeb, sys; f='setup.py'; " + \
+            "sys.argv[0]=f; execfile(f,{'__file__':f,'__name__':'__main__'})",
             'sdist_dsc','--dist-dir=%s'%abs_dist_dir,
-            '--patch-already-applied=%s'%str(patch_already_applied),
             '--use-premade-distfile=%s'%os.path.abspath(sdist_file)]+extra_args
 
     print >> sys.stderr, '-='*20
