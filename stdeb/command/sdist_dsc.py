@@ -65,12 +65,14 @@ class sdist_dsc(Command):
         #         find .egg-info directory
         ei_cmd = self.distribution.get_command_obj('egg_info')
 
+
         self.run_command('egg_info')
         egg_info_dirname = ei_cmd.egg_info
         egg_version_filename = pkg_resources.to_filename(ei_cmd.egg_version)
         config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
 
         egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
+        egg_module_name = egg_module_name.split(os.sep)[-1]
 
         cfg_files = []
         if os.path.exists(config_fname):
