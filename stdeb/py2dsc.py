@@ -10,19 +10,27 @@ of distutils.
 import sys, os, shutil, subprocess
 from distutils.util import strtobool
 from distutils.fancy_getopt import FancyGetopt, translate_longopt
-from stdeb.util import DebianInfo, stdeb_cmdline_opts, stdeb_cmd_bool_opts
+from stdeb.util import stdeb_cmdline_opts, stdeb_cmd_bool_opts
 from stdeb.util import expand_sdist_file, apply_patch
+
+from setuptools.package_index import PackageIndex, distros_for_filename, \
+                                     EXTENSIONS
+from pkg_resources import Requirement, Distribution
+
+EXTRA_OPTS = [('process-dependencies', 'D', "process package dependencies")]
 
 class OptObj: pass
 
 def runit():
     # process command-line options
     bool_opts = map(translate_longopt, stdeb_cmd_bool_opts)
+    bool_opts.append('process-dependencies')
     parser = FancyGetopt(stdeb_cmdline_opts+[
         ('help', 'h', "show detailed help message"),
-        ]+[('process-dependencies', 'D', "process package dependencies")])
+        ]+EXTRA_OPTS)
     optobj = OptObj()
     args = parser.getopt(object=optobj)
+    idx = PackageIndex()
     for option in optobj.__dict__:
         value = getattr(optobj,option)
         is_string = type(value) == str
@@ -31,7 +39,7 @@ def runit():
 
     if hasattr(optobj,'help'):
         print USAGE
-        parser.set_option_table(stdeb_cmdline_opts)
+        parser.set_option_table(stdeb_cmdline_opts + EXTRA_OPTS)
         parser.print_help("Options:")
         return 0
 
@@ -43,40 +51,54 @@ def runit():
 
     sdist_file = args[0]
 
-    if not os.path.isfile(sdist_file):
-        # Let's try PyPi
-        print >> sys.stderr, "Package %s not found, trying PyPi" % sdist_file
-        from setuptools.package_index import PackageIndex
-        from pkg_resources import Requirement
-        idx = PackageIndex()
-        package = Requirement.parse(args[0])
-        sdist_file = idx.fetch_distribution(package, '.',
-                                            force_scan=True,
-                                            source=True).location
-        print >> sys.stderr, sdist_file
-
-    if hasattr(optobj, 'process_dependencies'):
-        backup_argv = sys.argv[:]
-        if bool(int(getattr(optobj, 'process_dependencies'))):
-            oldargv = sys.argv[:]
-            oldargv.pop(-1)
-            for req in idx.obtain(package).requires():
-                print >> sys.stderr
-                new_argv = oldargv + ["%s" % req]
-                print >> sys.stderr, "Bulding dependency package %s" % req
-                print >> sys.stderr, "  running %r" % new_argv
-                sys.argv = new_argv
-                runit()
-                print >> sys.stderr
-            print >> sys.stderr, "Completed building dependencies, " + \
-                    "continuing..."
-        sys.argv = backup_argv
+    package = None
 
     final_dist_dir = optobj.__dict__.get('dist_dir','deb_dist')
     tmp_dist_dir = os.path.join(final_dist_dir,'tmp_py2dsc')
     if os.path.exists(tmp_dist_dir):
         shutil.rmtree(tmp_dist_dir)
     os.makedirs(tmp_dist_dir)
+
+    if not os.path.isfile(sdist_file):
+        # Let's try PyPi
+        for ext in EXTENSIONS:
+            if sdist_file.endswith(ext):
+                raise IOError, "File not found"
+        print >> sys.stderr, "Package %s not found, trying PyPi ." % sdist_file,
+        package = Requirement.parse(sdist_file)
+        print >> sys.stderr,".",
+        sdist_file = idx.fetch_distribution(package, final_dist_dir,
+                                            force_scan=True,
+                                            source=True).location
+        print >> sys.stderr,".",
+        print >> sys.stderr, "=>", sdist_file
+
+    if hasattr(optobj, 'process_dependencies'):
+        if bool(int(getattr(optobj, 'process_dependencies'))):
+            backup_argv = sys.argv[:]
+            oldargv = sys.argv[:]
+            oldargv.pop(-1)
+
+            if not isinstance(package, Distribution):
+                dist = list(distros_for_filename(sdist_file))[0]
+                idx.scan_egg_links(dist.location)
+                package = idx.obtain(Requirement.parse(dist.project_name))
+
+            if package.requires():
+                print >> sys.stderr, "Processing package dependencies " + \
+                                     "for %s" % package
+            for req in package.requires():
+                print >> sys.stderr
+                new_argv = oldargv + ["%s" % req]
+                print >> sys.stderr, "Bulding dependency package %s" % req
+                print >> sys.stderr, "  running `%s`" % ' '.join(new_argv)
+                sys.argv = new_argv
+                runit()
+                print >> sys.stderr
+            if package.requires():
+                print >> sys.stderr, "Completed building dependencies " + \
+                                     "for %s, continuing..." % package
+        sys.argv = backup_argv
 
     patch_file = optobj.__dict__.get('patch_file',None)
     patch_level = int(optobj.__dict__.get('patch_level',0))
@@ -90,6 +112,8 @@ def runit():
     os.mkdir(expand_dir)
 
     expand_sdist_file(os.path.abspath(sdist_file),cwd=expand_dir)
+
+
 
     # now the sdist package is expanded in expand_dir
     expanded_root_files = os.listdir(expand_dir)
@@ -120,12 +144,12 @@ def runit():
 
     extra_args = []
     for long in parser.long_opts:
-        if long in ['dist-dir=','patch-file=']:
+        if long in ['dist-dir=','patch-file=', 'process-dependencies']:
             continue # dealt with by this invocation
         attr = parser.get_attr_name(long).rstrip('=')
         if hasattr(optobj,attr):
             val = getattr(optobj,attr)
-            if long.replace('-', '_') in bool_opts:
+            if (long or long.replace('-', '_')) in bool_opts:
                 extra_args.append('--%s' % long)
             else:
                 extra_args.append('--'+long+str(val))
@@ -139,9 +163,9 @@ def runit():
             '--use-premade-distfile=%s'%os.path.abspath(sdist_file)]+extra_args
 
     print >> sys.stderr, '-='*20
-    print >> sys.stderr, "Note that the .cfg file(s), if present, have not been "\
-          "read at this stage. If options are necessary, pass them from the "\
-          "command line"
+    print >> sys.stderr, "Note that the .cfg file(s), if present, have not "\
+          "been read at this stage. If options are necessary, pass them from "\
+          "the command line"
     print >> sys.stderr, "running the following command in directory: %s\n%s"%(
         fullpath_repackaged_dirname,
         ' '.join(args))
