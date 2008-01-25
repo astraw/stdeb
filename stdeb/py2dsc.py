@@ -67,9 +67,13 @@ def runit():
         print >> sys.stderr, "Package %s not found, trying PyPi ." % sdist_file,
         package = Requirement.parse(sdist_file)
         print >> sys.stderr,".",
-        sdist_file = idx.fetch_distribution(package, final_dist_dir,
+        dist = idx.fetch_distribution(package, final_dist_dir,
                                             force_scan=True,
-                                            source=True).location
+                                            source=True)
+        if hasattr(dist, 'location'):
+            sdist_file = dist.location
+        else:
+            raise Exception, "Distribution not found on PyPi"
         print >> sys.stderr,".",
         print >> sys.stderr, "=>", sdist_file
 
