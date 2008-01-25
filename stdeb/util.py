@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import stdeb
 
+
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink',
            'apply_patch','repack_tarball_with_debianized_dirname',
@@ -40,7 +41,6 @@ stdeb_cmd_bool_opts = [
     'no-pycentral',
     'remove-expanded-source-dir',
     'patch-posix',
-    'process-dependencies'
     ]
 
 class NotGiven: pass
@@ -151,12 +151,13 @@ def expand_zip(zip_fname,cwd=None):
     args = ['/usr/bin/unzip',zip_fname]
     # Does it have a top dir
     res = subprocess.Popen(
-        ['/usr/bin/unzip', '-l', zip_fname, '|', 'awk',  "'{print $4}'"],
-        cwd=cwd,
+        [args[0], '-l', args[1]], cwd=cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        )
-    contents = res.stdout.read()
+    )
+    contents = []
+    for line in res.stdout.readlines()[3:-2]:
+        contents.append(line.split()[-1])
     commonprefix = os.path.commonprefix(contents)
     if not commonprefix:
         extdir = os.path.join(cwd, os.path.basename(zip_fname[:-4]))
