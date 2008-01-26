@@ -6,7 +6,7 @@ import ConfigParser
 import subprocess
 import tempfile
 import stdeb
-
+from stdeb import log, __version__ as __stdeb_version__
 
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink',
@@ -105,8 +105,8 @@ def get_date_822():
         )
     returncode = res.wait()
     if returncode:
-        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-        print >> sys.stderr, res.stderr.read()
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error(res.stderr.read())
         raise RuntimeError('returncode %d'%returncode)
     result = res.stdout.read().strip()
     return result
@@ -123,9 +123,12 @@ def make_tarball(tarball_fname,directory,cwd=None):
         )
     returncode = res.wait()
     if returncode:
-        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-        print >> sys.stderr, 'ERROR in',cwd
-        print >> sys.stderr, res.stderr.read()
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error('ERROR in %s', cwd)
+        log.error(res.stderr.read())
+#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
+#        print >> sys.stderr, 'ERROR in',cwd
+#        print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
 
 def expand_tarball(tarball_fname,cwd=None):
@@ -141,9 +144,12 @@ def expand_tarball(tarball_fname,cwd=None):
         )
     returncode = res.wait()
     if returncode:
-        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-        print >> sys.stderr, 'ERROR in',cwd
-        print >> sys.stderr, res.stderr.read()
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error('ERROR in %s', cwd)
+        log.error(res.stderr.read())
+#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
+#        print >> sys.stderr, 'ERROR in',cwd
+#        print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
 
 def expand_zip(zip_fname,cwd=None):
@@ -169,9 +175,12 @@ def expand_zip(zip_fname,cwd=None):
         )
     returncode = res.wait()
     if returncode:
-        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-        print >> sys.stderr, 'ERROR in',cwd
-        print >> sys.stderr, res.stderr.read()
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error('ERROR in %s', cwd)
+        log.error(res.stderr.read())
+#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
+#        print >> sys.stderr, 'ERROR in',cwd
+#        print >> sys.stderr, res.stderr.read()
         raise RuntimeError('returncode %d'%returncode)
 
 def expand_sdist_file(sdist_file,cwd=None):
@@ -216,8 +225,10 @@ def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
         )
     returncode = res.wait()
     if returncode:
-        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-        print >> sys.stderr, 'ERROR in',cwd
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error('ERROR in %s', cwd)
+#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
+#        print >> sys.stderr, 'ERROR in',cwd
         raise RuntimeError('returncode %d'%returncode)
 
 def apply_patch(patchfile,cwd=None,posix=False,level=0):
@@ -236,8 +247,10 @@ def apply_patch(patchfile,cwd=None,posix=False,level=0):
     if posix:
         args.append('--posix')
 
-    print >> sys.stderr, 'PATCH COMMAND:',' '.join(args),'<',patchfile
-    print >> sys.stderr, '  PATCHING in dir:',cwd
+    log.info('PATCH COMMAND: %s < %s', ' '.join(args), patchfile)
+    log.info('  PATCHING in dir: %s', cwd)
+#    print >> sys.stderr, 'PATCH COMMAND:',' '.join(args),'<',patchfile
+#    print >> sys.stderr, '  PATCHING in dir:',cwd
     res = subprocess.Popen(
         args, cwd=cwd,
         stdin=fd,
@@ -262,8 +275,10 @@ def apply_patch(patchfile,cwd=None,posix=False,level=0):
     sys.stderr.flush()
 
     if returncode:
-        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-        print >> sys.stderr, 'ERROR in',cwd
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error('ERROR in %s', cwd)
+#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
+#        print >> sys.stderr, 'ERROR in',cwd
         raise RuntimeError('returncode %d'%returncode)
 
 def parse_vals(cfg,section,option):
@@ -325,7 +340,7 @@ class DebianInfo:
         cfg.read(cfg_files)
 
         debinfo = self # convert old code...
-        debinfo.stdeb_version = stdeb.__version__
+        debinfo.stdeb_version = __stdeb_version__
         debinfo.module_name = module_name
         debinfo.source = parse_val(cfg,module_name,'Source')
         debinfo.package = parse_val(cfg,module_name,'Package')
@@ -679,7 +694,7 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
               fullpath_repackaged_dirname)
 
     if orig_sdist is None:
-        print >> sys.stderr, 'No original tarball, regenerating'
+        log.info('No original tarball, regenerating')
         # No original tarball (that we want to keep)
         #    i.  Remove temporarily repackaged original tarball
         os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))

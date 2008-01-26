@@ -8,16 +8,19 @@ of distutils.
 """
 
 import sys, os, shutil, subprocess
+from ConfigParser import SafeConfigParser
 from distutils.util import strtobool
 from distutils.fancy_getopt import FancyGetopt, translate_longopt
 from stdeb.util import stdeb_cmdline_opts, stdeb_cmd_bool_opts
 from stdeb.util import expand_sdist_file, apply_patch
+from stdeb import log
 
 from setuptools.package_index import PackageIndex, distros_for_filename, \
                                      EXTENSIONS
 from pkg_resources import Requirement, Distribution
 
 EXTRA_OPTS = [('process-dependencies', 'D', "process package dependencies")]
+
 
 class OptObj: pass
 
@@ -44,7 +47,7 @@ def runit():
         return 0
 
     if len(args)!=1:
-        print 'not given single argument (distfile), args=%s'%repr(args)
+        log.error('not given single argument (distfile), args=%r', args)
         print USAGE
         return 1
 
@@ -64,9 +67,9 @@ def runit():
         for ext in EXTENSIONS:
             if sdist_file.endswith(ext):
                 raise IOError, "File not found"
-        print >> sys.stderr, "Package %s not found, trying PyPi ." % sdist_file,
+        log.info("Package %s not found, trying PyPi..." % sdist_file)
         package = Requirement.parse(sdist_file)
-        print >> sys.stderr,".",
+#        print >> sys.stderr,".",
         dist = idx.fetch_distribution(package, final_dist_dir,
                                             force_scan=True,
                                             source=True)
@@ -74,8 +77,9 @@ def runit():
             sdist_file = dist.location
         else:
             raise Exception, "Distribution not found on PyPi"
-        print >> sys.stderr,".",
-        print >> sys.stderr, "=>", sdist_file
+#        print >> sys.stderr,".",
+#        print >> sys.stderr, "=>", sdist_file
+        log.info("Downloaded %s", sdist_file)
 
     if hasattr(optobj, 'process_dependencies'):
         if bool(int(getattr(optobj, 'process_dependencies'))):
@@ -89,20 +93,30 @@ def runit():
                 package = idx.obtain(Requirement.parse(dist.project_name))
 
             if package.requires():
-                print >> sys.stderr, "Processing package dependencies " + \
-                                     "for %s" % package
+                log.info("Processing package dependencies for %s", package)
             for req in package.requires():
-                print >> sys.stderr
+#                print >> sys.stderr
                 new_argv = oldargv + ["%s" % req]
-                print >> sys.stderr, "Bulding dependency package %s" % req
-                print >> sys.stderr, "  running `%s`" % ' '.join(new_argv)
+                log.info("Bulding dependency package %s", req)
+                log.info("  running '%s'", ' '.join(new_argv))
                 sys.argv = new_argv
                 runit()
-                print >> sys.stderr
+#                print >> sys.stderr
             if package.requires():
-                print >> sys.stderr, "Completed building dependencies " + \
-                                     "for %s, continuing..." % package
+                log.info("Completed building dependencies "
+                         "for %s, continuing...", package)
         sys.argv = backup_argv
+
+    if hasattr(optobj, 'extra_cfg_file'):
+        # Allow one to have patch-files setup on config file for example
+        local_parser = SafeConfigParser()
+        local_parser.readfp(open(optobj.__dict__.get('extra_cfg_file')))
+        if local_parser.has_section(package.project_name):
+            for opt in local_parser.options(package.project_name):
+                _opt = opt.replace('_', '-')
+                if parser.has_option(_opt) or parser.has_option(_opt+'='):
+                    setattr(optobj, opt,
+                            local_parser.get(package.project_name, opt))
 
     patch_file = optobj.__dict__.get('patch_file',None)
     patch_level = int(optobj.__dict__.get('patch_level',0))
@@ -133,11 +147,11 @@ def runit():
 
     ##############################################
     if patch_file is not None:
-        print >> sys.stderr, 'py2dsc applying patch',patch_file
+        log.info('py2dsc applying patch %s', patch_file)
         apply_patch(patch_file,
                     posix=patch_posix,
                     level=patch_level,
-                    cwd=tmp_dist_dir)
+                    cwd=fullpath_repackaged_dirname)
         patch_already_applied = 1
     else:
         patch_already_applied = 0
@@ -166,14 +180,15 @@ def runit():
             'sdist_dsc','--dist-dir=%s'%abs_dist_dir,
             '--use-premade-distfile=%s'%os.path.abspath(sdist_file)]+extra_args
 
-    print >> sys.stderr, '-='*20
-    print >> sys.stderr, "Note that the .cfg file(s), if present, have not "\
-          "been read at this stage. If options are necessary, pass them from "\
-          "the command line"
-    print >> sys.stderr, "running the following command in directory: %s\n%s"%(
-        fullpath_repackaged_dirname,
-        ' '.join(args))
-    print >> sys.stderr, '-='*20
+    log.info('-='*35 + '-')
+#    print >> sys.stderr, '-='*20
+#    print >> sys.stderr, "Note that the .cfg file(s), if present, have not "\
+#          "been read at this stage. If options are necessary, pass them from "\
+#          "the command line"
+    log.info("running the following command in directory: %s\n%s",
+             fullpath_repackaged_dirname, ' '.join(args))
+    log.info('-='*35 + '-')
+#    print >> sys.stderr, '-='*20
 
     res = subprocess.Popen(
         args,cwd=fullpath_repackaged_dirname,
