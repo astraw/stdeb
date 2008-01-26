@@ -45,6 +45,18 @@ stdeb_cmd_bool_opts = [
 
 class NotGiven: pass
 
+def process_command(args, cwd=None, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE):
+    if not isinstance(args, (list, tuple)):
+        raise RuntimeError, "args passed must be in a list"
+    cmd = subprocess.Popen(args, cwd=cwd, stdout=stdout, stderr=stderr)
+    returncode = cmd.wait()
+    if returncode:
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error(cmd.stderr.read())
+        raise RuntimeError('returncode %d', returncode)
+    return cmd.stdout.read().strip()
+
 def recursive_hardlink(src,dst):
     dst = os.path.abspath(dst)
     orig_dir = os.path.abspath(os.curdir)
@@ -98,17 +110,7 @@ def get_date_822():
         raise ValueError('822-date command does not appear to exist at file '
                          '%s (install package dpkg-dev)'%cmd)
     args = [cmd]
-    res = subprocess.Popen(
-        args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        )
-    returncode = res.wait()
-    if returncode:
-        log.error('ERROR running: %s', ' '.join(args))
-        log.error(res.stderr.read())
-        raise RuntimeError('returncode %d'%returncode)
-    result = res.stdout.read().strip()
+    result = process_command([cmd])
     return result
 
 def make_tarball(tarball_fname,directory,cwd=None):
@@ -116,20 +118,8 @@ def make_tarball(tarball_fname,directory,cwd=None):
     if tarball_fname.endswith('.gz'): opts = 'czf'
     else: opts = 'cf'
     args = ['/bin/tar',opts,tarball_fname,directory]
-    res = subprocess.Popen(
-        args, cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        )
-    returncode = res.wait()
-    if returncode:
-        log.error('ERROR running: %s', ' '.join(args))
-        log.error('ERROR in %s', cwd)
-        log.error(res.stderr.read())
-#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-#        print >> sys.stderr, 'ERROR in',cwd
-#        print >> sys.stderr, res.stderr.read()
-        raise RuntimeError('returncode %d'%returncode)
+    result = process_command(args, cwd=cwd)
+
 
 def expand_tarball(tarball_fname,cwd=None):
     "expand a tarball"
@@ -137,20 +127,8 @@ def expand_tarball(tarball_fname,cwd=None):
     elif tarball_fname.endswith('.bz2'): opts = 'xjf'
     else: opts = 'xf'
     args = ['/bin/tar',opts,tarball_fname]
-    res = subprocess.Popen(
-        args, cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        )
-    returncode = res.wait()
-    if returncode:
-        log.error('ERROR running: %s', ' '.join(args))
-        log.error('ERROR in %s', cwd)
-        log.error(res.stderr.read())
-#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-#        print >> sys.stderr, 'ERROR in',cwd
-#        print >> sys.stderr, res.stderr.read()
-        raise RuntimeError('returncode %d'%returncode)
+    result = process_command(args, cwd=cwd)
+
 
 def expand_zip(zip_fname,cwd=None):
     "expand a zip"
@@ -168,20 +146,9 @@ def expand_zip(zip_fname,cwd=None):
     if not commonprefix:
         extdir = os.path.join(cwd, os.path.basename(zip_fname[:-4]))
         args.extend(['-d', os.path.abspath(extdir)])
-    res = subprocess.Popen(
-        args, cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        )
-    returncode = res.wait()
-    if returncode:
-        log.error('ERROR running: %s', ' '.join(args))
-        log.error('ERROR in %s', cwd)
-        log.error(res.stderr.read())
-#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-#        print >> sys.stderr, 'ERROR in',cwd
-#        print >> sys.stderr, res.stderr.read()
-        raise RuntimeError('returncode %d'%returncode)
+
+    result = process_command(args, cwd=cwd)
+
 
 def expand_sdist_file(sdist_file,cwd=None):
     lower_sdist_file = sdist_file.lower()
@@ -220,16 +187,8 @@ def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
     args = ['/usr/bin/dpkg-source',b_or_x,arg1]
     if arg2 is not None:
         args.append(arg2)
-    res = subprocess.Popen(
-        args, cwd=cwd,
-        )
-    returncode = res.wait()
-    if returncode:
-        log.error('ERROR running: %s', ' '.join(args))
-        log.error('ERROR in %s', cwd)
-#        print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
-#        print >> sys.stderr, 'ERROR in',cwd
-        raise RuntimeError('returncode %d'%returncode)
+
+    result = process_command(args, cwd=cwd)
 
 def apply_patch(patchfile,cwd=None,posix=False,level=0):
     """call 'patch -p[level] [--posix] < arg1'
