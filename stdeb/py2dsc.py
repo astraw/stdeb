@@ -107,7 +107,7 @@ def runit():
                          "for %s, continuing...", package)
         sys.argv = backup_argv
 
-    if hasattr(optobj, 'extra_cfg_file'):
+    if package is not None and hasattr(optobj, 'extra_cfg_file'):
         # Allow one to have patch-files setup on config file for example
         local_parser = SafeConfigParser()
         local_parser.readfp(open(optobj.__dict__.get('extra_cfg_file')))
