@@ -299,16 +299,15 @@ class DebianInfo:
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
         cfg.read(cfg_files)
 
-        debinfo = self # convert old code...
-        debinfo.stdeb_version = __stdeb_version__
-        debinfo.module_name = module_name
-        debinfo.source = parse_val(cfg,module_name,'Source')
-        debinfo.package = parse_val(cfg,module_name,'Package')
+        self.stdeb_version = __stdeb_version__
+        self.module_name = module_name
+        self.source = parse_val(cfg,module_name,'Source')
+        self.package = parse_val(cfg,module_name,'Package')
         forced_upstream_version = parse_val(cfg,module_name,'Forced-Upstream-Version')
         if forced_upstream_version == '':
             upstream_version_prefix = parse_val(cfg,module_name,'Upstream-Version-Prefix')
             upstream_version_suffix = parse_val(cfg,module_name,'Upstream-Version-Suffix')
-            debinfo.upstream_version = (upstream_version_prefix+
+            self.upstream_version = (upstream_version_prefix+
                                         debianize_version(upstream_version)+
                                         upstream_version_suffix)
         else:
@@ -316,29 +315,29 @@ class DebianInfo:
                 raise ValueError('forced upstream version ("%s") not a '\
                                  'Debian-compatible version (e.g. "%s")'%(
                     forced_upstream_version,debianize_version(forced_upstream_version)))
-            debinfo.upstream_version = forced_upstream_version
-        debinfo.egg_module_name = egg_module_name
-        debinfo.egg_version_filename = egg_version_filename
-        debinfo.epoch = parse_val(cfg,module_name,'Epoch')
-        if debinfo.epoch != '' and not debinfo.epoch.endswith(':'):
-            debinfo.epoch = debinfo.epoch + ':'
-        debinfo.packaging_version = parse_val(cfg,module_name,'Debian-Version')
-        debinfo.dsc_version = '%s-%s'%(
-            debinfo.upstream_version,
-            debinfo.packaging_version)
-        debinfo.full_version = '%s%s-%s'%(
-            debinfo.epoch,
-            debinfo.upstream_version,
-            debinfo.packaging_version)
-        debinfo.distname = parse_val(cfg,module_name,'Distribution')
-        debinfo.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
-        debinfo.uploaders = parse_vals(cfg,module_name,'Uploaders')
-        debinfo.date822 = get_date_822()
+            self.upstream_version = forced_upstream_version
+        self.egg_module_name = egg_module_name
+        self.egg_version_filename = egg_version_filename
+        self.epoch = parse_val(cfg,module_name,'Epoch')
+        if self.epoch != '' and not self.epoch.endswith(':'):
+            self.epoch = self.epoch + ':'
+        self.packaging_version = parse_val(cfg,module_name,'Debian-Version')
+        self.dsc_version = '%s-%s'%(
+            self.upstream_version,
+            self.packaging_version)
+        self.full_version = '%s%s-%s'%(
+            self.epoch,
+            self.upstream_version,
+            self.packaging_version)
+        self.distname = parse_val(cfg,module_name,'Distribution')
+        self.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
+        self.uploaders = parse_vals(cfg,module_name,'Uploaders')
+        self.date822 = get_date_822()
         if not no_pycentral:
-            debinfo.pycentral_showversions='$(shell pyversions -vr)'
+            self.pycentral_showversions='$(shell pyversions -vr)'
         else:
             current = sys.version[:3]
-            debinfo.pycentral_showversions=current
+            self.pycentral_showversions=current
 
 
         build_deps = ['python-setuptools (>= 0.6b3-1)']
@@ -347,52 +346,52 @@ class DebianInfo:
         depends.append('${python:Depends}')
 
         if has_ext_modules:
-            debinfo.architecture = 'any'
+            self.architecture = 'any'
             depends.append('${shlibs:Depends}')
         else:
-            debinfo.architecture = 'all'
+            self.architecture = 'all'
 
-        debinfo.copyright_file = parse_val(cfg,module_name,'Copyright-File')
-        debinfo.mime_file = parse_val(cfg,module_name,'MIME-File')
+        self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
+        self.mime_file = parse_val(cfg,module_name,'MIME-File')
 
-        debinfo.shared_mime_file = parse_val(cfg,module_name,'Shared-MIME-File')
+        self.shared_mime_file = parse_val(cfg,module_name,'Shared-MIME-File')
 
-        if debinfo.mime_file == '' and debinfo.shared_mime_file == '':
-            debinfo.dh_installmime_line = ''
+        if self.mime_file == '' and self.shared_mime_file == '':
+            self.dh_installmime_line = ''
         else:
-            debinfo.dh_installmime_line = '\n        dh_installmime'
-            if debinfo.architecture == 'all':
-                debinfo.dh_installmime_line += ' -i'
+            self.dh_installmime_line = '\n        dh_installmime'
+            if self.architecture == 'all':
+                self.dh_installmime_line += ' -i'
             else:
-                debinfo.dh_installmime_line += ' -a'
+                self.dh_installmime_line += ' -a'
 
         mime_desktop_files = parse_vals(cfg,module_name,'MIME-Desktop-Files')
         if len(mime_desktop_files):
-            debinfo.dh_desktop_line = '\n        dh_desktop'
-            if debinfo.architecture == 'all':
-                debinfo.dh_desktop_line += ' -i'
+            self.dh_desktop_line = '\n        dh_desktop'
+            if self.architecture == 'all':
+                self.dh_desktop_line += ' -i'
             else:
-                debinfo.dh_desktop_line += ' -a'
+                self.dh_desktop_line += ' -a'
         else:
-            debinfo.dh_desktop_line = ''
+            self.dh_desktop_line = ''
 
-        debinfo.fix_scripts = RULES_FIX_SCRIPTS%debinfo.__dict__
+        self.fix_scripts = RULES_FIX_SCRIPTS%self.__dict__
 
         #    E. any mime .desktop files
-        debinfo.copy_files_lines = ''
-        debinfo.install_dirs = sets.Set()
+        self.copy_files_lines = ''
+        self.install_dirs = sets.Set()
         for mime_desktop_file in mime_desktop_files:
             dest_file = os.path.join('debian',
-                                     debinfo.package,
+                                     self.package,
                                      'usr/share/applications',
                                      os.path.split(mime_desktop_file)[-1])
-            debinfo.install_dirs.add('usr/share/applications')
-            debinfo.copy_files_lines += '\n\tcp %s %s'%(mime_desktop_file,dest_file)
+            self.install_dirs.add('usr/share/applications')
+            self.copy_files_lines += '\n\tcp %s %s'%(mime_desktop_file,dest_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
-        debinfo.depends = ', '.join(depends)
+        self.depends = ', '.join(depends)
 
-        debinfo.description = description
+        self.description = description
         if long_description != 'UNKNOWN':
             ld2=[]
             for line in long_description.split('\n'):
@@ -401,9 +400,9 @@ class DebianInfo:
                     ld2.append(' '+line)
                 else:
                     ld2.append(' .')
-            debinfo.long_description = '\n'.join(ld2)
+            self.long_description = '\n'.join(ld2)
         else:
-            debinfo.long_description = ''
+            self.long_description = ''
 
         if not no_pycentral:
             build_deps.extend(  [
@@ -418,68 +417,68 @@ class DebianInfo:
                 ])
 
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
-        debinfo.build_depends = ', '.join(build_deps)
+        self.build_depends = ', '.join(build_deps)
 
-        debinfo.suggests = ', '.join( parse_vals(cfg,module_name,'Suggests') )
-        debinfo.recommends = ', '.join( parse_vals(cfg,module_name,'Recommends') )
+        self.suggests = ', '.join( parse_vals(cfg,module_name,'Suggests') )
+        self.recommends = ', '.join( parse_vals(cfg,module_name,'Recommends') )
 
-        debinfo.source_stanza_extras = ''
+        self.source_stanza_extras = ''
 
         build_conflicts = parse_vals(cfg,module_name,'Build-Conflicts')
         if len(build_conflicts):
-            debinfo.source_stanza_extras += ('Build-Conflicts: '+
+            self.source_stanza_extras += ('Build-Conflicts: '+
                                               ', '.join( build_conflicts )+'\n')
 
-        debinfo.patch_file = parse_val(cfg,module_name,'Stdeb-Patch-File')
+        self.patch_file = parse_val(cfg,module_name,'Stdeb-Patch-File')
 
         if patch_file is not None:
-            if debinfo.patch_file != '':
+            if self.patch_file != '':
                 raise RuntimeError('A patch file was specified on the command '
                                    'line and in .cfg file.')
             else:
-                debinfo.patch_file = patch_file
+                self.patch_file = patch_file
 
-        debinfo.patch_level = parse_val(cfg,module_name,'Stdeb-Patch-Level')
-        if debinfo.patch_level != '':
+        self.patch_level = parse_val(cfg,module_name,'Stdeb-Patch-Level')
+        if self.patch_level != '':
             if patch_level is not None:
                 raise RuntimeError('A patch level was specified on the command '
                                    'line and in .cfg file.')
             else:
-                debinfo.patch_level = int(debinfo.patch_level)
+                self.patch_level = int(self.patch_level)
         else:
             if patch_level is not None:
-                debinfo.patch_level = patch_level
+                self.patch_level = patch_level
             else:
-                debinfo.patch_level = 0
+                self.patch_level = 0
 
         xs_python_version = parse_vals(cfg,module_name,'XS-Python-Version')
         if not no_pycentral:
-            debinfo.source_stanza_extras += ('XS-Python-Version: '+
+            self.source_stanza_extras += ('XS-Python-Version: '+
                                              ', '.join(xs_python_version)+'\n')
-            debinfo.package_stanza_extras = """\
+            self.package_stanza_extras = """\
 XB-Python-Version: ${python:Versions}
 Provides: ${python:Provides}
 """
-            debinfo.debhelper_command = 'dh_pycentral'
+            self.debhelper_command = 'dh_pycentral'
         else:
-            debinfo.package_stanza_extras = ''
-            debinfo.debhelper_command = 'dh_python'
+            self.package_stanza_extras = ''
+            self.debhelper_command = 'dh_python'
 
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         if len(conflicts):
-            debinfo.package_stanza_extras += ('Conflicts: '+
+            self.package_stanza_extras += ('Conflicts: '+
                                               ', '.join( conflicts )+'\n')
 
         provides = parse_vals(cfg,module_name,'Provides')
         if len(provides):
-            debinfo.package_stanza_extras += ('Provides: ' +
+            self.package_stanza_extras += ('Provides: ' +
                                               ', '.join( provides  )+'\n')
 
         replaces = parse_vals(cfg,module_name,'Replaces')
         if len(replaces):
-            debinfo.package_stanza_extras += ('Replaces: ' +
+            self.package_stanza_extras += ('Replaces: ' +
                                               ', '.join( replaces  )+'\n')
-        debinfo.dirlist = ""
+        self.dirlist = ""
 
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
