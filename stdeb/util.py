@@ -480,6 +480,12 @@ Provides: ${python:Provides}
                                               ', '.join( replaces  )+'\n')
         self.dirlist = ""
 
+        self.setup_env_vars = parse_val(cfg,module_name,'Setup-Env-Vars')
+
+        if self.setup_env_vars != '' and not self.setup_env_vars.endswith(' '):
+            # end with a space if not empty
+            self.setup_env_vars = self.setup_env_vars + ' '
+
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
                            default_distribution=NotGiven,
@@ -522,6 +528,8 @@ Provides: ${python:Provides}
         defaults['MIME-Desktop-Files'] = ''
         defaults['MIME-File'] = ''
         defaults['Shared-MIME-File'] = ''
+
+        defaults['Setup-Env-Vars'] = ''
         return defaults
 
 def build_dsc(debinfo,dist_dir,repackaged_dirname,
@@ -713,7 +721,7 @@ build-stamp: $(PYVERS:%%=build-python%%)
         touch $@
 build-python%%:
 # Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py files expect that.
-        python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" build
+        %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" build
         touch $@
 clean:
         dh_testdir
@@ -732,7 +740,7 @@ install-prereq:
 
 install-python%%:
 # Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py files expect that.
-        python$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
+        %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
                 --no-compile --single-version-externally-managed \\
                 --root $(CURDIR)/debian/${PACKAGE_NAME}
         mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${EGG_MODULE_NAME}-${EGG_VERSION_FILENAME}-py$*.egg-info \\
