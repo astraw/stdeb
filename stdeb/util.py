@@ -457,7 +457,6 @@ class DebianInfo:
                                              ', '.join(xs_python_version)+'\n')
             self.package_stanza_extras = """\
 XB-Python-Version: ${python:Versions}
-Provides: ${python:Provides}
 """
             self.debhelper_command = 'dh_pycentral'
         else:
@@ -470,9 +469,8 @@ Provides: ${python:Provides}
                                               ', '.join( conflicts )+'\n')
 
         provides = parse_vals(cfg,module_name,'Provides')
-        if len(provides):
-            self.package_stanza_extras += ('Provides: ' +
-                                              ', '.join( provides  )+'\n')
+        provides.insert(0, 'Provides: ${python:Provides}')
+        self.package_stanza_extras += ', '.join( provides  )+'\n'
 
         replaces = parse_vals(cfg,module_name,'Replaces')
         if len(replaces):
