@@ -1,3 +1,13 @@
+= Release 0.2 (2008-04-26) =
+
+2008-03-27 Add ability to pass environment variables to setup.py
+           script.
+
+2008-03-18 Do not allow '.' in source package names.
+
+2008-01-20 Allows a user to build every dependency a package has
+           stated on it's setup.py, recursively.
+
 2007-10-29 Allow upstream tarball to have different name from debian
            .orig.tar.gz but keep md5sum.
 
@@ -47,7 +57,7 @@
 
 2006-07-21 Don't bother trying to rename .egg-info directories.
 
-2006-07-09 Ability to specify MIME-Desktop-Files, MIME-File, and 
+2006-07-09 Ability to specify MIME-Desktop-Files, MIME-File, and
 	   Shared-MIME-File in configuration file.
 
 2006-07-09 Use of dh_python for generation of postinst and prerm

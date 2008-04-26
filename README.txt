@@ -11,10 +11,11 @@ resulting package can be customized via a configuration file.
 News
 ----
 
- * 2007-04-02: Version 0.2.a1 Released. See the `download page`_. This version uses python-central_ by default. See the `Changelog for 0.2.a1`_
+ * 2008-04-26: Version 0.2 Released. See the `download page`_. See the `Changelog for 0.2`_
+ * 2007-04-02: Version 0.2.a1 Released. See the `download page`_.
  * 2006-06-19: Version 0.1 Released. See the `download page`_.
 
-.. _Changelog for 0.2.a1: http://stdeb.python-hosting.com/file/tags/release-0.2.a1/CHANGELOG.txt
+.. _Changelog for 0.2: http://stdeb.python-hosting.com/file/tags/release-0.2/CHANGELOG.txt
 
 Invocation
 ----------
@@ -80,7 +81,8 @@ package::
 
 (For packages that don't use setuptools, you need to get the stdeb
 monkeypatch for the sdist_dsc distutils command. So, do this: ``python
--c "import stdeb; execfile('setup.py')" sdist_dsc``.)
+-c "import stdeb; execfile('setup.py')" sdist_dsc``, or use the
+command ``stdeb_run_setup``, which does just this.)
 
 The source generated in the above way is also extracted (using
 ``dpkg-source -x``) and placed in the ``deb_dist`` subdirectory. To
@@ -89,7 +91,7 @@ continue the example above::
   cd deb_dist/reindent-0.1.0
   dpkg-buildpackage -rfakeroot -uc -us
 
-Finally, the generated package can be installed:: 
+Finally, the generated package can be installed::
 
   cd ..
   sudo dpkg -i python-reindent_0.1.0-1_all.deb
@@ -231,7 +233,7 @@ Please address all questions to the distutils-SIG_
 License
 -------
 
-MIT-style license. Copyright (c) 2006-2008 stdeb authors. 
+MIT-style license. Copyright (c) 2006-2008 stdeb authors.
 
 See the LICENSE.txt file provided with the source distribution for
 full details.
