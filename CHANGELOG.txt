@@ -1,3 +1,19 @@
+= Release 0.2.1 (2008-04-26) =
+
+2008-04-26 Find .egg-info directory in debian/rules using a glob
+           rather than attempting to guess it, which was fragile.
+
+2008-04-26 Use Python2.5's subprocess.check_call() instead of our
+ 	   home-brewed version.
+
+2008-04-26 Use "date -R" instead of "822-date".
+
+2008-04-26 Erase temporary directories created on prior run of stdeb.
+
+2008-04-26 Don't break if no author is specified in setup.py.
+
+2008-04-26 Add tests for more styles of packages.
+
 = Release 0.2 (2008-04-26) =
 
 2008-03-27 Add ability to pass environment variables to setup.py
