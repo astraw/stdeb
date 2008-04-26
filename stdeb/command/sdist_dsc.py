@@ -60,7 +60,7 @@ class sdist_dsc(Command):
                     self.distribution.get_author(),
                     self.distribution.get_author_email())
             else:
-                defaults['Maintainer'] = "unknown <unknown@unknown>"
+                self.default_maintainer = "unknown <unknown@unknown>"
 
         #    B. find config files (if any)
         #         find .egg-info directory
@@ -69,7 +69,6 @@ class sdist_dsc(Command):
 
         self.run_command('egg_info')
         egg_info_dirname = ei_cmd.egg_info
-        egg_version_filename = pkg_resources.to_filename(ei_cmd.egg_version)
         config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
 
         egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
@@ -88,7 +87,6 @@ class sdist_dsc(Command):
             default_maintainer=self.default_maintainer,
             upstream_version = self.distribution.get_version(),
             egg_module_name = egg_module_name,
-            egg_version_filename = egg_version_filename,
             no_pycentral = self.no_pycentral,
             has_ext_modules = self.distribution.has_ext_modules(),
             description = self.distribution.get_description()[:60],

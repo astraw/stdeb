@@ -184,12 +184,10 @@ please see http://stdeb.python-hosting.com/wiki/stdeb_all.cfg
 Prerequisites
 -------------
 
- * Python_ 2.3 or greater
- * setuptools_
- * subprocess.py_ (included with Python 2.4, backwards compatible with Python 2.3)
+ * Python_ 2.5 or higher (older python OK if you use subprocess.py
+   with backports from Python 2.5)
 
 .. _Python: http://www.python.org/
-.. _subprocess.py: http://svn.python.org/view/python/trunk/Lib/subprocess.py?rev=46651&view=log
 
 Using stdeb on stdeb
 --------------------

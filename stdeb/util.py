@@ -45,17 +45,10 @@ stdeb_cmd_bool_opts = [
 
 class NotGiven: pass
 
-def process_command(args, cwd=None, stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE):
+def process_command(args, cwd=None):
     if not isinstance(args, (list, tuple)):
         raise RuntimeError, "args passed must be in a list"
-    cmd = subprocess.Popen(args, cwd=cwd, stdout=stdout, stderr=stderr)
-    returncode = cmd.wait()
-    if returncode:
-        log.error('ERROR running: %s', ' '.join(args))
-        log.error(cmd.stderr.read())
-        raise RuntimeError('returncode %d', returncode)
-    return cmd.stdout.read().strip()
+    subprocess.check_call(args, cwd=cwd)
 
 def recursive_hardlink(src,dst):
     dst = os.path.abspath(dst)
@@ -106,12 +99,16 @@ def debianize_version(name):
 
 def get_date_822():
     """return output of 822-date command"""
-    cmd = '/usr/bin/822-date'
+    cmd = '/bin/date'
     if not os.path.exists(cmd):
-        raise ValueError('822-date command does not appear to exist at file '
-                         '%s (install package dpkg-dev)'%cmd)
-    args = [cmd]
-    result = process_command([cmd])
+        raise ValueError('%s command does not exist.'%cmd)
+    args = [cmd,'-R']
+    cmd = subprocess.Popen(args,stdout=subprocess.PIPE)
+    returncode = cmd.wait()
+    if returncode:
+        log.error('ERROR running: %s', ' '.join(args))
+        raise RuntimeError('returncode %d', returncode)
+    result = cmd.stdout.read().strip()
     return result
 
 def make_tarball(tarball_fname,directory,cwd=None):
@@ -119,7 +116,7 @@ def make_tarball(tarball_fname,directory,cwd=None):
     if tarball_fname.endswith('.gz'): opts = 'czf'
     else: opts = 'cf'
     args = ['/bin/tar',opts,tarball_fname,directory]
-    result = process_command(args, cwd=cwd)
+    process_command(args, cwd=cwd)
 
 
 def expand_tarball(tarball_fname,cwd=None):
@@ -128,7 +125,7 @@ def expand_tarball(tarball_fname,cwd=None):
     elif tarball_fname.endswith('.bz2'): opts = 'xjf'
     else: opts = 'xf'
     args = ['/bin/tar',opts,tarball_fname]
-    result = process_command(args, cwd=cwd)
+    process_command(args, cwd=cwd)
 
 
 def expand_zip(zip_fname,cwd=None):
@@ -148,7 +145,7 @@ def expand_zip(zip_fname,cwd=None):
         extdir = os.path.join(cwd, os.path.basename(zip_fname[:-4]))
         args.extend(['-d', os.path.abspath(extdir)])
 
-    result = process_command(args, cwd=cwd)
+    process_command(args, cwd=cwd)
 
 
 def expand_sdist_file(sdist_file,cwd=None):
@@ -189,7 +186,7 @@ def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
     if arg2 is not None:
         args.append(arg2)
 
-    result = process_command(args, cwd=cwd)
+    process_command(args, cwd=cwd)
 
 def apply_patch(patchfile,cwd=None,posix=False,level=0):
     """call 'patch -p[level] [--posix] < arg1'
@@ -273,7 +270,6 @@ class DebianInfo:
                  default_maintainer=NotGiven,
                  upstream_version=NotGiven,
                  egg_module_name=NotGiven,
-                 egg_version_filename=NotGiven,
                  no_pycentral=NotGiven,
                  has_ext_modules=NotGiven,
                  description=NotGiven,
@@ -317,7 +313,6 @@ class DebianInfo:
                     forced_upstream_version,debianize_version(forced_upstream_version)))
             self.upstream_version = forced_upstream_version
         self.egg_module_name = egg_module_name
-        self.egg_version_filename = egg_version_filename
         self.epoch = parse_val(cfg,module_name,'Epoch')
         if self.epoch != '' and not self.epoch.endswith(':'):
             self.epoch = self.epoch + ':'
@@ -662,7 +657,11 @@ def build_dsc(debinfo,
             fullpath_orig_dirname = os.path.join(tmp_dir,orig_dirname)
 
             #    C. move original repackaged tree to .orig
-            os.rename(fullpath_orig_dirname,fullpath_repackaged_dirname+'.orig')
+            target = fullpath_repackaged_dirname+'.orig'
+            if os.path.exists(target):
+                # here from previous invocation, probably
+                shutil.rmtree(target)
+            os.rename(fullpath_orig_dirname,target)
 
         finally:
             shutil.rmtree(tmp_dir)
@@ -674,6 +673,10 @@ def build_dsc(debinfo,
     #    Re-generate tarball using best practices see
     #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
     #    call "dpkg-source -b new_dirname orig_dirname"
+    log.info('CALLING dpkg-source -b %s %s (in dir %s)'%(repackaged_dirname,
+                                                         repackaged_orig_tarball,
+                                                         dist_dir))
+
     dpkg_source('-b',repackaged_dirname,
                 repackaged_orig_tarball,
                 cwd=dist_dir)
@@ -713,7 +716,6 @@ RULES_MAIN = """\
 PACKAGE_NAME=%(package)s
 MODULE_NAME=%(module_name)s
 EGG_MODULE_NAME=%(egg_module_name)s
-EGG_VERSION_FILENAME=%(egg_version_filename)s
 
 PYVERS=%(pycentral_showversions)s
 
@@ -744,7 +746,7 @@ install-python%%:
         %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
                 --no-compile --single-version-externally-managed \\
                 --root $(CURDIR)/debian/${PACKAGE_NAME}
-        mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${EGG_MODULE_NAME}-${EGG_VERSION_FILENAME}-py$*.egg-info \\
+        mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/*.egg-info \\
                 debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${EGG_MODULE_NAME}.egg-info
 
 %(rules_binary)s

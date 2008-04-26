@@ -188,15 +188,20 @@ def runit():
     log.info("running the following command in directory: %s\n%s",
              fullpath_repackaged_dirname, ' '.join(args))
     log.info('-='*35 + '-')
-#    print >> sys.stderr, '-='*20
 
-    res = subprocess.Popen(
-        args,cwd=fullpath_repackaged_dirname,
-        #stdout=subprocess.PIPE,
-        #stderr=subprocess.PIPE,
-        )
-    returncode = res.wait()
+    try:
+        returncode = subprocess.call(
+            args,cwd=fullpath_repackaged_dirname,
+            )
+    except:
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error('ERROR in %s', fullpath_repackaged_dirname)
+        raise
+
     if returncode:
+        log.error('ERROR running: %s', ' '.join(args))
+        log.error('ERROR in %s', fullpath_repackaged_dirname)
+        #log.error('   stderr: %s'res.stderr.read())
         #print >> sys.stderr, 'ERROR running: %s'%(' '.join(args),)
         #print >> sys.stderr, res.stderr.read()
         return returncode
