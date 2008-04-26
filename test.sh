@@ -23,7 +23,7 @@ rm -rf deb_dist; if [[ $? -ne 0 ]]; then exit $?; fi
 # case 2: build from pre-existing source tarball
 tar xzf $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
 cd $SOURCE; if [[ $? -ne 0 ]]; then exit $?; fi
-python setup.py sdist_dsc; if [[ $? -ne 0 ]]; then exit $?; fi
+stdeb_run_setup; if [[ $? -ne 0 ]]; then exit $?; fi
 cd deb_dist/$DEBSOURCE; if [[ $? -ne 0 ]]; then exit $?; fi
 dpkg-buildpackage -rfakeroot -uc -us; if [[ $? -ne 0 ]]; then exit $?; fi
 cd ..; if [[ $? -ne 0 ]]; then exit $?; fi
