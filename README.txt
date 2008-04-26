@@ -1,6 +1,8 @@
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
+.. KEEP THE TWO COPIES OF THIS FILE IN SYNC: README.TXT AND THE WEBPAGE!
+
 stdeb_ ("setuptools debian") produces Debian source packages from
 Python packages via a new distutils command, ``sdist_dsc``. Automatic
 defaults are provided for the Debian package, but many aspects of the
@@ -96,6 +98,11 @@ Finally, the generated package can be installed::
 
   cd ..
   sudo dpkg -i python-reindent_0.1.0-1_all.deb
+
+For yet another example of use, with still more explanation, see
+`allmydata-tahoe ticket 251`_.
+
+.. _allmydata-tahoe ticket 251: http://allmydata.org/trac/tahoe/ticket/251
 
 Download
 --------
