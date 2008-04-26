@@ -186,8 +186,10 @@ class sdist_dsc(Command):
                             raise RuntimeError('original source dist cannot '
                                                'contain .pyc files')
         else:
-            # haven't figured out why
-            raise NotImplementedError("the code path is broken right now")
+            if 0:
+                # haven't figured out why
+                raise NotImplementedError("the code path is broken right now")
+
 
         ###############################################
         # 3. Find all directories
@@ -198,7 +200,9 @@ class sdist_dsc(Command):
         ###############################################
         # 4. Build source tree and rename it to be in self.dist_dir
 
-        build_dsc(debinfo,self.dist_dir,repackaged_dirname,
+        build_dsc(debinfo,
+                  self.dist_dir,
+                  repackaged_dirname,
                   orig_sdist=source_tarball,
                   patch_posix = self.patch_posix,
                   remove_expanded_source_dir=self.remove_expanded_source_dir)

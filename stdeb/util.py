@@ -530,14 +530,19 @@ XB-Python-Version: ${python:Versions}
         defaults['Setup-Env-Vars'] = ''
         return defaults
 
-def build_dsc(debinfo,dist_dir,repackaged_dirname,
+def build_dsc(debinfo,
+              dist_dir,
+              repackaged_dirname,
               orig_sdist=None,
               patch_posix=0,
               remove_expanded_source_dir=0):
     """make debian source package"""
     #    A. Find new dirname and delete any pre-existing contents
-    fullpath_repackaged_dirname = os.path.join(dist_dir,repackaged_dirname)
 
+    # dist_dir is usually 'deb_dist'
+
+    # the location of the copied original source package (it was re-recreated in dist_dir)
+    fullpath_repackaged_dirname = os.path.join(dist_dir,repackaged_dirname)
 
     ###############################################
     # 1. make temporary original source tarball
@@ -546,14 +551,19 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     #    using "dpkg-source -b".  See
     #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
 
+    # Create the name of the tarball that qualifies as the upstream
+    # source. If the original was specified, we'll link to
+    # it. Otherwise, we generate our own .tar.gz file from the output
+    # of "python setup.py sdist" (done above) so that we avoid
+    # packaging .svn directories, for example.
+
+    repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
+    repackaged_orig_tarball_path = os.path.join(dist_dir,repackaged_orig_tarball)
     if orig_sdist is not None:
-        repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
-        repackaged_orig_tarball_path = os.path.join(dist_dir,repackaged_orig_tarball)
         if os.path.exists(repackaged_orig_tarball_path):
             os.unlink(repackaged_orig_tarball_path)
         os.link(orig_sdist,repackaged_orig_tarball_path)
     else:
-        repackaged_orig_tarball = 'orig.tar'
         make_tarball(repackaged_orig_tarball,
                      repackaged_dirname,
                      cwd=dist_dir)
@@ -635,44 +645,38 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
     ###############################################
     # 3. unpack original source tarball
 
+    debianized_package_dirname = fullpath_repackaged_dirname+'.debianized'
+    if os.path.exists(debianized_package_dirname):
+        raise RuntimeError('debianized_package_dirname exists: %s'%debianized_package_dirname)
     #    A. move debianized tree away
-    os.rename(fullpath_repackaged_dirname,
-              fullpath_repackaged_dirname+'.debianized')
-    #    B. expand repackaged original tarball
-    tmp_dir = os.path.join(dist_dir,'tmp-expand')
-    os.mkdir(tmp_dir)
-    try:
-        expand_tarball(orig_sdist,cwd=tmp_dir)
-        orig_tarball_top_contents = os.listdir(tmp_dir)
-        assert len(orig_tarball_top_contents)==1 # make sure original tarball has exactly one directory
-        orig_dirname = orig_tarball_top_contents[0]
-        fullpath_orig_dirname = os.path.join(tmp_dir,orig_dirname)
+    os.rename(fullpath_repackaged_dirname, debianized_package_dirname )
+    if orig_sdist is not None:
+        #    B. expand repackaged original tarball
+        tmp_dir = os.path.join(dist_dir,'tmp-expand')
+        os.mkdir(tmp_dir)
+        try:
+            expand_tarball(orig_sdist,cwd=tmp_dir)
+            orig_tarball_top_contents = os.listdir(tmp_dir)
+            assert len(orig_tarball_top_contents)==1 # make sure original tarball has exactly one directory
+            orig_dirname = orig_tarball_top_contents[0]
+            fullpath_orig_dirname = os.path.join(tmp_dir,orig_dirname)
 
-        #    C. move original repackaged tree to .orig
-        os.rename(fullpath_orig_dirname,fullpath_repackaged_dirname+'.orig')
+            #    C. move original repackaged tree to .orig
+            os.rename(fullpath_orig_dirname,fullpath_repackaged_dirname+'.orig')
 
-    finally:
-        shutil.rmtree(tmp_dir)
+        finally:
+            shutil.rmtree(tmp_dir)
 
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
               fullpath_repackaged_dirname)
 
-    if orig_sdist is None:
-        log.info('No original tarball, regenerating')
-        # No original tarball (that we want to keep)
-        #    i.  Remove temporarily repackaged original tarball
-        os.unlink(os.path.join(dist_dir,repackaged_orig_tarball))
-        #    ii. Re-generate tarball using best practices see
-        #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
-        #    call "dpkg-source -b new_dirname orig_dirname"
-        dpkg_source('-b',repackaged_dirname,
-                    repackaged_dirname+'.orig',
-                    cwd=dist_dir)
-    else:
-        dpkg_source('-b',repackaged_dirname,
-                    repackaged_orig_tarball,
-                    cwd=dist_dir)
+    #    Re-generate tarball using best practices see
+    #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
+    #    call "dpkg-source -b new_dirname orig_dirname"
+    dpkg_source('-b',repackaged_dirname,
+                repackaged_orig_tarball,
+                cwd=dist_dir)
 
     if 1:
         shutil.rmtree(fullpath_repackaged_dirname)
@@ -682,7 +686,6 @@ def build_dsc(debinfo,dist_dir,repackaged_dirname,
         dsc_name = debinfo.source + '_' + debinfo.dsc_version + '.dsc'
         dpkg_source('-x',dsc_name,
                     cwd=dist_dir)
-
 
 CONTROL_FILE = """\
 Source: %(source)s
