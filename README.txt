@@ -141,18 +141,31 @@ bdist_dpkg_.
 .. _Logilab's DevTools: http://www.logilab.org/projects/devtools
 .. _bdist_dpkg: http://svn.python.org/view/sandbox/trunk/Lib/bdist_dpkg.py
 
-Prerequisites
--------------
+Features
+--------
 
- * Python_ 2.3 or greater
- * setuptools_
- * subprocess.py_ (included with Python 2.4, backwards compatible with Python 2.3)
+* Create a package for all Python versions supported by
+  pycentral. (Limiting this range is possible with the
+  ``XS-Python-Version:`` config option.
 
-.. _Python: http://www.python.org/
-.. _subprocess.py: http://svn.python.org/view/python/trunk/Lib/subprocess.py?rev=46651&view=log
+* Install .desktop files. (``MIME-Desktop-Files`` config option.)
 
-Customizing the produced Debian source package
-----------------------------------------------
+* Install .mime and .sharedmimeinfo files. (``MIME-File`` and
+  ``Shared-MIME-File`` config options.)
+
+* Install copyright files. (``Copyright-File`` config option.)
+
+* Automatic conversion of Python package names into valid Debian
+  package names.
+
+* Apply patches to upstream sources. (``Stdeb-Patch-File`` config
+  option.)
+
+* Pass environment variables to setup.py script. (``Setup-Env-Vars``
+  config option.)
+
+Customizing the produced Debian source package (config options)
+---------------------------------------------------------------
 
 stdeb will attempt to provide reasonable defaults, but these are only
 guesses.
@@ -167,6 +180,16 @@ with the command-line option --extra-cfg-file.
 
 For an example configuration file I use to build several packages,
 please see http://stdeb.python-hosting.com/wiki/stdeb_all.cfg
+
+Prerequisites
+-------------
+
+ * Python_ 2.3 or greater
+ * setuptools_
+ * subprocess.py_ (included with Python 2.4, backwards compatible with Python 2.3)
+
+.. _Python: http://www.python.org/
+.. _subprocess.py: http://svn.python.org/view/python/trunk/Lib/subprocess.py?rev=46651&view=log
 
 Using stdeb on stdeb
 --------------------
@@ -212,25 +235,6 @@ help. In particular, I'd be interested in finding a co-maintainer or
 maintainer if the project generates any interest. Secondarily, I would
 appreciate advice from Debian developers or Ubuntu MOTUs about the
 arcane details of Python packaging.
-
-Features
---------
-
-* Install .desktop files. (``MIME-Desktop-Files`` config option.)
-
-* Install .mime and .sharedmimeinfo files. (``MIME-File`` and
-  ``Shared-MIME-File`` config options.)
-
-* Install copyright files. (``Copyright-File`` config option.)
-
-* Automatic conversion of Python package names into valid Debian
-  package names.
-
-* Apply patches to upstream sources. (``Stdeb-Patch-File`` config
-  option.)
-
-* Pass environment variables to setup.py script. (``Setup-Env-Vars``
-  config option.)
 
 Mailing list
 ------------
