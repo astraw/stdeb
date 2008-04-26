@@ -13,10 +13,12 @@ resulting package can be customized via a configuration file.
 News
 ----
 
+ * 2008-04-26: Version 0.2.1 Released. See the `download page`_. See the `Changelog for 0.2.1`_
  * 2008-04-26: Version 0.2 Released. See the `download page`_. See the `Changelog for 0.2`_
- * 2007-04-02: Version 0.2.a1 Released. See the `download page`_.
- * 2006-06-19: Version 0.1 Released. See the `download page`_.
+ * 2007-04-02: Version 0.2.a1 Released. See the `old download page`_.
+ * 2006-06-19: Version 0.1 Released. See the `old download page`_.
 
+.. _Changelog for 0.2.1: http://stdeb.python-hosting.com/file/tags/release-0.2.1/CHANGELOG.txt
 .. _Changelog for 0.2: http://stdeb.python-hosting.com/file/tags/release-0.2/CHANGELOG.txt
 
 Invocation
@@ -148,15 +150,24 @@ Features
   pycentral. (Limiting this range is possible with the
   ``XS-Python-Version:`` config option.
 
+* Automatic conversion of Python package names into valid Debian
+  package names.
+
+* Attempt to automatically convert version numbers such that ordering
+  is maintained. (The setuptools version sorting is different than the
+  Debian version sorting.) See also the config option
+  ``Forced-Upstream-Version``.
+
+* Fine grained control of version numbers. (``Debian-Version``,
+  ``Forced-Upstream-Version``, ``Upstream-Version-Prefix``,
+  ``Upstream-Version-Suffix`` config options.)
+
 * Install .desktop files. (``MIME-Desktop-Files`` config option.)
 
 * Install .mime and .sharedmimeinfo files. (``MIME-File`` and
   ``Shared-MIME-File`` config options.)
 
 * Install copyright files. (``Copyright-File`` config option.)
-
-* Automatic conversion of Python package names into valid Debian
-  package names.
 
 * Apply patches to upstream sources. (``Stdeb-Patch-File`` config
   option.)
