@@ -100,9 +100,10 @@ Finally, the generated package can be installed::
 Download
 --------
 
-Files are available at the `download page`_.
+Files are available at the `download page`_ (for older releases, see the `old download page`_).
 
-.. _download page: http://stdeb.python-hosting.com/wiki/Download
+.. _download page: http://pypi.python.org/pypi/stdeb
+.. _old download page: http://stdeb.python-hosting.com/wiki/Download
 
 The subversion repository is available at
 https://svn.stdeb.python-hosting.com/trunk
