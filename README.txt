@@ -56,6 +56,7 @@ This turns it into a .deb::
   dpkg-buildpackage -rfakeroot -uc -us
 
 This installs it::
+
   cd ..
   sudo dpkg -i python-reindent_0.1.0-1_all.deb
 
