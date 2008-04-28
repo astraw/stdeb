@@ -247,6 +247,8 @@ def parse_vals(cfg,section,option):
             vals = cfg.get('DEFAULT',option)
         else:
             raise err
+    vals = vals.split('#')[0]
+    vals = vals.strip()
     vals = vals.split(',')
     vals = [v.strip() for v in vals]
     vals = [v for v in vals if len(v)]

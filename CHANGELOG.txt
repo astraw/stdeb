@@ -1,3 +1,5 @@
+2008-04-28 Allow comments after config entry
+
 = Release 0.2.1 (2008-04-26) =
 
 2008-04-26 Find .egg-info directory in debian/rules using a glob
