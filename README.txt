@@ -148,7 +148,7 @@ Features
 
 * Create a package for all Python versions supported by
   pycentral. (Limiting this range is possible with the
-  ``XS-Python-Version:`` config option.
+  ``XS-Python-Version:`` config option.)
 
 * Automatic conversion of Python package names into valid Debian
   package names.
@@ -192,11 +192,32 @@ with the command-line option --extra-cfg-file.
 For an example configuration file I use to build several packages,
 please see http://stdeb.python-hosting.com/wiki/stdeb_all.cfg
 
+======================== ===========
+        Option             Effect
+======================== ===========
+Debian-Version           Set Debian version
+Forced-Upstream-Version  Force upstream version number
+Upstream-Version-Prefix  Force upstream version prefix (e.g. epoch)
+Upstream-Version-Suffix  Force upstream version suffix
+Build-Depends            Add entry to debian/control
+Depends                  Add entry to debian/control
+Package                  Name of (binary) package
+Source                   Nome of source package
+XS-Python-Version        Add to debian/control (limits Python versions)
+MIME-Desktop-Files       Filename of .desktop file(s) to install
+MIME-File                Filename of .mime file(s) to install
+Shared-MIME-File         Filename of .sharedmimeinfo file(s) to install
+Copyright-File           Filename of copyright file to install
+Stdeb-Patch-File         Patches to apply
+Setup-Env-Vars           Environment variables to set on call to setup.py
+======================== ===========
+
 Prerequisites
 -------------
 
  * Python_ 2.5 or higher (older python OK if you use subprocess.py
    with backports from Python 2.5)
+ * Standard Debian utilities (e.g. ``date`` and ``dpkg-source``)
 
 .. _Python: http://www.python.org/
 
