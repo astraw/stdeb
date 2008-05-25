@@ -460,6 +460,13 @@ XB-Python-Version: ${python:Versions}
             self.package_stanza_extras = ''
             self.debhelper_command = 'dh_python'
 
+        dpkg_shlibdeps_params = parse_val(cfg,module_name,'dpkg-shlibdeps-params')
+        if dpkg_shlibdeps_params:
+            self.dh_shlibdeps_line = 'dh_shlibdeps -a --dpkg-shlibdeps-params=%s'%dpkg_shlibdeps_params
+        else:
+            self.dh_shlibdeps_line = 'dh_shlibdeps -a'
+        print >> sys.stderr,'self.dh_shlibdeps_line',self.dh_shlibdeps_line
+
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
@@ -515,6 +522,8 @@ XB-Python-Version: ${python:Versions}
         defaults['Recommends'] = ''
 
         defaults['XS-Python-Version'] = 'all'
+
+        defaults['dpkg-shlibdeps-params'] = ''
 
         defaults['Conflicts'] = ''
         defaults['Provides'] = ''
@@ -793,7 +802,7 @@ binary-arch: build install
         dh_fixperms -a
 %(fix_scripts)s
         dh_installdeb -a
-        dh_shlibdeps -a
+        %(dh_shlibdeps_line)s
         dh_gencontrol -a
         dh_md5sums -a
         dh_builddeb -a
