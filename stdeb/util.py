@@ -1,17 +1,27 @@
 #
 # This module contains most of the code of stdeb.
 #
-import sys, os, shutil, sets, select
+import re, sys, os, shutil, sets, select
 import ConfigParser
 import subprocess
 import tempfile
 import stdeb
+import pkg_resources
 from stdeb import log, __version__ as __stdeb_version__
 
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink',
            'apply_patch','repack_tarball_with_debianized_dirname',
            'expand_sdist_file']
+
+import exceptions
+class CalledProcessError(exceptions.Exception): pass
+
+def check_call(*popenargs, **kwargs):
+    retcode = subprocess.call(*popenargs, **kwargs)
+    if retcode == 0:
+        return
+    raise CalledProcessError(retcode)
 
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
@@ -48,7 +58,7 @@ class NotGiven: pass
 def process_command(args, cwd=None):
     if not isinstance(args, (list, tuple)):
         raise RuntimeError, "args passed must be in a list"
-    subprocess.check_call(args, cwd=cwd)
+    check_call(args, cwd=cwd)
 
 def recursive_hardlink(src,dst):
     dst = os.path.abspath(dst)
@@ -110,6 +120,80 @@ def get_date_822():
         raise RuntimeError('returncode %d', returncode)
     result = cmd.stdout.read().strip()
     return result
+
+def get_deb_depends_from_setuptools_requires(requirements):
+    depends = [] # This will be the return value from this function.
+
+    requirements = list(pkg_resources.parse_requirements(requirements))
+    if not requirements:
+        return depends
+
+    # Ask apt-file for any packages which have a .egg-info file by these names.
+    # Note that apt-file appears to think that some packages e.g. setuptools itself have "foo.egg-info/BLAH" files but not a "foo.egg-info" directory.
+    
+    egginfore="((%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)" % '|'.join(req.project_name for req in requirements)
+
+    args = ["apt-file", "search", "--ignore-case", "--regexp", egginfore]
+    try:
+        cmd = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    except Exception, le:
+        log.error('ERROR running: %s', ' '.join(args))
+        raise RuntimeError('exception %s from subprocess %s' % (le,args)) 
+    returncode = cmd.wait()
+    if returncode:
+        log.error('ERROR running: %s', ' '.join(args))
+        raise RuntimeError('returncode %d from subprocess %s' % (returncode, args))
+
+    inlines = cmd.stdout.readlines()
+
+    dd = {} # {pydistname: {pydist: set(debpackagename)}}
+    E=re.compile(egginfore, re.I)
+    D=re.compile("^([^:]*):", re.I)
+    eggsndebs = set()
+    for l in inlines:
+        if l:
+            emo = E.search(l)
+            assert emo, l
+            dmo = D.search(l)
+            assert dmo, l
+            eggsndebs.add((emo.group(1), dmo.group(1)))
+            
+    for (egginfo, debname) in eggsndebs:
+        pydist = pkg_resources.Distribution.from_filename(egginfo)
+        try:
+            dd.setdefault(pydist.project_name.lower(), {}).setdefault(pydist, set()).add(debname)
+        except ValueError, le:
+            log.warn("I got an error parsing a .egg-info file named \"%s\" from Debian package \"%s\" as a pkg_resources Distribution: %s" % (egginfo, debname, le,))
+            pass
+
+    # Now for each requirement, see if a Debian package satisfies it.
+    ops = {'<':'<<','>':'>>','==':'=','<=':'<=','>=':'>='}
+    for req in requirements:
+        reqname = req.project_name.lower()
+        gooddebs = set()
+        for pydist, debs in dd.get(reqname, {}).iteritems():
+            if pydist in req:
+                # log.info("I found Debian packages \"%s\" which provides Python package \"%s\", version \"%s\", which satisfies our version requirements: \"%s\"" % (', '.join(debs), req.project_name, ver, req))
+                gooddebs |= (debs)
+            else:
+                log.info("I found Debian packages \"%s\" which provides Python package \"%s\", version \"%s\", which does not satisfy our version requirements: \"%s\" -- ignoring." % (', '.join(debs), req.project_name, ver, req))
+        if not gooddebs:
+            log.warn("I found no Debian package which provides the required Python package \"%s\" with version requirements \"%s\".  Guessing blindly that the name \"python-%s\" will be it, and that the Python package version number requirements will apply to the Debian package." % (req.project_name, req.specs, reqname))
+            gooddebs.add("python-" + reqname)
+        elif len(gooddebs) == 1:
+            log.info("I found a Debian package which provides the require Python package.  Python package: \"%s\", Debian package: \"%s\";  adding Depends specifications for the following version(s): \"%s\"" % (req.project_name, tuple(gooddebs)[0], req.specs))
+        else:
+            log.warn("I found multiple Debian packages which provide the Python distribution required.  I'm listing them all as alternates.  Candidate debs which claim to provide the Python package \"%s\" are: \"%s\"" % (req.project_name, ', '.join(gooddebs),))
+
+        alts = []
+        for deb in gooddebs:
+            for spec in req.specs:
+                # Here we blithely assume that the Debian package versions are enough like the Python package versions that the requirement can be ported straight over...
+                alts.append("%s (%s %s)" % (deb, ops[spec[0]], spec[1]))
+
+        depends.append(' | '.join(alts))
+
+    return depends
 
 def make_tarball(tarball_fname,directory,cwd=None):
     "create a tarball from a directory"
@@ -278,6 +362,8 @@ class DebianInfo:
                  long_description=NotGiven,
                  patch_file=None,
                  patch_level=None,
+                 install_requires=None,
+                 setup_requires=None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError("module_name must be supplied")
@@ -337,7 +423,9 @@ class DebianInfo:
             self.pycentral_showversions=current
 
 
-        build_deps = ['python-setuptools (>= 0.6b3-1)']
+        build_deps = ['python-setuptools (>= 0.6b3)']
+        build_deps.extend(get_deb_depends_from_setuptools_requires(setup_requires))
+
         depends = []
 
         depends.append('${python:Depends}')
@@ -386,6 +474,7 @@ class DebianInfo:
             self.copy_files_lines += '\n\tcp %s %s'%(mime_desktop_file,dest_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
+        depends.extend(get_deb_depends_from_setuptools_requires(install_requires))
         self.depends = ', '.join(depends)
 
         self.description = description

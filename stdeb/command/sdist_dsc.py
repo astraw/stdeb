@@ -80,6 +80,10 @@ class sdist_dsc(Command):
         if self.extra_cfg_file is not None:
             cfg_files.append(self.extra_cfg_file)
 
+        try:
+            install_requires = open(os.path.join(egg_info_dirname,'requires.txt'),'rU').read()
+        except EnvironmentError:
+            install_requires = ()
         debinfo = DebianInfo(
             cfg_files=cfg_files,
             module_name = module_name,
@@ -93,6 +97,8 @@ class sdist_dsc(Command):
             long_description = self.distribution.get_long_description(),
             patch_file = self.patch_file,
             patch_level = self.patch_level,
+            install_requires = install_requires,
+            setup_requires = (), # XXX How do we get the setup_requires?
         )
         if debinfo.patch_file != '' and self.patch_already_applied:
             raise RuntimeError('A patch was already applied, but another '
