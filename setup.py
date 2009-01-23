@@ -20,5 +20,6 @@ of the resulting package can be customized via a configuration file.""",
         'distutils.commands':['sdist_dsc = stdeb.command.sdist_dsc:sdist_dsc'],
         'console_scripts':['py2dsc = stdeb.py2dsc:main',
                            'stdeb_run_setup = stdeb.stdeb_run_setup:main']
-      }
+      },
+      zip_ok=False,
 )
