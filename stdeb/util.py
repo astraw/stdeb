@@ -130,15 +130,19 @@ def get_deb_depends_from_setuptools_requires(requirements):
 
     # Ask apt-file for any packages which have a .egg-info file by these names.
     # Note that apt-file appears to think that some packages e.g. setuptools itself have "foo.egg-info/BLAH" files but not a "foo.egg-info" directory.
-    
-    egginfore="((%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)" % '|'.join(req.project_name for req in requirements)
+
+    egginfore=("((%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)"
+               % '|'.join(req.project_name for req in requirements) )
 
     args = ["apt-file", "search", "--ignore-case", "--regexp", egginfore]
     try:
-        cmd = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        cmd = subprocess.Popen(args, stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               universal_newlines=True)
     except Exception, le:
         log.error('ERROR running: %s', ' '.join(args))
-        raise RuntimeError('exception %s from subprocess %s' % (le,args)) 
+        raise RuntimeError('exception %s from subprocess %s' % (le,args))
     returncode = cmd.wait()
     if returncode:
         log.error('ERROR running: %s', ' '.join(args))
@@ -157,13 +161,17 @@ def get_deb_depends_from_setuptools_requires(requirements):
             dmo = D.search(l)
             assert dmo, l
             eggsndebs.add((emo.group(1), dmo.group(1)))
-            
+
     for (egginfo, debname) in eggsndebs:
         pydist = pkg_resources.Distribution.from_filename(egginfo)
         try:
-            dd.setdefault(pydist.project_name.lower(), {}).setdefault(pydist, set()).add(debname)
+            dd.setdefault(
+                pydist.project_name.lower(), {}).setdefault(
+                pydist, set()).add(debname)
         except ValueError, le:
-            log.warn("I got an error parsing a .egg-info file named \"%s\" from Debian package \"%s\" as a pkg_resources Distribution: %s" % (egginfo, debname, le,))
+            log.warn("I got an error parsing a .egg-info file named \"%s\" "
+                     "from Debian package \"%s\" as a pkg_resources "
+                     "Distribution: %s" % (egginfo, debname, le,))
             pass
 
     # Now for each requirement, see if a Debian package satisfies it.
@@ -173,22 +181,44 @@ def get_deb_depends_from_setuptools_requires(requirements):
         gooddebs = set()
         for pydist, debs in dd.get(reqname, {}).iteritems():
             if pydist in req:
-                # log.info("I found Debian packages \"%s\" which provides Python package \"%s\", version \"%s\", which satisfies our version requirements: \"%s\"" % (', '.join(debs), req.project_name, ver, req))
+                ## log.info("I found Debian packages \"%s\" which provides "
+                ##          "Python package \"%s\", version \"%s\", which "
+                ##          "satisfies our version requirements: \"%s\""
+                ##          % (', '.join(debs), req.project_name, ver, req)
                 gooddebs |= (debs)
             else:
-                log.info("I found Debian packages \"%s\" which provides Python package \"%s\", version \"%s\", which does not satisfy our version requirements: \"%s\" -- ignoring." % (', '.join(debs), req.project_name, ver, req))
+                log.info("I found Debian packages \"%s\" which provides "
+                         "Python package \"%s\", version \"%s\", which "
+                         "does not satisfy our version requirements: "
+                         "\"%s\" -- ignoring."
+                         % (', '.join(debs), req.project_name, ver, req))
         if not gooddebs:
-            log.warn("I found no Debian package which provides the required Python package \"%s\" with version requirements \"%s\".  Guessing blindly that the name \"python-%s\" will be it, and that the Python package version number requirements will apply to the Debian package." % (req.project_name, req.specs, reqname))
+            log.warn("I found no Debian package which provides the required "
+                     "Python package \"%s\" with version requirements "
+                     "\"%s\".  Guessing blindly that the name \"python-%s\" "
+                     "will be it, and that the Python package version number "
+                     "requirements will apply to the Debian package."
+                     % (req.project_name, req.specs, reqname))
             gooddebs.add("python-" + reqname)
         elif len(gooddebs) == 1:
-            log.info("I found a Debian package which provides the require Python package.  Python package: \"%s\", Debian package: \"%s\";  adding Depends specifications for the following version(s): \"%s\"" % (req.project_name, tuple(gooddebs)[0], req.specs))
+            log.info("I found a Debian package which provides the require "
+                     "Python package.  Python package: \"%s\", "
+                     "Debian package: \"%s\";  adding Depends specifications "
+                     "for the following version(s): \"%s\""
+                     % (req.project_name, tuple(gooddebs)[0], req.specs))
         else:
-            log.warn("I found multiple Debian packages which provide the Python distribution required.  I'm listing them all as alternates.  Candidate debs which claim to provide the Python package \"%s\" are: \"%s\"" % (req.project_name, ', '.join(gooddebs),))
+            log.warn("I found multiple Debian packages which provide the "
+                     "Python distribution required.  I'm listing them all "
+                     "as alternates.  Candidate debs which claim to provide "
+                     "the Python package \"%s\" are: \"%s\""
+                     % (req.project_name, ', '.join(gooddebs),))
 
         alts = []
         for deb in gooddebs:
             for spec in req.specs:
-                # Here we blithely assume that the Debian package versions are enough like the Python package versions that the requirement can be ported straight over...
+                # Here we blithely assume that the Debian package
+                # versions are enough like the Python package versions
+                # that the requirement can be ported straight over...
                 alts.append("%s (%s %s)" % (deb, ops[spec[0]], spec[1]))
 
         depends.append(' | '.join(alts))
