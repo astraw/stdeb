@@ -1,3 +1,8 @@
+2009-01-29 Rename README.txt to README.rst so it renders on github
+           better.
+
+2009-06-29 Integrate zooko's autofind-depends patch.
+
 2008-04-28 Allow comments after config entry
 
 = Release 0.2.1 (2008-04-26) =
