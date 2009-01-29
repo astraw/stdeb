@@ -8,7 +8,7 @@ Python packages via a new distutils command, ``sdist_dsc``. Automatic
 defaults are provided for the Debian package, but many aspects of the
 resulting package can be customized via a configuration file.
 
-.. _stdeb: http://stdeb.python-hosting.com/
+.. _stdeb: http://github.com/astraw/stdeb
 
 News
 ----
@@ -18,8 +18,8 @@ News
  * 2007-04-02: Version 0.2.a1 Released. See the `old download page`_.
  * 2006-06-19: Version 0.1 Released. See the `old download page`_.
 
-.. _Changelog for 0.2.1: http://stdeb.python-hosting.com/file/tags/release-0.2.1/CHANGELOG.txt
-.. _Changelog for 0.2: http://stdeb.python-hosting.com/file/tags/release-0.2/CHANGELOG.txt
+.. _Changelog for 0.2.1: http://github.com/astraw/stdeb/blob/eb3b3c78622d56edfe96bc563bcad62369ea427b/CHANGELOG.txt
+.. _Changelog for 0.2: http://github.com/astraw/stdeb/blob/c21e8ee53ae4104e07a44b65224d70672fe8afaa/CHANGELOG.txt
 
 Invocation
 ----------
@@ -114,8 +114,8 @@ Files are available at the `download page`_ (for older releases, see the `old do
 .. _download page: http://pypi.python.org/pypi/stdeb
 .. _old download page: http://stdeb.python-hosting.com/wiki/Download
 
-The subversion repository is available at
-https://svn.stdeb.python-hosting.com/trunk
+The git repository is available at
+http://github.com/astraw/stdeb
 
 Background
 ----------
@@ -290,7 +290,9 @@ Pedro Algarvio, aka, s0undt3ch <ufs@ufsoft.org>
 Additional Credits
 ------------------
 
-* WebFaction_ (aka `python-hosting`_) for hosting services.
+* GitHub_ for hosting services.
+* WebFaction_ (aka `python-hosting`_) for previous hosting services.
 
+.. _GitHub: http://github.com/
 .. _WebFaction: http://webfaction.com/
 .. _python-hosting: http://python-hosting.com/
