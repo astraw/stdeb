@@ -11,11 +11,14 @@ resulting package can be customized via a configuration file.
 News
 ----
 
+ * 2009-01-29: Version 0.2.2 Released. See the `download page`__. See the `Changelog for 0.2.2`__
  * 2008-04-26: Version 0.2.1 Released. See the `download page`__. See the `Changelog for 0.2.1`__
  * 2008-04-26: Version 0.2 Released. See the `download page`__. See the `Changelog for 0.2`__
  * 2007-04-02: Version 0.2.a1 Released. See the `old download page`_.
  * 2006-06-19: Version 0.1 Released. See the `old download page`_.
 
+__ http://pypi.python.org/pypi/stdeb/0.2.2
+__ http://github.com/astraw/stdeb/blob/54c637a7da7d69279783a1a8f8fc17a3860c0523/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.2.1
 __ http://github.com/astraw/stdeb/blob/eb3b3c78622d56edfe96bc563bcad62369ea427b/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.2
