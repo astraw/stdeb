@@ -8,11 +8,12 @@ setup(name='stdeb',
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       description='Python to Debian source package conversion utility',
-      long_description="""stdeb extends distutils to make Debian source packages from Python
+      long_description=\
+      """stdeb extends distutils to make Debian source packages from Python
 packages. It attempts to provide automatic defaults, but many aspects
 of the resulting package can be customized via a configuration file.""",
       license='MIT',
-      url='http://stdeb.python-hosting.com/',
+      url='http://github.com/astraw/stdeb',
       packages=setuptools.find_packages(),
 
       # register ourselves (using setuptools) with distutils:

@@ -1,3 +1,5 @@
+= Release 0.2.2 (2009-01-29) =
+
 2009-01-29 Rename README.txt to README.rst so it renders on github
            better.
 
