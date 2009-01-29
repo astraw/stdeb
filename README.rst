@@ -1,8 +1,6 @@
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
-.. KEEP THE TWO COPIES OF THIS FILE IN SYNC: README.TXT AND THE WEBPAGE!
-
 stdeb_ ("setuptools debian") produces Debian source packages from
 Python packages via a new distutils command, ``sdist_dsc``. Automatic
 defaults are provided for the Debian package, but many aspects of the
@@ -13,13 +11,15 @@ resulting package can be customized via a configuration file.
 News
 ----
 
- * 2008-04-26: Version 0.2.1 Released. See the `download page`_. See the `Changelog for 0.2.1`_
- * 2008-04-26: Version 0.2 Released. See the `download page`_. See the `Changelog for 0.2`_
+ * 2008-04-26: Version 0.2.1 Released. See the `download page`__. See the `Changelog for 0.2.1`__
+ * 2008-04-26: Version 0.2 Released. See the `download page`__. See the `Changelog for 0.2`__
  * 2007-04-02: Version 0.2.a1 Released. See the `old download page`_.
  * 2006-06-19: Version 0.1 Released. See the `old download page`_.
 
-.. _Changelog for 0.2.1: http://github.com/astraw/stdeb/blob/eb3b3c78622d56edfe96bc563bcad62369ea427b/CHANGELOG.txt
-.. _Changelog for 0.2: http://github.com/astraw/stdeb/blob/c21e8ee53ae4104e07a44b65224d70672fe8afaa/CHANGELOG.txt
+__ http://pypi.python.org/pypi/stdeb/0.2.1
+__ http://github.com/astraw/stdeb/blob/eb3b3c78622d56edfe96bc563bcad62369ea427b/CHANGELOG.txt
+__ http://pypi.python.org/pypi/stdeb/0.2
+__ http://github.com/astraw/stdeb/blob/c21e8ee53ae4104e07a44b65224d70672fe8afaa/CHANGELOG.txt
 
 Invocation
 ----------
@@ -276,7 +276,7 @@ Please address all questions to the distutils-SIG_
 License
 -------
 
-MIT-style license. Copyright (c) 2006-2008 stdeb authors.
+MIT-style license. Copyright (c) 2006-2009 stdeb authors.
 
 See the LICENSE.txt file provided with the source distribution for
 full details.
@@ -290,6 +290,7 @@ Pedro Algarvio, aka, s0undt3ch <ufs@ufsoft.org>
 Additional Credits
 ------------------
 
+* Zooko O'Whielacronx for the autofind-depends patch
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 
