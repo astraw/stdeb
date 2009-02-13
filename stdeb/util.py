@@ -128,8 +128,16 @@ def get_deb_depends_from_setuptools_requires(requirements):
     if not requirements:
         return depends
 
-    # Ask apt-file for any packages which have a .egg-info file by these names.
-    # Note that apt-file appears to think that some packages e.g. setuptools itself have "foo.egg-info/BLAH" files but not a "foo.egg-info" directory.
+    if not os.path.exists('/usr/bin/apt-file'):
+        raise ValueError('apt-file not in /usr/bin. Please install '
+                         'with: sudo apt-get install apt-file')
+
+    # Ask apt-file for any packages which have a .egg-info file by
+    # these names.
+
+    # Note that apt-file appears to think that some packages
+    # e.g. setuptools itself have "foo.egg-info/BLAH" files but not a
+    # "foo.egg-info" directory.
 
     egginfore=("((%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)"
                % '|'.join(req.project_name for req in requirements) )
@@ -138,7 +146,6 @@ def get_deb_depends_from_setuptools_requires(requirements):
     try:
         cmd = subprocess.Popen(args, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
                                universal_newlines=True)
     except Exception, le:
         log.error('ERROR running: %s', ' '.join(args))
