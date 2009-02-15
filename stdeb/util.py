@@ -197,10 +197,10 @@ def get_deb_depends_from_setuptools_requires(requirements):
                 gooddebs |= (debs)
             else:
                 log.info("I found Debian packages \"%s\" which provides "
-                         "Python package \"%s\", version \"%s\", which "
+                         "Python package \"%s\" which "
                          "does not satisfy our version requirements: "
                          "\"%s\" -- ignoring."
-                         % (', '.join(debs), req.project_name, ver, req))
+                         % (', '.join(debs), req.project_name, req))
         if not gooddebs:
             log.warn("I found no Debian package which provides the required "
                      "Python package \"%s\" with version requirements "
