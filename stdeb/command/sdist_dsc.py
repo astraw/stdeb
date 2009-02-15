@@ -33,6 +33,7 @@ class sdist_dsc(Command):
         self.patch_file = None
         self.patch_level = None
         self.use_premade_distfile = None
+        self.ignore_install_requires = None
 
     def finalize_options(self):
         if self.dist_dir is None:
@@ -80,10 +81,12 @@ class sdist_dsc(Command):
         if self.extra_cfg_file is not None:
             cfg_files.append(self.extra_cfg_file)
 
+        install_requires = ()
         try:
-            install_requires = open(os.path.join(egg_info_dirname,'requires.txt'),'rU').read()
+            if not self.ignore_install_requires:
+                install_requires = open(os.path.join(egg_info_dirname,'requires.txt'),'rU').read()
         except EnvironmentError:
-            install_requires = ()
+            pass
         debinfo = DebianInfo(
             cfg_files=cfg_files,
             module_name = module_name,
