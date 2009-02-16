@@ -48,7 +48,7 @@ stdeb_cmdline_opts = [
     ('remove-expanded-source-dir','r',
      'remove the expanded source directory'),
     ('ignore-install-requires', 'i',
-     'ignore the requirements from requires.txt in the egg-info directory
+     'ignore the requirements from requires.txt in the egg-info directory'),
     ]
 
 stdeb_cmd_bool_opts = [
