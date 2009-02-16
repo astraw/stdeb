@@ -31,15 +31,18 @@ stdeb_cmdline_opts = [
     ('patch-already-applied','a',
      'patch was already applied (used when py2dsc calls sdist_dsc)'),
     ('default-distribution=', 'z',
-     "which distribution name to use if not specified in .cfg (default='unstable')"),
+     "distribution name to use if not specified in .cfg (default='unstable')"),
     ('default-maintainer=', 'm',
-     'maintainer name and email to use if not specified in .cfg (default from setup.py)'),
+     'maintainer name and email to use if not specified in .cfg '
+     '(default from setup.py)'),
     ('extra-cfg-file=','x',
      'additional .cfg file (in addition to .egg-info/stdeb.cfg if present)'),
     ('patch-file=','p',
-     'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
+     'patch file applied before setup.py called '
+     '(incompatible with file specified in .cfg)'),
     ('patch-level=','l',
-     'patch file applied before setup.py called (incompatible with file specified in .cfg)'),
+     'patch file applied before setup.py called '
+     '(incompatible with file specified in .cfg)'),
     ('patch-posix','q',
      'apply the patch with --posix mode'),
     ('remove-expanded-source-dir','r',
@@ -141,7 +144,8 @@ def get_deb_depends_from_setuptools_requires(requirements):
     # e.g. setuptools itself have "foo.egg-info/BLAH" files but not a
     # "foo.egg-info" directory.
 
-    egginfore="(/(%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)" % '|'.join(req.project_name for req in requirements)
+    egginfore=("(/(%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)"
+               % '|'.join(req.project_name for req in requirements))
 
     args = ["apt-file", "search", "--ignore-case", "--regexp", egginfore]
     try:
@@ -154,7 +158,8 @@ def get_deb_depends_from_setuptools_requires(requirements):
     returncode = cmd.wait()
     if returncode:
         log.error('ERROR running: %s', ' '.join(args))
-        raise RuntimeError('returncode %d from subprocess %s' % (returncode, args))
+        raise RuntimeError('returncode %d from subprocess %s' % (returncode,
+                                                                 args))
 
     inlines = cmd.stdout.readlines()
 
@@ -404,19 +409,28 @@ class DebianInfo:
                  setup_requires=None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
-        if module_name is NotGiven: raise ValueError("module_name must be supplied")
-        if default_distribution is NotGiven: raise ValueError("default_distribution must be supplied")
-        if default_maintainer is NotGiven: raise ValueError("default_maintainer must be supplied")
-        if upstream_version is NotGiven: raise ValueError("upstream_version must be supplied")
-        if no_pycentral is NotGiven: raise ValueError("no_pycentral must be supplied")
-        if has_ext_modules is NotGiven: raise ValueError("has_ext_modules must be supplied")
-        if description is NotGiven: raise ValueError("description must be supplied")
-        if long_description is NotGiven: raise ValueError("long_description must be supplied")
+        if module_name is NotGiven: raise ValueError(
+            "module_name must be supplied")
+        if default_distribution is NotGiven: raise ValueError(
+            "default_distribution must be supplied")
+        if default_maintainer is NotGiven: raise ValueError(
+            "default_maintainer must be supplied")
+        if upstream_version is NotGiven: raise ValueError(
+            "upstream_version must be supplied")
+        if no_pycentral is NotGiven: raise ValueError(
+            "no_pycentral must be supplied")
+        if has_ext_modules is NotGiven: raise ValueError(
+            "has_ext_modules must be supplied")
+        if description is NotGiven: raise ValueError(
+            "description must be supplied")
+        if long_description is NotGiven: raise ValueError(
+            "long_description must be supplied")
 
-        cfg_defaults = self._make_cfg_defaults(module_name=module_name,
-                                               default_distribution=default_distribution,
-                                               default_maintainer=default_maintainer,
-                                               )
+        cfg_defaults = self._make_cfg_defaults(
+            module_name=module_name,
+            default_distribution=default_distribution,
+            default_maintainer=default_maintainer,
+            )
 
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
         cfg.read(cfg_files)
@@ -425,18 +439,23 @@ class DebianInfo:
         self.module_name = module_name
         self.source = parse_val(cfg,module_name,'Source')
         self.package = parse_val(cfg,module_name,'Package')
-        forced_upstream_version = parse_val(cfg,module_name,'Forced-Upstream-Version')
+        forced_upstream_version = parse_val(cfg,module_name,
+                                            'Forced-Upstream-Version')
         if forced_upstream_version == '':
-            upstream_version_prefix = parse_val(cfg,module_name,'Upstream-Version-Prefix')
-            upstream_version_suffix = parse_val(cfg,module_name,'Upstream-Version-Suffix')
+            upstream_version_prefix = parse_val(cfg,module_name,
+                                                'Upstream-Version-Prefix')
+            upstream_version_suffix = parse_val(cfg,module_name,
+                                                'Upstream-Version-Suffix')
             self.upstream_version = (upstream_version_prefix+
                                         debianize_version(upstream_version)+
                                         upstream_version_suffix)
         else:
-            if debianize_version(forced_upstream_version) != forced_upstream_version:
-                raise ValueError('forced upstream version ("%s") not a '\
+            if (debianize_version(forced_upstream_version) !=
+                forced_upstream_version):
+                raise ValueError('forced upstream version ("%s") not a '
                                  'Debian-compatible version (e.g. "%s")'%(
-                    forced_upstream_version,debianize_version(forced_upstream_version)))
+                    forced_upstream_version,
+                    debianize_version(forced_upstream_version)))
             self.upstream_version = forced_upstream_version
         self.egg_module_name = egg_module_name
         self.epoch = parse_val(cfg,module_name,'Epoch')
@@ -462,7 +481,8 @@ class DebianInfo:
 
 
         build_deps = ['python-setuptools (>= 0.6b3)']
-        build_deps.extend(get_deb_depends_from_setuptools_requires(setup_requires))
+        build_deps.extend(
+            get_deb_depends_from_setuptools_requires(setup_requires))
 
         depends = []
 
@@ -509,10 +529,12 @@ class DebianInfo:
                                      'usr/share/applications',
                                      os.path.split(mime_desktop_file)[-1])
             self.install_dirs.add('usr/share/applications')
-            self.copy_files_lines += '\n\tcp %s %s'%(mime_desktop_file,dest_file)
+            self.copy_files_lines += '\n\tcp %s %s'%(
+                mime_desktop_file,dest_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
-        depends.extend(get_deb_depends_from_setuptools_requires(install_requires))
+        depends.extend(get_deb_depends_from_setuptools_requires(
+            install_requires))
         self.depends = ', '.join(depends)
 
         self.description = description
@@ -587,9 +609,12 @@ XB-Python-Version: ${python:Versions}
             self.package_stanza_extras = ''
             self.debhelper_command = 'dh_python'
 
-        dpkg_shlibdeps_params = parse_val(cfg,module_name,'dpkg-shlibdeps-params')
+        dpkg_shlibdeps_params = parse_val(
+            cfg,module_name,'dpkg-shlibdeps-params')
         if dpkg_shlibdeps_params:
-            self.dh_shlibdeps_line = 'dh_shlibdeps -a --dpkg-shlibdeps-params=%s'%dpkg_shlibdeps_params
+            self.dh_shlibdeps_line = ('dh_shlibdeps -a '
+                                     '--dpkg-shlibdeps-params=%s' %
+                                      dpkg_shlibdeps_params)
         else:
             self.dh_shlibdeps_line = 'dh_shlibdeps -a'
         print >> sys.stderr,'self.dh_shlibdeps_line',self.dh_shlibdeps_line
@@ -674,7 +699,8 @@ def build_dsc(debinfo,
 
     # dist_dir is usually 'deb_dist'
 
-    # the location of the copied original source package (it was re-recreated in dist_dir)
+    # the location of the copied original source package (it was
+    # re-recreated in dist_dir)
     fullpath_repackaged_dirname = os.path.join(dist_dir,repackaged_dirname)
 
     ###############################################
@@ -690,8 +716,10 @@ def build_dsc(debinfo,
     # of "python setup.py sdist" (done above) so that we avoid
     # packaging .svn directories, for example.
 
-    repackaged_orig_tarball = '%(source)s_%(upstream_version)s.orig.tar.gz'%debinfo.__dict__
-    repackaged_orig_tarball_path = os.path.join(dist_dir,repackaged_orig_tarball)
+    repackaged_orig_tarball = ('%(source)s_%(upstream_version)s.orig.tar.gz'%
+                               debinfo.__dict__)
+    repackaged_orig_tarball_path = os.path.join(dist_dir,
+                                                repackaged_orig_tarball)
     if orig_sdist is not None:
         if os.path.exists(repackaged_orig_tarball_path):
             os.unlink(repackaged_orig_tarball_path)
@@ -780,7 +808,8 @@ def build_dsc(debinfo,
 
     debianized_package_dirname = fullpath_repackaged_dirname+'.debianized'
     if os.path.exists(debianized_package_dirname):
-        raise RuntimeError('debianized_package_dirname exists: %s'%debianized_package_dirname)
+        raise RuntimeError('debianized_package_dirname exists: %s' %
+                           debianized_package_dirname)
     #    A. move debianized tree away
     os.rename(fullpath_repackaged_dirname, debianized_package_dirname )
     if orig_sdist is not None:
@@ -790,7 +819,9 @@ def build_dsc(debinfo,
         try:
             expand_tarball(orig_sdist,cwd=tmp_dir)
             orig_tarball_top_contents = os.listdir(tmp_dir)
-            assert len(orig_tarball_top_contents)==1 # make sure original tarball has exactly one directory
+
+            # make sure original tarball has exactly one directory
+            assert len(orig_tarball_top_contents)==1
             orig_dirname = orig_tarball_top_contents[0]
             fullpath_orig_dirname = os.path.join(tmp_dir,orig_dirname)
 
@@ -811,9 +842,10 @@ def build_dsc(debinfo,
     #    Re-generate tarball using best practices see
     #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
     #    call "dpkg-source -b new_dirname orig_dirname"
-    log.info('CALLING dpkg-source -b %s %s (in dir %s)'%(repackaged_dirname,
-                                                         repackaged_orig_tarball,
-                                                         dist_dir))
+    log.info('CALLING dpkg-source -b %s %s (in dir %s)'%(
+        repackaged_dirname,
+        repackaged_orig_tarball,
+        dist_dir))
 
     dpkg_source('-b',repackaged_dirname,
                 repackaged_orig_tarball,
@@ -861,7 +893,8 @@ build: build-stamp
 build-stamp: $(PYVERS:%%=build-python%%)
         touch $@
 build-python%%:
-# Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py files expect that.
+# Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py
+# files expect that.
         %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" build
         touch $@
 clean:
@@ -880,7 +913,8 @@ install-prereq:
         dh_clean -k
 
 install-python%%:
-# Force setuptools, but reset sys.argv[0] to 'setup.py' because setup.py files expect that.
+# Force setuptools, but reset sys.argv[0] to 'setup.py' because
+# setup.py files expect that.
         %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
                 --no-compile --single-version-externally-managed \\
                 --root $(CURDIR)/debian/${PACKAGE_NAME}
