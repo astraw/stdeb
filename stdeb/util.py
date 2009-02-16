@@ -131,7 +131,7 @@ def get_deb_depends_from_setuptools_requires(requirements):
     # Ask apt-file for any packages which have a .egg-info file by these names.
     # Note that apt-file appears to think that some packages e.g. setuptools itself have "foo.egg-info/BLAH" files but not a "foo.egg-info" directory.
     
-    egginfore="((%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)" % '|'.join(req.project_name for req in requirements)
+    egginfore="(/(%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)" % '|'.join(req.project_name for req in requirements)
 
     args = ["apt-file", "search", "--ignore-case", "--regexp", egginfore]
     try:
@@ -173,10 +173,10 @@ def get_deb_depends_from_setuptools_requires(requirements):
         gooddebs = set()
         for pydist, debs in dd.get(reqname, {}).iteritems():
             if pydist in req:
-                # log.info("I found Debian packages \"%s\" which provides Python package \"%s\", version \"%s\", which satisfies our version requirements: \"%s\"" % (', '.join(debs), req.project_name, ver, req))
+                log.info("I found Debian packages \"%s\" which provides Python package \"%s\", version \"%s\", which satisfies our version requirements: \"%s\"" % (', '.join(debs), req.project_name, pydist.version, req))
                 gooddebs |= (debs)
             else:
-                log.info("I found Debian packages \"%s\" which provides Python package \"%s\", version \"%s\", which does not satisfy our version requirements: \"%s\" -- ignoring." % (', '.join(debs), req.project_name, ver, req))
+                log.info("I found Debian packages \"%s\" which provides Python package \"%s\", version \"%s\", which does not satisfy our version requirements: \"%s\" -- ignoring." % (', '.join(debs), req.project_name, pydist.version, req))
         if not gooddebs:
             log.warn("I found no Debian package which provides the required Python package \"%s\" with version requirements \"%s\".  Guessing blindly that the name \"python-%s\" will be it, and that the Python package version number requirements will apply to the Debian package." % (req.project_name, req.specs, reqname))
             gooddebs.add("python-" + reqname)
