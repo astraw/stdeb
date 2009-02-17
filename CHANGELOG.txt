@@ -1,3 +1,15 @@
+= Release 0.2.3 (2009-02-17) =
+
+2009-02-16 new patch from zooko to improve regexp search for dependencies
+
+2009-02-14 fix a crash with an undefined variable 'ver' (from Brett)
+
+2009-02-14 Add --ignore-install-requires option. (From Brett)
+           adds the ignore-install-requires command line option to
+           keep stdeb from guessing python packages names from
+           requires.txt and lets you specify your own Depends: without
+           adding those from the egg requires.txt....
+
 = Release 0.2.2 (2009-01-29) =
 
 2009-01-29 Rename README.txt to README.rst so it renders on github
