@@ -167,7 +167,7 @@ def runit():
         attr = parser.get_attr_name(long).rstrip('=')
         if hasattr(optobj,attr):
             val = getattr(optobj,attr)
-            if (long or long.replace('-', '_')) in bool_opts:
+            if long in bool_opts or long.replace('-', '_') in bool_opts:
                 extra_args.append('--%s' % long)
             else:
                 extra_args.append('--'+long+str(val))

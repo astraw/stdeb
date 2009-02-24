@@ -56,6 +56,7 @@ stdeb_cmd_bool_opts = [
     'no-pycentral',
     'remove-expanded-source-dir',
     'patch-posix',
+    'ignore-install-requires'
     ]
 
 class NotGiven: pass
