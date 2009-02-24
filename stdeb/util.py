@@ -228,11 +228,18 @@ def get_deb_depends_from_setuptools_requires(requirements):
 
         alts = []
         for deb in gooddebs:
+            added_any_alt = False
             for spec in req.specs:
                 # Here we blithely assume that the Debian package
                 # versions are enough like the Python package versions
                 # that the requirement can be ported straight over...
                 alts.append("%s (%s %s)" % (deb, ops[spec[0]], spec[1]))
+                added_any_alt = True
+
+            if not added_any_alt:
+                # No alternates were added, but we have the name of a
+                # good package.
+                alts.append("%s"%deb)
 
         depends.append(' | '.join(alts))
 
