@@ -209,11 +209,7 @@ def get_deb_depends_from_setuptools_requires(requirements):
         if not gooddebs:
             log.warn("I found no Debian package which provides the required "
                      "Python package \"%s\" with version requirements "
-                     "\"%s\".  Guessing blindly that the name \"python-%s\" "
-                     "will be it, and that the Python package version number "
-                     "requirements will apply to the Debian package."
-                     % (req.project_name, req.specs, reqname))
-            gooddebs.add("python-" + reqname)
+                     "\"%s\"."% (req.project_name, req.specs))
         elif len(gooddebs) == 1:
             log.info("I found a Debian package which provides the require "
                      "Python package.  Python package: \"%s\", "
@@ -242,7 +238,8 @@ def get_deb_depends_from_setuptools_requires(requirements):
                 # good package.
                 alts.append("%s"%deb)
 
-        depends.append(' | '.join(alts))
+        if len(alts):
+            depends.append(' | '.join(alts))
 
     return depends
 
