@@ -920,17 +920,19 @@ install-prereq:
 install-python%%:
 # Force setuptools, but reset sys.argv[0] to 'setup.py' because
 # setup.py files expect that.
-        %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
-                --no-compile --single-version-externally-managed --install-layout=deb \\
-                --root $(CURDIR)/debian/${PACKAGE_NAME}
-# Move .egg-info file to appropriate place:
-#   1) Python 2.5 and older:
-	if [ -f debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/*.egg-info ]; then \\
+
+# Python 2.6 or greater in Jaunty have a patch to install in
+# /usr/local/lib. This if statement avoids that when necessary.
+        if test "$*" = "2.5" -o "$*" = "2.4"; then \\
+          %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
+            --no-compile --single-version-externally-managed \\
+            --root $(CURDIR)/debian/${PACKAGE_NAME}; \\
           mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/*.egg-info \\
                 debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${EGG_MODULE_NAME}.egg-info; \\
-	fi
-#   2) Python 2.6 and newer with Ubuntu patch to distutils adding --install-layout=deb
-	if [ -f debian/${PACKAGE_NAME}/usr/lib/python$*/dist-packages/*.egg-info ]; then \\
+        else \\
+          %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
+            --no-compile --single-version-externally-managed --install-layout=deb \\
+            --root $(CURDIR)/debian/${PACKAGE_NAME}; \\
           mv debian/${PACKAGE_NAME}/usr/lib/python$*/dist-packages/*.egg-info \\
                 debian/${PACKAGE_NAME}/usr/lib/python$*/dist-packages/${EGG_MODULE_NAME}.egg-info; \\
 	fi
