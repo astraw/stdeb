@@ -1,3 +1,13 @@
+= Release 0.3 (2009-03-21) =
+
+2009-03-14 On Python2.6, pass "--install-layout=deb" to the distutils install
+           command. This is required for Ubuntu Jaunty, and the current
+           implementation in stdeb is also compatible with the python2.6
+           package in Debian experimental.
+
+2009-02-24 bugfix to autofind-depends feature: include good package if found,
+           even when version information not specified
+
 = Release 0.2.3 (2009-02-17) =
 
 2009-02-16 new patch from zooko to improve regexp search for dependencies
