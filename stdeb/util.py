@@ -912,6 +912,7 @@ clean:
         dh_testdir
         dh_testroot
         rm -f *-stamp
+        rm -f build-python*
         rm -rf dist build
         -find -name '*.py[co]' | xargs rm -f
 #        find . -name *.pyc -exec rm {} \;
