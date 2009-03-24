@@ -894,6 +894,12 @@ EGG_MODULE_NAME=%(egg_module_name)s
 
 PYVERS=%(pycentral_showversions)s
 
+unexport CPPFLAGS
+unexport CFLAGS
+unexport CXXFLAGS
+unexport FFLAGS
+unexport LDFLAGS
+
 build: build-stamp
 build-stamp: $(PYVERS:%%=build-python%%)
         touch $@
