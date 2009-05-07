@@ -1,7 +1,7 @@
 # setuptools is required for distutils.commands plugin we use
 import logging
 import setuptools
-__version__ = '0.3+git'
+__version__ = '0.3+git+dh7'
 
 log = logging.getLogger('stdeb')
 log.setLevel(logging.INFO)
