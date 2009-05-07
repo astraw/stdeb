@@ -15,7 +15,7 @@ class sdist_dsc(Command):
     decription = "distutils command to create a debian source distribution"
 
     user_options = stdeb_cmdline_opts + [
-        ('use-premade-distfile=','p',
+        ('use-premade-distfile=','P',
          'use .zip or .tar.gz file already made by sdist command'),
         ]
 
