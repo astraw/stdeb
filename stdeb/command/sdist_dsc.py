@@ -15,7 +15,7 @@ class sdist_dsc(Command):
     decription = "distutils command to create a debian source distribution"
 
     user_options = stdeb_cmdline_opts + [
-        ('use-premade-distfile=','p',
+        ('use-premade-distfile=','P',
          'use .zip or .tar.gz file already made by sdist command'),
         ]
 
@@ -142,6 +142,7 @@ class sdist_dsc(Command):
 
         if self.use_premade_distfile is not None:
         # ensure premade sdist can actually be used
+            self.use_premade_distfile = os.path.abspath(self.use_premade_distfile)
             expand_dir = os.path.join(self.dist_dir,'tmp_sdist_dsc')
             cleanup_dirs.append(expand_dir)
             if os.path.exists(expand_dir):
