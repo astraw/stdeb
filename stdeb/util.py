@@ -49,6 +49,8 @@ stdeb_cmdline_opts = [
      'remove the expanded source directory'),
     ('ignore-install-requires', 'i',
      'ignore the requirements from requires.txt in the egg-info directory'),
+    ('debian-version=',None,
+     'debian version'),
     ]
 
 stdeb_cmd_bool_opts = [
@@ -411,6 +413,7 @@ class DebianInfo:
                  patch_level=None,
                  install_requires=None,
                  setup_requires=None,
+                 debian_version=None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -464,6 +467,9 @@ class DebianInfo:
         if self.epoch != '' and not self.epoch.endswith(':'):
             self.epoch = self.epoch + ':'
         self.packaging_version = parse_val(cfg,module_name,'Debian-Version')
+        if debian_version is not None:
+            # command-line arg overrides file
+            self.packaging_version = debian_version
         self.dsc_version = '%s-%s'%(
             self.upstream_version,
             self.packaging_version)

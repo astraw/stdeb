@@ -33,6 +33,7 @@ class sdist_dsc(Command):
         self.patch_level = None
         self.use_premade_distfile = None
         self.ignore_install_requires = None
+        self.debian_version = None
 
     def finalize_options(self):
         if self.dist_dir is None:
@@ -99,6 +100,7 @@ class sdist_dsc(Command):
             patch_file = self.patch_file,
             patch_level = self.patch_level,
             install_requires = install_requires,
+            debian_version = self.debian_version,
             setup_requires = (), # XXX How do we get the setup_requires?
         )
         if debinfo.patch_file != '' and self.patch_already_applied:
