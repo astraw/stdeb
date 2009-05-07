@@ -144,6 +144,7 @@ class sdist_dsc(Command):
 
         if self.use_premade_distfile is not None:
         # ensure premade sdist can actually be used
+            self.use_premade_distfile = os.path.abspath(self.use_premade_distfile)
             expand_dir = os.path.join(self.dist_dir,'tmp_sdist_dsc')
             cleanup_dirs.append(expand_dir)
             if os.path.exists(expand_dir):
