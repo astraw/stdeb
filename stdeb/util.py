@@ -404,7 +404,6 @@ class DebianInfo:
                  default_maintainer=NotGiven,
                  upstream_version=NotGiven,
                  egg_module_name=NotGiven,
-                 no_pycentral=NotGiven,
                  has_ext_modules=NotGiven,
                  description=NotGiven,
                  long_description=NotGiven,
@@ -422,8 +421,6 @@ class DebianInfo:
             "default_maintainer must be supplied")
         if upstream_version is NotGiven: raise ValueError(
             "upstream_version must be supplied")
-        if no_pycentral is NotGiven: raise ValueError(
-            "no_pycentral must be supplied")
         if has_ext_modules is NotGiven: raise ValueError(
             "has_ext_modules must be supplied")
         if description is NotGiven: raise ValueError(
@@ -478,12 +475,7 @@ class DebianInfo:
         self.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
         self.uploaders = parse_vals(cfg,module_name,'Uploaders')
         self.date822 = get_date_822()
-        if not no_pycentral:
-            self.pycentral_showversions='$(shell pyversions -vr)'
-        else:
-            current = sys.version[:3]
-            self.pycentral_showversions=current
-
+        self.pycentral_showversions='$(shell pyversions -vr)'
 
         build_deps = ['python-setuptools (>= 0.6b3)']
         build_deps.extend(
@@ -555,17 +547,11 @@ class DebianInfo:
         else:
             self.long_description = ''
 
-        if not no_pycentral:
-            build_deps.extend(  [
-                'python-all-dev (>= 2.3.5-11)',
-                'debhelper (>= 5.0.38)',
-                'python-central (>= 0.5.6)',
-                ] )
-        else:
-            build_deps.extend(  [
-                'python-all-dev',
-                'debhelper (>=5)',
-                ])
+        build_deps.extend(  [
+            'python-all-dev',
+            'debhelper (>= 7)',
+            'python-central',
+            ] )
 
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
         self.build_depends = ', '.join(build_deps)
@@ -603,16 +589,12 @@ class DebianInfo:
                 self.patch_level = 0
 
         xs_python_version = parse_vals(cfg,module_name,'XS-Python-Version')
-        if not no_pycentral:
-            self.source_stanza_extras += ('XS-Python-Version: '+
-                                             ', '.join(xs_python_version)+'\n')
-            self.package_stanza_extras = """\
+        self.source_stanza_extras += ('XS-Python-Version: '+
+                                         ', '.join(xs_python_version)+'\n')
+        self.package_stanza_extras = """\
 XB-Python-Version: ${python:Versions}
 """
-            self.debhelper_command = 'dh_pycentral'
-        else:
-            self.package_stanza_extras = ''
-            self.debhelper_command = 'dh_python'
+        self.debhelper_command = 'dh_pycentral'
 
         dpkg_shlibdeps_params = parse_val(
             cfg,module_name,'dpkg-shlibdeps-params')

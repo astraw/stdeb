@@ -23,7 +23,6 @@ class sdist_dsc(Command):
 
     def initialize_options (self):
         self.patch_already_applied = 0
-        self.no_pycentral = 0
         self.remove_expanded_source_dir = 0
         self.patch_posix = 0
         self.dist_dir = None
@@ -94,7 +93,6 @@ class sdist_dsc(Command):
             default_maintainer=self.default_maintainer,
             upstream_version = self.distribution.get_version(),
             egg_module_name = egg_module_name,
-            no_pycentral = self.no_pycentral,
             has_ext_modules = self.distribution.has_ext_modules(),
             description = self.distribution.get_description()[:60],
             long_description = self.distribution.get_long_description(),
