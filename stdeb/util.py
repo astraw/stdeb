@@ -622,7 +622,6 @@ XB-Python-Version: ${python:Versions}
                                       dpkg_shlibdeps_params)
         else:
             self.dh_shlibdeps_line = 'dh_shlibdeps -a'
-        print >> sys.stderr,'self.dh_shlibdeps_line',self.dh_shlibdeps_line
 
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         if len(conflicts):
