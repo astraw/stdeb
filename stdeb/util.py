@@ -801,9 +801,17 @@ def build_dsc(debinfo,
 
     #    E. debian/package.mime
     if debinfo.mime_file != '':
+        if not os.path.exists(debinfo.mime_file):
+            raise ValueError(
+                'a MIME file was specified, but does not exist: %s'%(
+                debinfo.mime_file,))
         os.link( debinfo.mime_file,
                  os.path.join(debian_dir,debinfo.package+'.mime'))
     if debinfo.shared_mime_file != '':
+        if not os.path.exists(debinfo.shared_mime_file):
+            raise ValueError(
+                'a shared MIME file was specified, but does not exist: %s'%(
+                debinfo.shared_mime_file,))
         os.link( debinfo.shared_mime_file,
                  os.path.join(debian_dir,
                               debinfo.package+'.sharedmimeinfo'))
