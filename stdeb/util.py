@@ -26,8 +26,6 @@ def check_call(*popenargs, **kwargs):
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
      "directory to put final built distributions in (default='deb_dist')"),
-    ('no-pycentral', 'C',
-     'do not use pycentral (support for multiple Python versions)'),
     ('patch-already-applied','a',
      'patch was already applied (used when py2dsc calls sdist_dsc)'),
     ('default-distribution=', 'z',
@@ -55,7 +53,6 @@ stdeb_cmdline_opts = [
 
 stdeb_cmd_bool_opts = [
     'patch-already-applied',
-    'no-pycentral',
     'remove-expanded-source-dir',
     'patch-posix',
     'ignore-install-requires'
@@ -481,7 +478,6 @@ class DebianInfo:
         self.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
         self.uploaders = parse_vals(cfg,module_name,'Uploaders')
         self.date822 = get_date_822()
-        self.pycentral_showversions='$(shell pyversions -vr)'
 
         build_deps = ['python-setuptools (>= 0.6b3)']
         build_deps.extend(
@@ -555,7 +551,7 @@ class DebianInfo:
         build_deps.extend(  [
             'python-all-dev',
             'debhelper (>= 7)',
-            'python-central',
+            'python-support (>= 0.5.3)',
             ] )
 
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
@@ -599,8 +595,6 @@ class DebianInfo:
         self.package_stanza_extras = """\
 XB-Python-Version: ${python:Versions}
 """
-        self.debhelper_command = 'dh_pycentral'
-
         dpkg_shlibdeps_params = parse_val(
             cfg,module_name,'dpkg-shlibdeps-params')
         if dpkg_shlibdeps_params:
