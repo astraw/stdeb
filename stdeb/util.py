@@ -485,7 +485,7 @@ class DebianInfo:
 
         depends = []
 
-        depends.append('${python:Depends}')
+        depends.append('${python:Depends}, python-central')
 
         if has_ext_modules:
             self.architecture = 'any'
@@ -786,6 +786,12 @@ def build_dsc(debinfo,
         os.link( debinfo.copyright_file,
                  os.path.join(debian_dir,'copyright'))
 
+    #    G. debian/<package>.preinst
+    preinst = PREINST%debinfo.__dict__
+    fd = open( os.path.join(debian_dir,'%s.preinst'%debinfo.package), mode='w')
+    fd.write(preinst)
+    fd.close()
+
     ###############################################
     # 3. unpack original source tarball
 
@@ -868,4 +874,17 @@ RULES_MAIN = """\
 
 %(percent_symbol)s:
         dh $@
+"""
+
+PREINST = """#! /bin/sh
+
+set -e
+
+# This was added by stdeb to workaround Debian #479852. In a nutshell,
+# pycentral does not remove normally remove its symlinks on an
+# upgrade. Since we're using python-support, however, those symlinks
+# will be broken. This tells python-central to clean up any symlinks.
+pycentral pkgremove %(package)s
+
+#DEBHELPER#
 """
