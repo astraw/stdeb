@@ -884,7 +884,9 @@ set -e
 # pycentral does not remove normally remove its symlinks on an
 # upgrade. Since we're using python-support, however, those symlinks
 # will be broken. This tells python-central to clean up any symlinks.
-pycentral pkgremove %(package)s
+if [ -e /var/lib/dpkg/info/%(package)s.list ]; then
+    pycentral pkgremove %(package)s
+fi
 
 #DEBHELPER#
 """
