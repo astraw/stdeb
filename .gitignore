@@ -1,0 +1,9 @@
+build
+*.pyc
+stdeb.egg-info/PKG-INFO
+stdeb.egg-info/SOURCES.txt
+stdeb.egg-info/dependency_links.txt
+stdeb.egg-info/entry_points.txt
+stdeb.egg-info/top_level.txt
+dist
+*~
