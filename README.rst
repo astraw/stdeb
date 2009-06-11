@@ -55,8 +55,19 @@ subdirectory ``deb_dist``:
 These can then be compiled into binary packages using the standard
 Debian machinery (e.g. dpkg-buildpackage).
 
-Quickstart example
-------------------
+Quickstart 1: Just tell me the fastest way to make a .deb
+---------------------------------------------------------
+
+Do this from the directory with your `setup.py` file::
+
+  python -c "import stdeb; execfile('setup.py')" sdist_dsc && \
+    cd `find deb_dist -mindepth 1 -maxdepth 1 -type d` && \
+    dpkg-buildpackage -rfakeroot -uc -us && \
+    cd ../.. &&
+    echo ".deb created successfully in deb_dist/"
+
+Quickstart 2: Show me the exact steps, in slightly more detail
+--------------------------------------------------------------
 
 This generates a source package::
 
