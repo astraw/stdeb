@@ -501,9 +501,7 @@ class DebianInfo:
         if self.mime_file == '' and self.shared_mime_file == '':
             self.dh_installmime_line = ''
         else:
-            if 1:
-                raise NotImplementedError('no dh7 support for mime files')
-            self.dh_installmime_line = '\n        dh_installmime'
+            self.dh_installmime_line = '\tdh_installmime'
             if self.architecture == 'all':
                 self.dh_installmime_line += ' -i'
             else:
@@ -511,9 +509,7 @@ class DebianInfo:
 
         mime_desktop_files = parse_vals(cfg,module_name,'MIME-Desktop-Files')
         if len(mime_desktop_files):
-            if 1:
-                raise NotImplementedError('no dh7 support for mime desktop files')
-            self.dh_desktop_line = '\n        dh_desktop'
+            self.dh_desktop_line = '\tdh_desktop'
             if self.architecture == 'all':
                 self.dh_desktop_line += ' -i'
             else:
@@ -522,13 +518,10 @@ class DebianInfo:
             self.dh_desktop_line = ''
 
         #    E. any mime .desktop files
-        self.install_dirs = sets.Set()
+        self.install_file_lines = []
         for mime_desktop_file in mime_desktop_files:
-            dest_file = os.path.join('debian',
-                                     self.package,
-                                     'usr/share/applications',
-                                     os.path.split(mime_desktop_file)[-1])
-            self.install_dirs.add('usr/share/applications')
+            self.install_file_lines.append(
+                '%s usr/share/applications'%mime_desktop_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
         depends.extend(get_deb_depends_from_setuptools_requires(
@@ -760,13 +753,6 @@ def build_dsc(debinfo,
     fd.close()
     os.chmod(rules_fname,0755)
 
-    fd = open( os.path.join(debian_dir,
-                            debinfo.package+'.dirs'),
-               mode='w')
-    for install_dir in debinfo.install_dirs:
-        fd.write(install_dir+'\n')
-    fd.close()
-
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
     fd.write('4\n')
@@ -791,6 +777,12 @@ def build_dsc(debinfo,
     fd = open( os.path.join(debian_dir,'%s.preinst'%debinfo.package), mode='w')
     fd.write(preinst)
     fd.close()
+
+    #    H. debian/<package>.install
+    if len(debinfo.install_file_lines):
+        fd = open( os.path.join(debian_dir,'%s.install'%debinfo.package), mode='w')
+        fd.write('\n'.join(debinfo.install_file_lines)+'\n')
+        fd.close()
 
     ###############################################
     # 3. unpack original source tarball
@@ -874,6 +866,11 @@ RULES_MAIN = """\
 
 %(percent_symbol)s:
         dh $@
+
+binary: build
+\tdh binary
+%(dh_installmime_line)s
+%(dh_desktop_line)s
 """
 
 PREINST = """#! /bin/sh
