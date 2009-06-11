@@ -1,3 +1,11 @@
+2009-06-01 Use debhelper 7 by default
+
+2009-06-01 Switch from python-central to python-support
+
+2009-06-02 workaround Debian #479852: remove left over python-central symlinks
+
+2009-03-23 Unset environment variables set by dpkg-buildpackage
+
 = Release 0.3 (2009-03-21) =
 
 2009-03-14 On Python2.6, pass "--install-layout=deb" to the distutils install
