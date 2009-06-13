@@ -9,6 +9,12 @@ import stdeb
 import pkg_resources
 from stdeb import log, __version__ as __stdeb_version__
 
+if hasattr(os,'link'):
+    link_func = os.link
+else:
+    # matplotlib deletes link from os namespace, expected distutils workaround
+    link_func = shutil.copyfile
+
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink',
            'apply_patch','repack_tarball_with_debianized_dirname',
@@ -84,7 +90,7 @@ def recursive_hardlink(src,dst):
                     else:
                         os.unlink(newpath)
                 #print 'linking %s -> %s'%(fullpath,newpath)
-                os.link(fullpath,newpath)
+                link_func(fullpath,newpath)
     finally:
         os.chdir(orig_dir)
 
@@ -703,7 +709,7 @@ def build_dsc(debinfo,
     if orig_sdist is not None:
         if os.path.exists(repackaged_orig_tarball_path):
             os.unlink(repackaged_orig_tarball_path)
-        os.link(orig_sdist,repackaged_orig_tarball_path)
+        link_func(orig_sdist,repackaged_orig_tarball_path)
     else:
         make_tarball(repackaged_orig_tarball,
                      repackaged_dirname,
@@ -760,16 +766,16 @@ def build_dsc(debinfo,
 
     #    E. debian/package.mime
     if debinfo.mime_file != '':
-        os.link( debinfo.mime_file,
+        link_func( debinfo.mime_file,
                  os.path.join(debian_dir,debinfo.package+'.mime'))
     if debinfo.shared_mime_file != '':
-        os.link( debinfo.shared_mime_file,
+        link_func( debinfo.shared_mime_file,
                  os.path.join(debian_dir,
                               debinfo.package+'.sharedmimeinfo'))
 
     #    F. debian/copyright
     if debinfo.copyright_file != '':
-        os.link( debinfo.copyright_file,
+        link_func( debinfo.copyright_file,
                  os.path.join(debian_dir,'copyright'))
 
     #    G. debian/<package>.preinst
