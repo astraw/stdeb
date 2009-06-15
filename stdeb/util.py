@@ -626,6 +626,8 @@ XB-Python-Version: ${python:Versions}
             # end with a space if not empty
             self.setup_env_vars = self.setup_env_vars + ' '
 
+        self.udev_rules = parse_val(cfg,module_name,'Udev-Rules')
+
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
                            default_distribution=NotGiven,
@@ -672,6 +674,8 @@ XB-Python-Version: ${python:Versions}
         defaults['Shared-MIME-File'] = ''
 
         defaults['Setup-Env-Vars'] = ''
+        defaults['Udev-Rules'] = ''
+
         return defaults
 
 def build_dsc(debinfo,
@@ -789,6 +793,14 @@ def build_dsc(debinfo,
         fd = open( os.path.join(debian_dir,'%s.install'%debinfo.package), mode='w')
         fd.write('\n'.join(debinfo.install_file_lines)+'\n')
         fd.close()
+
+    #    I. debian/<package>.udev
+    if debinfo.udev_rules != '':
+        fname = debinfo.udev_rules
+        if not os.path.exists(fname):
+            raise ValueError('udev rules file specified, but does not exist')
+        link_func(fname,
+                  os.path.join(debian_dir,'%s.udev'%debinfo.package))
 
     ###############################################
     # 3. unpack original source tarball
