@@ -946,13 +946,13 @@ install-python%%:
         if test "$*" = "2.5" -o "$*" = "2.4"; then \\
           %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
             --no-compile --single-version-externally-managed \\
-            --root $(CURDIR)/debian/${PACKAGE_NAME}; \\
+            --root \"$(CURDIR)/debian/${PACKAGE_NAME}\"; \\
           mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/*.egg-info \\
                 debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${EGG_MODULE_NAME}.egg-info; \\
         else \\
           %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
             --no-compile --single-version-externally-managed --install-layout=deb \\
-            --root $(CURDIR)/debian/${PACKAGE_NAME}; \\
+            --root \"$(CURDIR)/debian/${PACKAGE_NAME}\"; \\
           mv debian/${PACKAGE_NAME}/usr/lib/python$*/dist-packages/*.egg-info \\
                 debian/${PACKAGE_NAME}/usr/lib/python$*/dist-packages/${EGG_MODULE_NAME}.egg-info; \\
 	fi
