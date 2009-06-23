@@ -218,6 +218,9 @@ def get_deb_depends_from_setuptools_requires(requirements):
                                stdout=subprocess.PIPE,
                                universal_newlines=True)
     except Exception, le:
+        # TODO: catch rc=1 and "E: The cache directory is empty. You need to
+        # run 'apt-file update' first.", and tell the user to follow those
+        # instructions.
         log.error('ERROR running: %s', ' '.join(args))
         raise RuntimeError('exception %s from subprocess %s' % (le,args))
     returncode = cmd.wait()
