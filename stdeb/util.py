@@ -726,6 +726,15 @@ def build_dsc(debinfo,
                     level=debinfo.patch_level,
                     cwd=fullpath_repackaged_dirname)
 
+    for fname in ['Makefile','makefile']:
+        if os.path.exists(os.path.join(fullpath_repackaged_dirname,fname)):
+            sys.stderr.write('*'*1000 + '\n')
+            sys.stderr.write('WARNING: a Makefile exists in this package. '
+                             'debhelper 7 will attempt to use this rather than '
+                             'setup.py to build and install the package.\n')
+            sys.stderr.write('*'*1000 + '\n')
+
+
     ###############################################
     # 2. create debian/ directory and contents
     debian_dir = os.path.join(fullpath_repackaged_dirname,'debian')
