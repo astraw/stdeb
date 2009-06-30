@@ -63,13 +63,11 @@ def runit():
     os.makedirs(tmp_dist_dir)
 
     if not os.path.isfile(sdist_file):
-        # Let's try PyPi
         for ext in EXTENSIONS:
             if sdist_file.endswith(ext):
                 raise IOError, "File not found"
-        log.info("Package %s not found, trying PyPi..." % sdist_file)
         package = Requirement.parse(sdist_file)
-#        print >> sys.stderr,".",
+        log.info("Package %s not found, trying PyPI..." % sdist_file)
         dist = idx.fetch_distribution(package, final_dist_dir,
                                             force_scan=True,
                                             source=True)
@@ -77,20 +75,17 @@ def runit():
             sdist_file = dist.location
         else:
             raise Exception, "Distribution not found on PyPi"
-#        print >> sys.stderr,".",
-#        print >> sys.stderr, "=>", sdist_file
-        log.info("Downloaded %s", sdist_file)
+        log.info("Got %s", sdist_file)
+
+    dist = list(distros_for_filename(sdist_file))[0]
+    idx.scan_egg_links(dist.location)
+    package = idx.obtain(Requirement.parse(dist.project_name))
 
     if hasattr(optobj, 'process_dependencies'):
         if bool(int(getattr(optobj, 'process_dependencies'))):
             backup_argv = sys.argv[:]
             oldargv = sys.argv[:]
             oldargv.pop(-1)
-
-            if not isinstance(package, Distribution):
-                dist = list(distros_for_filename(sdist_file))[0]
-                idx.scan_egg_links(dist.location)
-                package = idx.obtain(Requirement.parse(dist.project_name))
 
             if package.requires():
                 log.info("Processing package dependencies for %s", package)
@@ -167,6 +162,8 @@ def runit():
         attr = parser.get_attr_name(long).rstrip('=')
         if hasattr(optobj,attr):
             val = getattr(optobj,attr)
+            if attr=='extra_cfg_file':
+                val = os.path.abspath(val)
             if long in bool_opts or long.replace('-', '_') in bool_opts:
                 extra_args.append('--%s' % long)
             else:
