@@ -550,7 +550,9 @@ class DebianInfo:
         build_deps.extend(  [
             'python-all-dev',
             'debhelper (>= 7)',
-            'python-support (>= 0.5.3)',
+            'python-support (>= 1.0.3)', # Namespace package support was added
+                                         # sometime between 0.7.5ubuntu1 and
+                                         # 1.0.3ubuntu1.
             ] )
 
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
