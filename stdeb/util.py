@@ -622,12 +622,13 @@ XB-Python-Version: ${python:Versions}
                                               ', '.join( replaces  )+'\n')
         self.dirlist = ""
 
-        self.setup_env_vars = parse_val(cfg,module_name,'Setup-Env-Vars')
-
-        if self.setup_env_vars != '' and not self.setup_env_vars.endswith(' '):
-            # end with a space if not empty
-            self.setup_env_vars = self.setup_env_vars + ' '
-
+        setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
+        self.exports = ""
+        if len(setup_env_vars):
+            self.exports += '\n'
+            self.exports += '#exports specified using stdeb Setup-Env-Vars:\n'
+            self.exports += '\n'.join(['export %s'%v for v in setup_env_vars])
+            self.exports += '\n'
         self.udev_rules = parse_val(cfg,module_name,'Udev-Rules')
 
     def _make_cfg_defaults(self,
@@ -898,6 +899,7 @@ unexport CFLAGS
 unexport CXXFLAGS
 unexport FFLAGS
 unexport LDFLAGS
+%(exports)s
 
 %(percent_symbol)s:
         dh $@
