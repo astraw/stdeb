@@ -1,7 +1,7 @@
 #
 # This module contains most of the code of stdeb.
 #
-import re, sys, os, shutil, sets, select
+import re, sys, os, shutil, select
 import ConfigParser
 import subprocess
 import tempfile
