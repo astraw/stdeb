@@ -7,12 +7,10 @@ __all__ = ['bdist_deb']
 class bdist_deb(Command):
     description = 'distutils command to create debian binary package'
 
-    user_options = [ ('install-dir=', 'd', "directory to install the files to"),
-    ]
+    user_options = []
 
     def initialize_options (self):
-        self.install_dir = None
-        self.outfiles = []
+        pass
 
     def finalize_options (self):
         pass
