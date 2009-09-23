@@ -1,3 +1,5 @@
+2009-09-22 Implement bdist_deb command (initial patch from Gerry Reno)
+
 = Release 0.3 (2009-03-21) =
 
 2009-03-14 On Python2.6, pass "--install-layout=deb" to the distutils install

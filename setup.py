@@ -18,7 +18,9 @@ of the resulting package can be customized via a configuration file.""",
 
       # register ourselves (using setuptools) with distutils:
       entry_points = {
-        'distutils.commands':['sdist_dsc = stdeb.command.sdist_dsc:sdist_dsc'],
+        'distutils.commands':['sdist_dsc = stdeb.command.sdist_dsc:sdist_dsc',
+                              'bdist_deb = stdeb.command.bdist_deb:bdist_deb',
+                              ],
         'console_scripts':['py2dsc = stdeb.py2dsc:main',
                            'stdeb_run_setup = stdeb.stdeb_run_setup:main']
       },
