@@ -135,8 +135,13 @@ def get_date_822():
 def get_deb_depends_from_setuptools_requires(requirements):
     depends = [] # This will be the return value from this function.
 
-    requirements = list(pkg_resources.parse_requirements(requirements))
-    if not requirements:
+    parsed_reqs=[]
+
+    for extra,reqs in pkg_resources.split_sections(requirements):
+        if extra: continue
+        parsed_reqs.extend(pkg_resources.parse_requirements(reqs))
+
+    if not parsed_reqs:
         return depends
 
     if not os.path.exists('/usr/bin/apt-file'):
@@ -151,7 +156,7 @@ def get_deb_depends_from_setuptools_requires(requirements):
     # "foo.egg-info" directory.
 
     egginfore=("(/(%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)"
-               % '|'.join(req.project_name for req in requirements))
+               % '|'.join(req.project_name for req in parsed_reqs))
 
     args = ["apt-file", "search", "--ignore-case", "--regexp", egginfore]
     try:
@@ -195,7 +200,7 @@ def get_deb_depends_from_setuptools_requires(requirements):
 
     # Now for each requirement, see if a Debian package satisfies it.
     ops = {'<':'<<','>':'>>','==':'=','<=':'<=','>=':'>='}
-    for req in requirements:
+    for req in parsed_reqs:
         reqname = req.project_name.lower()
         gooddebs = set()
         for pydist, debs in dd.get(reqname, {}).iteritems():
@@ -782,9 +787,17 @@ def build_dsc(debinfo,
 
     #    E. debian/package.mime
     if debinfo.mime_file != '':
+        if not os.path.exists(debinfo.mime_file):
+            raise ValueError(
+                'a MIME file was specified, but does not exist: %s'%(
+                debinfo.mime_file,))
         link_func( debinfo.mime_file,
                  os.path.join(debian_dir,debinfo.package+'.mime'))
     if debinfo.shared_mime_file != '':
+        if not os.path.exists(debinfo.shared_mime_file):
+            raise ValueError(
+                'a shared MIME file was specified, but does not exist: %s'%(
+                debinfo.shared_mime_file,))
         link_func( debinfo.shared_mime_file,
                  os.path.join(debian_dir,
                               debinfo.package+'.sharedmimeinfo'))

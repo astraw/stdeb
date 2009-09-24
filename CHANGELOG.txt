@@ -1,3 +1,5 @@
+2009-09-22 Implement bdist_deb command (initial patch from Gerry Reno)
+
 2009-06-01 Use debhelper 7 by default
 
 2009-06-01 Switch from python-central to python-support

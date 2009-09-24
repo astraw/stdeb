@@ -308,8 +308,9 @@ full details.
 Authors
 -------
 
-Andrew Straw <strawman@astraw.com>
-Pedro Algarvio, aka, s0undt3ch <ufs@ufsoft.org>
+* Andrew Straw <strawman@astraw.com>
+* Pedro Algarvio, aka, s0undt3ch <ufs@ufsoft.org>
+* Gerry Reno (initial bdist_deb implementation)
 
 Additional Credits
 ------------------
