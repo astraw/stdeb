@@ -49,6 +49,8 @@ stdeb_cmdline_opts = [
      'remove the expanded source directory'),
     ('ignore-install-requires', 'i',
      'ignore the requirements from requires.txt in the egg-info directory'),
+    ('disable-single-version-externally-managed', 's',
+     'delete option --single-version-externally-managed from install options'),
     ('debian-version=',None,
      'debian version'),
     ]
@@ -58,7 +60,8 @@ stdeb_cmd_bool_opts = [
     'no-pycentral',
     'remove-expanded-source-dir',
     'patch-posix',
-    'ignore-install-requires'
+    'ignore-install-requires',
+    'ignore-single-version-externally-managed',
     ]
 
 class NotGiven: pass
@@ -418,6 +421,7 @@ class DebianInfo:
                  patch_file=None,
                  patch_level=None,
                  install_requires=None,
+                 disable_single_version_externally_managed=False,
                  setup_requires=None,
                  debian_version=None,
                  ):
@@ -654,6 +658,11 @@ XB-Python-Version: ${python:Versions}
         if self.setup_env_vars != '' and not self.setup_env_vars.endswith(' '):
             # end with a space if not empty
             self.setup_env_vars = self.setup_env_vars + ' '
+
+	if disable_single_version_externally_managed:
+            self.svem_arg = ""
+        else:
+            self.svem_arg = "--single-version-externally-managed"
 
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
@@ -950,13 +959,13 @@ install-python%%:
 # /usr/local/lib. This if statement avoids that when necessary.
         if test "$*" = "2.5" -o "$*" = "2.4"; then \\
           %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
-            --no-compile --single-version-externally-managed \\
+            --no-compile %(svem_arg)s \\
             --root \"$(CURDIR)/debian/${PACKAGE_NAME}\"; \\
           mv debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/*.egg-info \\
                 debian/${PACKAGE_NAME}/usr/lib/python$*/site-packages/${EGG_MODULE_NAME}.egg-info; \\
         else \\
           %(setup_env_vars)spython$* -c "import setuptools,sys;f='setup.py';sys.argv[0]=f;execfile(f,{'__file__':f,'__name__':'__main__'})" install \\
-            --no-compile --single-version-externally-managed --install-layout=deb \\
+            --no-compile %(svem_arg)s --install-layout=deb \\
             --root \"$(CURDIR)/debian/${PACKAGE_NAME}\"; \\
           mv debian/${PACKAGE_NAME}/usr/lib/python$*/dist-packages/*.egg-info \\
                 debian/${PACKAGE_NAME}/usr/lib/python$*/dist-packages/${EGG_MODULE_NAME}.egg-info; \\
