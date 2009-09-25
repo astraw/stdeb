@@ -496,7 +496,7 @@ class DebianInfo:
 
         depends = []
 
-        depends.append('${python:Depends}, python-central')
+        depends.append('${python:Depends}, python-central, python-pkg-resources')
 
         if has_ext_modules:
             self.architecture = 'any'
