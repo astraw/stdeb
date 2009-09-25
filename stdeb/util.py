@@ -604,13 +604,12 @@ XB-Python-Version: ${python:Versions}
         dpkg_shlibdeps_params = parse_val(
             cfg,module_name,'dpkg-shlibdeps-params')
         if dpkg_shlibdeps_params:
-            if 1:
-                raise NotImplementedError('no dh7 support for dpkg-shlibdeps-params')
-            self.dh_shlibdeps_line = ('dh_shlibdeps -a '
-                                     '--dpkg-shlibdeps-params=%s' %
-                                      dpkg_shlibdeps_params)
+            self.dh_binary_lines = """\tdh binary --before dh_shlibdeps
+\tdh_shlibdeps -a --dpkg-shlibdeps-params=%s
+\tdh binary --after dh_shlibdeps"""%dpkg_shlibdeps_params
+
         else:
-            self.dh_shlibdeps_line = 'dh_shlibdeps -a'
+            self.dh_binary_lines = '\tdh binary'
 
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         if len(conflicts):
@@ -918,7 +917,7 @@ unexport LDFLAGS
         dh $@
 
 binary: build
-\tdh binary
+%(dh_binary_lines)s
 %(dh_installmime_line)s
 %(dh_desktop_line)s
 """
