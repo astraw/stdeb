@@ -8,6 +8,7 @@ import tempfile
 import stdeb
 import pkg_resources
 from stdeb import log, __version__ as __stdeb_version__
+import warnings
 
 if hasattr(os,'link'):
     link_func = os.link
@@ -131,6 +132,24 @@ def get_date_822():
         raise RuntimeError('returncode %d', returncode)
     result = cmd.stdout.read().strip()
     return result
+
+def load_module(name,fname):
+    import imp
+
+    suffix = '.py'
+    found = False
+    for description in imp.get_suffixes():
+        if description[0]==suffix:
+            found = True
+            break
+    assert found
+
+    fd = open(fname,mode='r')
+    try:
+        module = imp.load_module(name,fd,fname,description)
+    finally:
+        fd.close()
+    return module
 
 def get_deb_depends_from_setuptools_requires(requirements):
     depends = [] # This will be the return value from this function.
@@ -596,8 +615,57 @@ class DebianInfo:
                 self.patch_level = 0
 
         xs_python_version = parse_vals(cfg,module_name,'XS-Python-Version')
-        self.source_stanza_extras += ('XS-Python-Version: '+
-                                         ', '.join(xs_python_version)+'\n')
+        if 1:
+
+            # Trap cases that might trigger Debian bug #548392 and
+            # workaround. Disable this block once the bugfix has
+            # become widespread and change Build-Depends: to include
+            # sufficiently recent debhelper.
+
+            if len(xs_python_version)==0:
+                # No Python version specified. For now, just use default Python
+                warnings.warn('working around Debian #548392, changing '
+                              'XS-Python-Version: to \'current\'')
+                xs_python_version = ['current']
+            else:
+
+                # The user specified a Python version. Check if s/he
+                # specified more than one. (Specifying a single
+                # version won't trigger the bug.)
+
+                pyversions_fname = '/usr/bin/pyversions'
+                assert os.path.exists(pyversions_fname)
+                pyversions = load_module('pyversions',pyversions_fname)
+                vstring = ', '.join(xs_python_version)
+                pyversions_result = pyversions.parse_versions(vstring)
+                if ('versions' in pyversions_result and
+                    len(pyversions_result['versions'])>1):
+
+                    vers = list(pyversions_result)
+                    # More than one Python version specified.
+
+                    # This is dubious as the following comparison
+                    # happens at source build time, but what matters
+                    # is what runs when building the binary package.
+
+                    default_vers = pyversions.default_version(version_only=True)
+                    if default_vers in vers:
+                        warnings.warn('working around Debian #548392, changing '
+                                      'XS-Python-Version: to \'current\'')
+                        xs_python_version = ['current']
+                    else:
+                        vers.sort()
+                        warnings.warn('working around Debian #548392, changing '
+                                      'XS-Python-Version: to \'%s\''%vers[-1])
+                        xs_python_version = [vers[-1]]
+                elif 'all' in pyversions_result:
+                    warnings.warn('working around Debian #548392, changing '
+                                  'XS-Python-Version: to \'current\'')
+                    xs_python_version = ['current']
+
+        if xs_python_version is not None:
+            self.source_stanza_extras += ('XS-Python-Version: '+
+                                          ', '.join(xs_python_version)+'\n')
         self.package_stanza_extras = """\
 XB-Python-Version: ${python:Versions}
 """
@@ -668,7 +736,7 @@ XB-Python-Version: ${python:Versions}
         defaults['Suggests'] = ''
         defaults['Recommends'] = ''
 
-        defaults['XS-Python-Version'] = 'all'
+        defaults['XS-Python-Version'] = ''
 
         defaults['dpkg-shlibdeps-params'] = ''
 
