@@ -514,6 +514,7 @@ class DebianInfo:
             get_deb_depends_from_setuptools_requires(setup_requires))
 
         depends = []
+        need_custom_binary_target = False
 
         depends.append('${python:Depends}, python-central, python-pkg-resources')
 
@@ -531,6 +532,7 @@ class DebianInfo:
         if self.mime_file == '' and self.shared_mime_file == '':
             self.dh_installmime_line = ''
         else:
+            need_custom_binary_target = True
             self.dh_installmime_line = '\tdh_installmime'
             if self.architecture == 'all':
                 self.dh_installmime_line += ' -i'
@@ -539,6 +541,7 @@ class DebianInfo:
 
         mime_desktop_files = parse_vals(cfg,module_name,'MIME-Desktop-Files')
         if len(mime_desktop_files):
+            need_custom_binary_target = True
             self.dh_desktop_line = '\tdh_desktop'
             if self.architecture == 'all':
                 self.dh_desktop_line += ' -i'
@@ -669,9 +672,11 @@ class DebianInfo:
         self.package_stanza_extras = """\
 XB-Python-Version: ${python:Versions}
 """
+
         dpkg_shlibdeps_params = parse_val(
             cfg,module_name,'dpkg-shlibdeps-params')
         if dpkg_shlibdeps_params:
+            need_custom_binary_target = True
             self.dh_binary_lines = """\tdh binary --before dh_shlibdeps
 \tdh_shlibdeps -a --dpkg-shlibdeps-params=%s
 \tdh binary --after dh_shlibdeps"""%dpkg_shlibdeps_params
@@ -702,6 +707,11 @@ XB-Python-Version: ${python:Versions}
             self.exports += '\n'.join(['export %s'%v for v in setup_env_vars])
             self.exports += '\n'
         self.udev_rules = parse_val(cfg,module_name,'Udev-Rules')
+
+        if need_custom_binary_target:
+            self.binary_target_lines = RULES_BINARY_TARGET%self.__dict__
+        else:
+            self.binary_target_lines = ''
 
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
@@ -984,6 +994,10 @@ unexport LDFLAGS
 %(percent_symbol)s:
         dh $@
 
+%(binary_target_lines)s
+"""
+
+RULES_BINARY_TARGET = """
 binary: build
 %(dh_binary_lines)s
 %(dh_installmime_line)s
