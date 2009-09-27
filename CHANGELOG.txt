@@ -1,4 +1,4 @@
-2009-09-22 Implement bdist_deb command (initial patch from Gerry Reno)
+= Release 0.4 (2009-09-27) =
 
 2009-06-01 Use debhelper 7 by default
 
@@ -7,6 +7,10 @@
 2009-06-02 workaround Debian #479852: remove left over python-central symlinks
 
 2009-03-23 Unset environment variables set by dpkg-buildpackage
+
+= Release 0.3.1 (2009-09-27) =
+
+2009-09-22 Implement bdist_deb command (initial patch from Gerry Reno)
 
 = Release 0.3 (2009-03-21) =
 

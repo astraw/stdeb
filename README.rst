@@ -11,8 +11,11 @@ resulting package can be customized via a configuration file.
 News
 ----
 
- * 2009-06-11: Version 0.4 in development. This version switches to
-   debhelper 7. See the `current Changelog`__.
+ * 2009-09-27: Version 0.4 Released. See the `download page`__. This
+   version switches to debhelper 7, and thus *requires Ubuntu Intrepid
+   or Debian Lenny* at a minimum (unless you use backports). See the
+   `Changelog for 0.4`__
+ * 2009-09-27: Version 0.3.1 Released. See the `download page`__. See the `Changelog for 0.3.1`__
  * 2009-03-21: Version 0.3 Released. See the `download page`__. See the `Changelog for 0.3`__
  * 2009-02-17: Version 0.2.3 Released. See the `download page`__. See the `Changelog for 0.2.3`__
  * 2009-01-29: Version 0.2.2 Released. See the `download page`__. See the `Changelog for 0.2.2`__
@@ -21,17 +24,20 @@ News
  * 2007-04-02: Version 0.2.a1 Released. See the `old download page`_.
  * 2006-06-19: Version 0.1 Released. See the `old download page`_.
 
-__ http://github.com/astraw/stdeb/blob/master/CHANGELOG.txt
+__ http://pypi.python.org/pypi/stdeb/0.4
+__ http://github.com/astraw/stdeb/blob/release-0.4/CHANGELOG.txt
+__ http://pypi.python.org/pypi/stdeb/0.3.1
+__ http://github.com/astraw/stdeb/blob/release-0.3.1/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.3
-__ http://github.com/astraw/stdeb/blob/f34b5d9a2f9f049ed73a7d58a38a6126702b855e/CHANGELOG.txt
+__ http://github.com/astraw/stdeb/blob/release-0.3/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.2.3
-__ http://github.com/astraw/stdeb/blob/4af1a7d44f186af6243fa879cd319b38db0587bd/CHANGELOG.txt
+__ http://github.com/astraw/stdeb/blob/release-0.2.3/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.2.2
-__ http://github.com/astraw/stdeb/blob/54c637a7da7d69279783a1a8f8fc17a3860c0523/CHANGELOG.txt
+__ http://github.com/astraw/stdeb/blob/release-0.2.2/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.2.1
-__ http://github.com/astraw/stdeb/blob/eb3b3c78622d56edfe96bc563bcad62369ea427b/CHANGELOG.txt
+__ http://github.com/astraw/stdeb/blob/release-0.2.1/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.2
-__ http://github.com/astraw/stdeb/blob/c21e8ee53ae4104e07a44b65224d70672fe8afaa/CHANGELOG.txt
+__ http://github.com/astraw/stdeb/blob/release-0.2/CHANGELOG.txt
 
 Invocation
 ----------
@@ -58,19 +64,33 @@ subdirectory ``deb_dist``:
 These can then be compiled into binary packages using the standard
 Debian machinery (e.g. dpkg-buildpackage).
 
+Also, a ``bdist_deb`` distutils command is installed. This calls the
+sdist_dsc command and then runs dpkg-buildpackage on the result.
+
 Quickstart 1: Just tell me the fastest way to make a .deb
 ---------------------------------------------------------
 
 Do this from the directory with your `setup.py` file::
 
-  python -c "import stdeb; execfile('setup.py')" sdist_dsc && \
-    cd `find deb_dist -mindepth 1 -maxdepth 1 -type d` && \
-    dpkg-buildpackage -rfakeroot -uc -us && \
-    cd ../.. &&
-    echo ".deb created successfully in deb_dist/"
+  python -c "import stdeb; execfile('setup.py')" bdist_deb
 
-Quickstart 2: Show me the exact steps, in slightly more detail
---------------------------------------------------------------
+This will make a Debian source package (.dsc, .orig.tar.gz and
+.diff.gz files) and then compile it to a Debian binary package (.deb)
+for your current system. The result will be in ``deb_dist``.
+
+**Note: installing the .deb file on other versions of Ubuntu or Debian
+than the one on which it was compiled will result in undefined
+behavior. If you have extension modules, they will be very likely to
+break. Even in the absence of extension modules, bad stuff could happen.**
+
+For this reason, it is much better to build the Debian source package
+and then compile that (e.g. using `Ubuntu's PPA`__) for each target
+version of Debian or Ubuntu.
+
+__ https://help.launchpad.net/Packaging/PPA
+
+Quickstart 2: I read the warning, so show me how to make a source package, then compile it
+------------------------------------------------------------------------------------------
 
 This generates a source package::
 
