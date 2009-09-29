@@ -1,24 +1,16 @@
 import os
 import stdeb.util as util
-from setuptools import Command
+from stdeb.command.sdist_dsc import sdist_dsc
 
 __all__ = ['bdist_deb']
 
-class bdist_deb(Command):
+class bdist_deb(sdist_dsc):
     description = 'distutils command to create debian binary package'
 
-    user_options = []
-
-    def initialize_options (self):
-        pass
-
-    def finalize_options (self):
-        pass
-
+    # extend the run method
     def run(self):
-        # generate .dsc source pkg using stdeb
-        for cmd_name in self.get_sub_commands():
-            self.run_command(cmd_name)
+        # call parent run() method to generate .dsc source pkg
+	sdist_dsc.run(self)
 
         # execute system command and read output (execute and read output of find cmd)
         dsc_tree = 'deb_dist'
@@ -38,7 +30,4 @@ class bdist_deb(Command):
         syscmd = ['dpkg-buildpackage','-rfakeroot','-uc','-b']
 
         util.process_command(syscmd,cwd=target_dir)
-
-    sub_commands = [('sdist_dsc', None),
-                   ]
 

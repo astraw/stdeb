@@ -62,7 +62,7 @@ stdeb_cmd_bool_opts = [
     'patch-already-applied',
     'remove-expanded-source-dir',
     'patch-posix',
-    'ignore-install-requires'
+    'ignore-install-requires',
     ]
 
 class NotGiven: pass
