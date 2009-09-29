@@ -61,7 +61,7 @@ stdeb_cmd_bool_opts = [
     'remove-expanded-source-dir',
     'patch-posix',
     'ignore-install-requires',
-    'ignore-single-version-externally-managed',
+    'disable-single-version-externally-managed',
     ]
 
 class NotGiven: pass
