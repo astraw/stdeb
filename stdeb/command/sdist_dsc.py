@@ -128,7 +128,7 @@ class sdist_dsc(Command):
             if src not in exclude_dirs+[self.dist_dir,'build','dist']:
                 dst = os.path.join(fullpath_repackaged_dirname,src)
                 if os.path.isdir(src):
-                    shutil.copytree(src, dst )
+                    shutil.copytree(src, dst, symlinks=True)
                 else:
                     shutil.copy2(src, dst )
         # remove .pyc files which dpkg-source cannot package
