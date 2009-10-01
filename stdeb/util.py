@@ -521,6 +521,7 @@ class DebianInfo:
         if has_ext_modules:
             self.architecture = 'any'
             depends.append('${shlibs:Depends}')
+            build_deps.append('python-all-dev')
         else:
             self.architecture = 'all'
 
@@ -575,7 +576,6 @@ class DebianInfo:
             self.long_description = ''
 
         build_deps.extend(  [
-            'python-all-dev',
             'debhelper (>= 7)',
             'python-support (>= 0.8.7)', # Namespace package support was added
                                          # sometime between 0.7.5ubuntu1 and
