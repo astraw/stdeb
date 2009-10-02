@@ -337,6 +337,8 @@ Additional Credits
 
 * Zooko O'Whielacronx for the autofind-depends patch
 * Brett (last name unknown) for the --ignore-install-requires patch
+* Ximin Luo for a bug fix
+* Alexander D. Sedov for bug fixes and suggestions
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 
