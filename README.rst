@@ -229,17 +229,16 @@ To customize the Debian source package produced, you may write config
 files of the format understood by ConfigParser_. When building each
 package, stdeb looks for the existance of a ``stdeb.cfg`` file in the
 ``.egg-info`` directory. You may specify an additional config file
-with the command-line option --extra-cfg-file.
+with the command-line option --extra-cfg-file. Other command line
+options may also be provided.
 
 .. _ConfigParser: http://docs.python.org/lib/module-ConfigParser.html
 
-For an example configuration file I use to build several packages,
-please see http://stdeb.python-hosting.com/wiki/stdeb_all.cfg
-
-======================== ===========
-        Option             Effect
-======================== ===========
+======================== ================================================
+  Config file option       Effect
+======================== ================================================
 Debian-Version           Set Debian version
+Maintainer               Set Debian maintainer
 Forced-Upstream-Version  Force upstream version number
 Upstream-Version-Prefix  Force upstream version prefix (e.g. epoch)
 Upstream-Version-Suffix  Force upstream version suffix
@@ -254,14 +253,45 @@ Shared-MIME-File         Filename of .sharedmimeinfo file(s) to install
 Copyright-File           Filename of copyright file to install
 Stdeb-Patch-File         Patches to apply
 Setup-Env-Vars           Environment variables to set on call to setup.py
-======================== ===========
+======================== ================================================
+
+==================================== ==========================================
+        Command line option                      Effect
+==================================== ==========================================
+  --dist-dir (-d)                    directory to put final built
+                                     distributions in (default='deb_dist')
+  --patch-already-applied (-a)       patch was already applied (used when
+                                     py2dsc calls sdist_dsc)
+  --default-distribution (-z)        distribution name to use if not specified
+                                     in .cfg (default='unstable')
+  --default-maintainer (-m)          maintainer name and email to use if not
+                                     specified in .cfg (default from setup.py)
+  --extra-cfg-file (-x)              additional .cfg file (in addition to .egg
+                                     -info/stdeb.cfg if present)
+  --patch-file (-p)                  patch file applied before setup.py called
+                                     (incompatible with file specified in
+                                     .cfg)
+  --patch-level (-l)                 patch file applied before setup.py called
+                                     (incompatible with file specified in
+                                     .cfg)
+  --patch-posix (-q)                 apply the patch with --posix mode
+  --remove-expanded-source-dir (-r)  remove the expanded source directory
+  --ignore-install-requires (-i)     ignore the requirements from requires.txt
+                                     in the egg-info directory
+  --debian-version                   debian version
+  --use-premade-distfile (-P)        use .zip or .tar.gz file already made by
+                                     sdist command
+==================================== ==========================================
+
 
 Prerequisites
 -------------
 
  * Python_ 2.5 or higher (older python OK if you use subprocess.py
    with backports from Python 2.5)
- * Standard Debian utilities (e.g. ``date`` and ``dpkg-source``)
+ * Standard Debian utilities such as ``date``, ``dpkg-source`` and
+   Debhelper 7 (use stdeb 0.3.x if you need to support older
+   distributions without dh7)
 
 .. _Python: http://www.python.org/
 
