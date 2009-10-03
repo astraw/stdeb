@@ -191,7 +191,7 @@ Features
 --------
 
 * Create a package for all Python versions supported by
-  pycentral. (Limiting this range is possible with the
+  python-support. (Limiting this range is possible with the
   ``XS-Python-Version:`` config option.)
 
 * Automatic conversion of Python package names into valid Debian
@@ -339,7 +339,6 @@ TODO
 
 .. _debian python policy: http://www.debian.org/doc/packaging-manuals/python-policy/
 .. _new python policy: http://wiki.debian.org/DebianPython/NewPolicy
-.. _python-central: http://python-modules.alioth.debian.org/python-central_howto.txt
 
 Call for volunteers
 -------------------
