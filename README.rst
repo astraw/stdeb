@@ -255,33 +255,45 @@ Stdeb-Patch-File         Patches to apply
 Setup-Env-Vars           Environment variables to set on call to setup.py
 ======================== ================================================
 
-==================================== ==========================================
+====================================== =========================================
         Command line option                      Effect
-==================================== ==========================================
-  --dist-dir (-d)                    directory to put final built
-                                     distributions in (default='deb_dist')
-  --patch-already-applied (-a)       patch was already applied (used when
-                                     py2dsc calls sdist_dsc)
-  --default-distribution (-z)        distribution name to use if not specified
-                                     in .cfg (default='unstable')
-  --default-maintainer (-m)          maintainer name and email to use if not
-                                     specified in .cfg (default from setup.py)
-  --extra-cfg-file (-x)              additional .cfg file (in addition to .egg
-                                     -info/stdeb.cfg if present)
-  --patch-file (-p)                  patch file applied before setup.py called
-                                     (incompatible with file specified in
-                                     .cfg)
-  --patch-level (-l)                 patch file applied before setup.py called
-                                     (incompatible with file specified in
-                                     .cfg)
-  --patch-posix (-q)                 apply the patch with --posix mode
-  --remove-expanded-source-dir (-r)  remove the expanded source directory
-  --ignore-install-requires (-i)     ignore the requirements from requires.txt
-                                     in the egg-info directory
-  --debian-version                   debian version
-  --use-premade-distfile (-P)        use .zip or .tar.gz file already made by
-                                     sdist command
-==================================== ==========================================
+====================================== =========================================
+  --dist-dir (-d)                      directory to put final built
+                                       distributions in (default='deb_dist')
+  --patch-already-applied (-a)         patch was already applied (used when
+                                       py2dsc calls sdist_dsc)
+  --default-distribution (-z)          distribution name to use if not
+                                       specified in .cfg (default='unstable')
+  --default-maintainer (-m)            maintainer name and email to use if not
+                                       specified in .cfg (default from
+                                       setup.py)
+  --extra-cfg-file (-x)                additional .cfg file (in addition to
+                                       .egg-info/stdeb.cfg if present)
+  --patch-file (-p)                    patch file applied before setup.py
+                                       called (incompatible with file
+                                       specified in .cfg)
+  --patch-level (-l)                   patch file applied before setup.py
+                                       called (incompatible with file
+                                       specified in .cfg)
+  --patch-posix (-q)                   apply the patch with --posix mode
+  --remove-expanded-source-dir (-r)    remove the expanded source directory
+  --ignore-install-requires (-i)       ignore the requirements from
+                                       requires.txt in the egg-info directory
+  --debian-version                     debian version
+  --pycentral-backwards-compatibility  If True (currently the default), enable
+                                       migration from old stdeb that used
+                                       pycentral
+  --workaround-548392                  If True (currently the default), limit
+                                       binary package to single Python
+                                       version, working around Debian bug
+                                       548392 of debhelper
+  --no-backwards-compatibility         If True, set --pycentral-backwards-
+                                       compatibility=False and --workaround-
+                                       548392=False. (Default=False).
+  --use-premade-distfile (-P)          use .zip or .tar.gz file already made
+                                       by sdist command
+
+====================================== =========================================
 
 
 Prerequisites
