@@ -56,6 +56,15 @@ stdeb_cmdline_opts = [
      'ignore the requirements from requires.txt in the egg-info directory'),
     ('debian-version=',None,
      'debian version'),
+    ('pycentral-backwards-compatibility=',None,
+     'If True (currently the default), enable migration from old stdeb '
+     'that used pycentral'),
+    ('workaround-548392=',None,
+     'If True (currently the default), limit binary package to single Python '
+     'version, working around Debian bug 548392 of debhelper'),
+    ('no-backwards-compatibility',None,
+     'If True, set --pycentral-backwards-compatibility=False and '
+     '--workaround-548392=False. (Default=False).'),
     ]
 
 stdeb_cmd_bool_opts = [
@@ -63,6 +72,7 @@ stdeb_cmd_bool_opts = [
     'remove-expanded-source-dir',
     'patch-posix',
     'ignore-install-requires',
+    'no-backwards-compatibility',
     ]
 
 class NotGiven: pass
@@ -441,6 +451,9 @@ class DebianInfo:
                  install_requires=None,
                  setup_requires=None,
                  debian_version=None,
+                 workaround_548392=None,
+                 have_script_entry_points = None,
+                 pycentral_backwards_compatibility=None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -513,10 +526,12 @@ class DebianInfo:
         build_deps.extend(
             get_deb_depends_from_setuptools_requires(setup_requires))
 
-        depends = []
+        depends = ['${python:Depends}', 'python-pkg-resources']
         need_custom_binary_target = False
 
-        depends.append('${python:Depends}, python-central, python-pkg-resources')
+        self.do_pycentral_removal_preinst = pycentral_backwards_compatibility
+        if pycentral_backwards_compatibility:
+            depends.append('python-central')
 
         if has_ext_modules:
             self.architecture = 'any'
@@ -575,8 +590,15 @@ class DebianInfo:
         else:
             self.long_description = ''
 
+        if have_script_entry_points:
+            if workaround_548392:
+                build_deps.append( 'debhelper (>= 7)' )
+            else:
+                build_deps.append( 'debhelper (>= 7.4.3)' )
+        else:
+            build_deps.append( 'debhelper (>= 7)' )
+
         build_deps.extend(  [
-            'debhelper (>= 7)',
             'python-support (>= 0.8.4)', # Namespace package support was added
                                          # sometime between 0.7.5ubuntu1 and
                                          # 0.8.4lenny1 (Lenny)
@@ -618,7 +640,7 @@ class DebianInfo:
                 self.patch_level = 0
 
         xs_python_version = parse_vals(cfg,module_name,'XS-Python-Version')
-        if 1:
+        if have_script_entry_points and workaround_548392:
 
             # Trap cases that might trigger Debian bug #548392 and
             # workaround. Disable this block once the bugfix has
@@ -666,7 +688,7 @@ class DebianInfo:
                                   'XS-Python-Version: to \'current\'')
                     xs_python_version = ['current']
 
-        if xs_python_version is not None:
+        if len(xs_python_version)!=0:
             self.source_stanza_extras += ('XS-Python-Version: '+
                                           ', '.join(xs_python_version)+'\n')
         self.package_stanza_extras = """\
@@ -885,10 +907,11 @@ def build_dsc(debinfo,
                  os.path.join(debian_dir,'copyright'))
 
     #    G. debian/<package>.preinst
-    preinst = PREINST%debinfo.__dict__
-    fd = open( os.path.join(debian_dir,'%s.preinst'%debinfo.package), mode='w')
-    fd.write(preinst)
-    fd.close()
+    if debinfo.do_pycentral_removal_preinst:
+        preinst = PREINST%debinfo.__dict__
+        fd = open( os.path.join(debian_dir,'%s.preinst'%debinfo.package), mode='w')
+        fd.write(preinst)
+        fd.close()
 
     #    H. debian/<package>.install
     if len(debinfo.install_file_lines):

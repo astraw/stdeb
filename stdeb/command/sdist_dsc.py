@@ -34,14 +34,50 @@ class sdist_dsc(Command):
         self.use_premade_distfile = None
         self.ignore_install_requires = None
         self.debian_version = None
+        self.pycentral_backwards_compatibility = None
+        self.workaround_548392 = None
+        self.no_backwards_compatibility = None
 
     def finalize_options(self):
+        def str_to_bool(mystr):
+            if mystr.lower() == 'false':
+                return False
+            elif mystr.lower() == 'true':
+                return True
+            else:
+                raise ValueError('bool string "%s" is not "true" or "false"'%mystr)
         if self.dist_dir is None:
             self.dist_dir = 'deb_dist'
         if self.default_distribution is None:
             self.default_distribution = 'unstable'
         if self.patch_level is not None:
             self.patch_level = int(self.patch_level)
+
+        if self.pycentral_backwards_compatibility is not None:
+            print '='*50,repr(self.pycentral_backwards_compatibility)
+            self.pycentral_backwards_compatibility = str_to_bool(
+                self.pycentral_backwards_compatibility)
+            print '='*50,repr(self.pycentral_backwards_compatibility)
+        if self.workaround_548392 is not None:
+            self.workaround_548392 = str_to_bool(self.workaround_548392)
+
+        if self.no_backwards_compatibility:
+            if self.pycentral_backwards_compatibility==True:
+                raise ValueError('inconsistent backwards compatibility '
+                                 'command line options')
+            if self.workaround_548392==True:
+                raise ValueError('inconsistent backwards compatibility '
+                                 'command line options')
+            self.workaround_548392=False
+            self.pycentral_backwards_compatibility=False
+
+        if self.workaround_548392 is None:
+            self.workaround_548392=True
+            # emit future change warnging?
+
+        if self.pycentral_backwards_compatibility is None:
+            self.pycentral_backwards_compatibility=True
+             # emit future change warnging?
 
     def run(self):
         ###############################################
@@ -67,7 +103,6 @@ class sdist_dsc(Command):
         #         find .egg-info directory
         ei_cmd = self.distribution.get_command_obj('egg_info')
 
-
         self.run_command('egg_info')
         egg_info_dirname = ei_cmd.egg_info
         config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
@@ -87,6 +122,22 @@ class sdist_dsc(Command):
                 install_requires = open(os.path.join(egg_info_dirname,'requires.txt'),'rU').read()
         except EnvironmentError:
             pass
+
+        if 1:
+            # determinc whether script specifies setuptools entry_points
+            ep_fname = os.path.join(egg_info_dirname,'entry_points.txt')
+            if os.path.exists(ep_fname):
+                entry_points = open(ep_fname,'rU').readlines()
+            else:
+                entry_points = ''
+            entry_points = [ep.strip() for ep in entry_points]
+
+            if ('[console_scripts]' in entry_points or
+                '[gui_scripts]' in entry_points):
+                have_script_entry_points = True
+            else:
+                have_script_entry_points = False
+
         debinfo = DebianInfo(
             cfg_files=cfg_files,
             module_name = module_name,
@@ -101,6 +152,9 @@ class sdist_dsc(Command):
             patch_level = self.patch_level,
             install_requires = install_requires,
             debian_version = self.debian_version,
+            workaround_548392=self.workaround_548392,
+            have_script_entry_points = have_script_entry_points,
+            pycentral_backwards_compatibility=self.pycentral_backwards_compatibility,
             setup_requires = (), # XXX How do we get the setup_requires?
         )
         if debinfo.patch_file != '' and self.patch_already_applied:
