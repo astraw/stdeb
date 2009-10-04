@@ -15,6 +15,7 @@ News
    version switches to debhelper 7, and thus *requires Ubuntu Intrepid
    or Debian Lenny* at a minimum (unless you use backports). See the
    `Changelog for 0.4`__
+ * 2009-10-04: Version 0.3.2 Released. See the `download page`__. See the `Changelog for 0.3.2`__
  * 2009-09-27: Version 0.3.1 Released. See the `download page`__. See the `Changelog for 0.3.1`__
  * 2009-03-21: Version 0.3 Released. See the `download page`__. See the `Changelog for 0.3`__
  * 2009-02-17: Version 0.2.3 Released. See the `download page`__. See the `Changelog for 0.2.3`__
@@ -26,6 +27,8 @@ News
 
 __ http://pypi.python.org/pypi/stdeb/0.4
 __ http://github.com/astraw/stdeb/blob/release-0.4/CHANGELOG.txt
+__ http://pypi.python.org/pypi/stdeb/0.3.2
+__ http://github.com/astraw/stdeb/blob/release-0.3.2/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.3.1
 __ http://github.com/astraw/stdeb/blob/release-0.3.1/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.3

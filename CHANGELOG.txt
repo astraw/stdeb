@@ -24,6 +24,14 @@
 
 2009-03-23 Unset environment variables set by dpkg-buildpackage
 
+= Release 0.3.2 (2009-10-04) =
+
+2009-09-29 bdist_deb accepts all sdist_dsc arguments (Gerry Reno)
+
+2009-09-29 add --disable-single-version-externally-managed option
+           (initial patch from Gerry Reno)
+
+
 = Release 0.3.1 (2009-09-27) =
 
 2009-09-22 Implement bdist_deb command (initial patch from Gerry Reno)
