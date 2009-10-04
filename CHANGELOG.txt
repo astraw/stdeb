@@ -1,3 +1,5 @@
+2009-10-03 Emit warnings if debhelper and python-support too old
+
 2009-10-03 Update and improve documentation
 
 2009-10-03 Allow command-line specified breaking of backward

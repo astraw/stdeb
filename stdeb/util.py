@@ -20,6 +20,14 @@ __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'apply_patch','repack_tarball_with_debianized_dirname',
            'expand_sdist_file']
 
+DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
+DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
+
+PYSUPPORT_MIN_VERS = '0.8.4' # Namespace package support was added
+                             # sometime between 0.7.5ubuntu1 and
+                             # 0.8.4lenny1 (Lenny). Might be able to
+                             # back this down.
+
 import exceptions
 class CalledProcessError(exceptions.Exception): pass
 
@@ -128,19 +136,37 @@ def debianize_version(name):
     name = name.lower()
     return name
 
+def dpkg_compare_versions(v1,op,v2):
+    args = ['/usr/bin/dpkg','--compare-versions',v1,op,v2]
+    cmd = subprocess.Popen(args)
+    returncode = cmd.wait()
+    if returncode:
+        return False
+    else:
+        return True
+
+def get_cmd_stdout(args):
+    cmd = subprocess.Popen(args,stdout=subprocess.PIPE)
+    returncode = cmd.wait()
+    if returncode:
+        log.error('ERROR running: %s', ' '.join(args))
+        raise RuntimeError('returncode %d', returncode)
+    return cmd.stdout.read()
+
 def get_date_822():
     """return output of 822-date command"""
     cmd = '/bin/date'
     if not os.path.exists(cmd):
         raise ValueError('%s command does not exist.'%cmd)
     args = [cmd,'-R']
-    cmd = subprocess.Popen(args,stdout=subprocess.PIPE)
-    returncode = cmd.wait()
-    if returncode:
-        log.error('ERROR running: %s', ' '.join(args))
-        raise RuntimeError('returncode %d', returncode)
-    result = cmd.stdout.read().strip()
+    result = get_cmd_stdout(args).strip()
     return result
+
+def get_version_str(pkg):
+    args = ['/usr/bin/dpkg-query','--show',
+           '--showformat=${Version}',pkg]
+    stdout = get_cmd_stdout(args)
+    return stdout.strip()
 
 def load_module(name,fname):
     import imp
@@ -591,17 +617,13 @@ class DebianInfo:
 
         if have_script_entry_points:
             if workaround_548392:
-                build_deps.append( 'debhelper (>= 7)' )
+                build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS)
             else:
-                build_deps.append( 'debhelper (>= 7.4.3)' )
+                build_deps.append( 'debhelper (>= %s)'%DH_IDEAL_VERS )
         else:
-            build_deps.append( 'debhelper (>= 7)' )
+            build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS )
 
-        build_deps.extend(  [
-            'python-support (>= 0.8.4)', # Namespace package support was added
-                                         # sometime between 0.7.5ubuntu1 and
-                                         # 0.8.4lenny1 (Lenny)
-            ] )
+        build_deps.append('python-support (>= %s)'%PYSUPPORT_MIN_VERS)
 
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
         self.build_depends = ', '.join(build_deps)
@@ -957,6 +979,34 @@ def build_dsc(debinfo,
 
         finally:
             shutil.rmtree(tmp_dir)
+
+    if 1:
+        # check versions of debhelper and python-support
+        debhelper_version_str = get_version_str('debhelper')
+        if len(debhelper_version_str)==0:
+            log.warn('This version of stdeb requires debhelper >= %s, but you '
+                     'do not have debhelper installed. '
+                     'Could not check compatibility.'%DH_MIN_VERS)
+        else:
+            if not dpkg_compare_versions(
+                debhelper_version_str, 'ge', DH_MIN_VERS ):
+                log.warn('This version of stdeb requires debhelper >= %s. '
+                         'Use stdeb 0.3.x to generate source packages '
+                         'compatible with older versions of debhelper.'%(
+                    DH_MIN_VERS,))
+
+        pysupport_version_str = get_version_str('python-support')
+        if len(pysupport_version_str)==0:
+            log.warn('This version of stdeb requires python-support >= %s, '
+                     'but you do not have python-support installed. '
+                     'Could not check compatibility.'%PYSUPPORT_MIN_VERS)
+        else:
+            if not dpkg_compare_versions(
+                pysupport_version_str, 'ge', PYSUPPORT_MIN_VERS ):
+                log.warn('This version of stdeb requires python-support >= %s. '
+                         'Use stdeb 0.3.x to generate source packages '
+                         'compatible with older versions of python-support.'%(
+                    PYSUPPORT_MIN_VERS,))
 
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
