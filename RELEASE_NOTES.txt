@@ -1,0 +1,19 @@
+(See CHANGELOG.txt for lists of changes. This file provides
+information for those upgrading from previous versions of stdeb.)
+
+Release 0.4.1
+=============
+
+This release maintains backward compatibility with old versions of
+stdeb and debhelper, but stdeb now allows packages that don't carry
+the cruft of backward compatibility. To disable all backwards
+compatibility, specify the --no-backwards-compatibility flag. This
+will set --pycentral-backwards-compatibility=False and
+--workaround-548392=False. You may set these flags individually if
+desired.
+
+By "maintains backward compatibility with stdeb", I mean that newer
+packages made with newer stdeb (0.4.1 and up) will properly upgrade
+from older package made with older versions of stdeb (less than
+0.4.0). The problem, in particular, is the migration from
+python-central. See Debian bug #479852 for more information.
