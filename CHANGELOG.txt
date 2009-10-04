@@ -1,3 +1,5 @@
+= Release 0.4.1 (2009-10-04) =
+
 2009-10-03 Emit warnings if debhelper and python-support too old
 
 2009-10-03 Update and improve documentation
@@ -7,7 +9,8 @@
 
 2009-10-01 Fix incorrect handling of symlinks. (Ximin Luo)
 
-2009-10-01 relax dependency on python-support down to 0.8.4
+2009-10-01 relax dependency on python-support down to 0.8.4 for Debian
+           Lenny
 
 2009-10-01 only include python-all-dev in Build-Deps if extension
            modules present (Alexander D. Sedov)
