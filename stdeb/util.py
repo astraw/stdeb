@@ -8,7 +8,6 @@ import tempfile
 import stdeb
 import pkg_resources
 from stdeb import log, __version__ as __stdeb_version__
-import warnings
 
 if hasattr(os,'link'):
     link_func = os.link
@@ -649,8 +648,8 @@ class DebianInfo:
 
             if len(xs_python_version)==0:
                 # No Python version specified. For now, just use default Python
-                warnings.warn('working around Debian #548392, changing '
-                              'XS-Python-Version: to \'current\'')
+                log.warn('working around Debian #548392, changing '
+                         'XS-Python-Version: to \'current\'')
                 xs_python_version = ['current']
             else:
 
@@ -675,17 +674,17 @@ class DebianInfo:
 
                     default_vers = pyversions.default_version(version_only=True)
                     if default_vers in vers:
-                        warnings.warn('working around Debian #548392, changing '
-                                      'XS-Python-Version: to \'current\'')
+                        log.warn('working around Debian #548392, changing '
+                                 'XS-Python-Version: to \'current\'')
                         xs_python_version = ['current']
                     else:
                         vers.sort()
-                        warnings.warn('working around Debian #548392, changing '
-                                      'XS-Python-Version: to \'%s\''%vers[-1])
+                        log.warn('working around Debian #548392, changing '
+                                 'XS-Python-Version: to \'%s\''%vers[-1])
                         xs_python_version = [vers[-1]]
                 elif 'all' in pyversions_result:
-                    warnings.warn('working around Debian #548392, changing '
-                                  'XS-Python-Version: to \'current\'')
+                    log.warn('working around Debian #548392, changing '
+                             'XS-Python-Version: to \'current\'')
                     xs_python_version = ['current']
 
         if len(xs_python_version)!=0:
