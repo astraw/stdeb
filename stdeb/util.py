@@ -900,7 +900,7 @@ def build_dsc(debinfo,
 
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
-    fd.write('4\n')
+    fd.write('7\n')
     fd.close()
 
     #    E. debian/package.mime
