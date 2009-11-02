@@ -687,7 +687,7 @@ class DebianInfo:
                 if ('versions' in pyversions_result and
                     len(pyversions_result['versions'])>1):
 
-                    vers = list(pyversions_result)
+                    vers = list(pyversions_result['versions'])
                     # More than one Python version specified.
 
                     # This is dubious as the following comparison
