@@ -555,8 +555,6 @@ class DebianInfo:
         need_custom_binary_target = False
 
         self.do_pycentral_removal_preinst = pycentral_backwards_compatibility
-        if pycentral_backwards_compatibility:
-            depends.append('python-central')
 
         if has_ext_modules:
             self.architecture = 'any'
@@ -1087,7 +1085,8 @@ set -e
 # pycentral does not remove normally remove its symlinks on an
 # upgrade. Since we're using python-support, however, those symlinks
 # will be broken. This tells python-central to clean up any symlinks.
-if [ -e /var/lib/dpkg/info/%(package)s.list ]; then
+if [ -e /var/lib/dpkg/info/%(package)s.list ] && which pycentral >/dev/null 2>&1
+then
     pycentral pkgremove %(package)s
 fi
 
