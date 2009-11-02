@@ -1,6 +1,15 @@
 (See CHANGELOG.txt for lists of changes. This file provides
 information for those upgrading from previous versions of stdeb.)
 
+Release 0.4.2
+=============
+
+This is a bugfix release fixing a couple issues. The most significant
+fix is that if a package specified "XS-Python-Version" in stdeb.cfg,
+the binary package wouldn't install the Python packages.
+
+No backwards incompatible changes were made with this release.
+
 Release 0.4.1
 =============
 

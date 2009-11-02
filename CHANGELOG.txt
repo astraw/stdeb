@@ -1,3 +1,11 @@
+= Release 0.4.2 (2009-11-02) =
+
+2009-11-02 Bump debian/compat to '7'.
+
+2009-11-02 Don't include python-central in build package's Depends list.
+
+2009-11-02 bugfix: actually parse list of supported Python versions correctly
+
 = Release 0.4.1 (2009-10-04) =
 
 2009-10-03 Emit warnings if debhelper and python-support too old

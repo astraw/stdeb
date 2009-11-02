@@ -17,6 +17,8 @@ News
 master branch
 `````````````
 
+ * 2009-11-02: Version 0.4.2 Released. See the `download page`__. See the
+   `changelog`__ and `release notes`__.
  * 2009-10-04: Version 0.4.1 Released. See the `download page`__. See the
    `changelog`__ and `release notes`__.
  * 2009-09-27: Version 0.4 Released. See the `download page`__. This
@@ -24,6 +26,9 @@ master branch
    or Debian Lenny* at a minimum (unless you use backports). See the
    `Changelog for 0.4`__
 
+__ http://pypi.python.org/pypi/stdeb/0.4.2
+__ http://github.com/astraw/stdeb/blob/release-0.4.2/CHANGELOG.txt
+__ http://github.com/astraw/stdeb/blob/release-0.4.2/RELEASE_NOTES.txt
 __ http://pypi.python.org/pypi/stdeb/0.4.1
 __ http://github.com/astraw/stdeb/blob/release-0.4.1/CHANGELOG.txt
 __ http://github.com/astraw/stdeb/blob/release-0.4.1/RELEASE_NOTES.txt
