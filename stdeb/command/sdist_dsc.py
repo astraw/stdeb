@@ -12,7 +12,7 @@ __all__ = ['sdist_dsc']
 
 
 class sdist_dsc(Command):
-    decription = "distutils command to create a debian source distribution"
+    description = "distutils command to create a debian source distribution"
 
     user_options = stdeb_cmdline_opts + [
         ('use-premade-distfile=','P',
