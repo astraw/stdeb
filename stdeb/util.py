@@ -860,8 +860,8 @@ def build_dsc(debinfo,
         if os.path.exists(os.path.join(fullpath_repackaged_dirname,fname)):
             sys.stderr.write('*'*1000 + '\n')
             sys.stderr.write('WARNING: a Makefile exists in this package. '
-                             'debhelper 7 will attempt to use this rather than '
-                             'setup.py to build and install the package.\n')
+                             'stdeb will use the setup.py to build and install '
+                             'the package, and the Makefile will be ignored.\n')
             sys.stderr.write('*'*1000 + '\n')
 
 
