@@ -69,6 +69,8 @@ stdeb_cmdline_opts = [
     ('workaround-548392=',None,
      'If True (currently the default), limit binary package to single Python '
      'version, working around Debian bug 548392 of debhelper'),
+    ('force-buildsystem=',None,
+     "If True (the default), set 'DH_OPTIONS=--buildsystem=python_distutils'"),
     ('no-backwards-compatibility',None,
      'If True, set --pycentral-backwards-compatibility=False and '
      '--workaround-548392=False. (Default=False).'),
@@ -480,6 +482,7 @@ class DebianInfo:
                  setup_requires=None,
                  debian_version=None,
                  workaround_548392=None,
+                 force_buildsystem=None,
                  have_script_entry_points = None,
                  pycentral_backwards_compatibility=None,
                  ):
@@ -744,7 +747,8 @@ XB-Python-Version: ${python:Versions}
         self.dirlist = ""
 
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
-        setup_env_vars.append('DH_OPTIONS=--buildsystem=python_distutils')
+        if force_buildsystem:
+            setup_env_vars.append('DH_OPTIONS=--buildsystem=python_distutils')
         self.exports = ""
         if len(setup_env_vars):
             self.exports += '\n'
@@ -859,9 +863,21 @@ def build_dsc(debinfo,
     for fname in ['Makefile','makefile']:
         if os.path.exists(os.path.join(fullpath_repackaged_dirname,fname)):
             sys.stderr.write('*'*1000 + '\n')
-            sys.stderr.write('WARNING: a Makefile exists in this package. '
-                             'stdeb will use the setup.py to build and install '
-                             'the package, and the Makefile will be ignored.\n')
+            if force_buildsystem:
+                sys.stderr.write('WARNING: a Makefile exists in this package. '
+                                 'stdeb tell debhelper 7 to use the setup.py '
+                                 'to build and install the package, and the '
+                                 'Makefile will be ignored. You can disable '
+                                 'this behavior with the '
+                                 '--force-buildsystem=False argument to the
+                                 ''stdeb command.\n')
+            else:
+                sys.stderr.write('WARNING: a Makefile exists in this package. '
+                                 'debhelper 7 will attempt to use this rather '
+                                 'than setup.py to build and install the '
+                                 'package. You can disable this behavior with '
+                                 'the --force-buildsystem=True argument to the '
+                                 'stdeb command.\n')
             sys.stderr.write('*'*1000 + '\n')
 
 
