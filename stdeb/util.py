@@ -869,8 +869,8 @@ def build_dsc(debinfo,
                                  'to build and install the package, and the '
                                  'Makefile will be ignored. You can disable '
                                  'this behavior with the '
-                                 '--force-buildsystem=False argument to the
-                                 ''stdeb command.\n')
+                                 '--force-buildsystem=False argument to the '
+                                 'stdeb command.\n')
             else:
                 sys.stderr.write('WARNING: a Makefile exists in this package. '
                                  'debhelper 7 will attempt to use this rather '
