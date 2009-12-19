@@ -749,6 +749,7 @@ XB-Python-Version: ${python:Versions}
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
         if force_buildsystem:
             setup_env_vars.append('DH_OPTIONS=--buildsystem=python_distutils')
+        self.force_buildsystem = force_buildsystem
         self.exports = ""
         if len(setup_env_vars):
             self.exports += '\n'
@@ -817,7 +818,8 @@ def build_dsc(debinfo,
               repackaged_dirname,
               orig_sdist=None,
               patch_posix=0,
-              remove_expanded_source_dir=0):
+              remove_expanded_source_dir=0,
+              ):
     """make debian source package"""
     #    A. Find new dirname and delete any pre-existing contents
 
@@ -863,9 +865,9 @@ def build_dsc(debinfo,
     for fname in ['Makefile','makefile']:
         if os.path.exists(os.path.join(fullpath_repackaged_dirname,fname)):
             sys.stderr.write('*'*1000 + '\n')
-            if force_buildsystem:
+            if debinfo.force_buildsystem:
                 sys.stderr.write('WARNING: a Makefile exists in this package. '
-                                 'stdeb tell debhelper 7 to use the setup.py '
+                                 'stdeb will tell debhelper 7 to use setup.py '
                                  'to build and install the package, and the '
                                  'Makefile will be ignored. You can disable '
                                  'this behavior with the '
