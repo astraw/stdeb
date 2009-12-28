@@ -1,10 +1,8 @@
 import setuptools
 from setuptools import setup
 
-import stdeb
-
 setup(name='stdeb',
-      version=stdeb.__version__,
+      version='0.4.3+git', # keep in sync with stdeb/__init__.py
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       description='Python to Debian source package conversion utility',
