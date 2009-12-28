@@ -1,3 +1,12 @@
+= Release 0.4.3 (2009-12-28) =
+
+2009-12-01 add '--force-buildsystem' command option to allow forcing
+           of python-distutils build system, even in presence of
+           Makefile (defaults to True)
+
+2009-11-30 Fixed a typo on the sdist_dsc.py which was throwing
+           exception from paver. Fix #14
+
 = Release 0.4.2 (2009-11-02) =
 
 2009-11-02 Bump debian/compat to '7'.

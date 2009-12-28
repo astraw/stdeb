@@ -17,6 +17,8 @@ News
 master branch
 `````````````
 
+ * 2009-12-28: Version 0.4.3 Released. See the `download page`__. See the
+   `changelog`__ and `release notes`__.
  * 2009-11-02: Version 0.4.2 Released. See the `download page`__. See the
    `changelog`__ and `release notes`__.
  * 2009-10-04: Version 0.4.1 Released. See the `download page`__. See the
@@ -26,6 +28,9 @@ master branch
    or Debian Lenny* at a minimum (unless you use backports). See the
    `Changelog for 0.4`__
 
+__ http://pypi.python.org/pypi/stdeb/0.4.3
+__ http://github.com/astraw/stdeb/blob/release-0.4.3/CHANGELOG.txt
+__ http://github.com/astraw/stdeb/blob/release-0.4.3/RELEASE_NOTES.txt
 __ http://pypi.python.org/pypi/stdeb/0.4.2
 __ http://github.com/astraw/stdeb/blob/release-0.4.2/CHANGELOG.txt
 __ http://github.com/astraw/stdeb/blob/release-0.4.2/RELEASE_NOTES.txt
@@ -412,6 +417,8 @@ Additional Credits
 * Brett (last name unknown) for the --ignore-install-requires patch
 * Ximin Luo for a bug fix
 * Alexander D. Sedov for bug fixes and suggestions
+* Michele Mattioni for bug fix
+* Alexander V. Nikolaev for the debhelper buildsystem specification
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 

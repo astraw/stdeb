@@ -1,6 +1,16 @@
 (See CHANGELOG.txt for lists of changes. This file provides
 information for those upgrading from previous versions of stdeb.)
 
+Release 0.4.3
+=============
+
+This is a bugfix release. The most significant change is that by
+default the "DH_OPTIONS=--buildsystem=python_distutils" environment
+variable is passed to debhelper. This causes debhelper to ignore
+Makefiles and forces use of "python setup.py install".
+
+No backwards incompatible changes were made with this release.
+
 Release 0.4.2
 =============
 
