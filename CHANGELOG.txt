@@ -1,3 +1,8 @@
+1009-12-28 --guess-conflicts-provides-replaces option. Provides
+           automatic finding of original Debian source package's
+           binaries, and create Conflicts/Provides/Replaces entries in
+           debian/control for them. (Closes GH-17)
+
 2009-12-28 Remove dependency on setuptools. (Closes GH-18)
 
 = Release 0.4.3 (2009-12-28) =

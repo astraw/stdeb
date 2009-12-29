@@ -38,6 +38,7 @@ class sdist_dsc(Command):
         self.workaround_548392 = None
         self.force_buildsystem = None
         self.no_backwards_compatibility = None
+        self.guess_conflicts_provides_replaces = None
 
     def finalize_options(self):
         def str_to_bool(mystr):
@@ -85,6 +86,13 @@ class sdist_dsc(Command):
         if self.pycentral_backwards_compatibility is None:
             self.pycentral_backwards_compatibility=True
              # emit future change warnging?
+
+        if self.guess_conflicts_provides_replaces is None:
+            # the default
+            self.guess_conflicts_provides_replaces = False
+        else:
+            self.guess_conflicts_provides_replaces = str_to_bool(
+                self.guess_conflicts_provides_replaces)
 
     def run(self):
         ###############################################
@@ -171,6 +179,7 @@ class sdist_dsc(Command):
             pycentral_backwards_compatibility=self.pycentral_backwards_compatibility,
             setup_requires = (), # XXX How do we get the setup_requires?
             use_setuptools = use_setuptools,
+            guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
         )
         if debinfo.patch_file != '' and self.patch_already_applied:
             raise RuntimeError('A patch was already applied, but another '
@@ -282,7 +291,8 @@ class sdist_dsc(Command):
                   repackaged_dirname,
                   orig_sdist=source_tarball,
                   patch_posix = self.patch_posix,
-                  remove_expanded_source_dir=self.remove_expanded_source_dir)
+                  remove_expanded_source_dir=self.remove_expanded_source_dir,
+                  )
 
         for rmdir in cleanup_dirs:
             shutil.rmtree(rmdir)

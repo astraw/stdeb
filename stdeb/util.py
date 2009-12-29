@@ -74,6 +74,9 @@ stdeb_cmdline_opts = [
     ('no-backwards-compatibility',None,
      'If True, set --pycentral-backwards-compatibility=False and '
      '--workaround-548392=False. (Default=False).'),
+    ('guess-conflicts-provides-replaces=',None,
+     'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
+     'based on apt-cache output. (Default=False).'),
     ]
 
 stdeb_cmd_bool_opts = [
@@ -485,6 +488,7 @@ class DebianInfo:
                  have_script_entry_points = None,
                  pycentral_backwards_compatibility=None,
                  use_setuptools = False,
+                 guess_conflicts_provides_replaces = False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -732,19 +736,65 @@ XB-Python-Version: ${python:Versions}
         else:
             self.dh_binary_lines = '\tdh binary'
 
+        cpr_binaries = []
+
+        if guess_conflicts_provides_replaces:
+            # Find list of binaries which we will conflict/provide/replace.
+
+            # Get original Debian information for the package named the same.
+            args = ["apt-cache", "showsrc", self.package]
+            cmd = subprocess.Popen(args,
+                                   stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE)
+            returncode = cmd.wait()
+            if returncode:
+                log.error('ERROR running: %s', ' '.join(args))
+                raise RuntimeError('returncode %d from subprocess %s' % (returncode,
+                                                                         args))
+            inlines = cmd.stdout.read()
+            version_blocks = inlines.split('\n\n')
+            cpr_binaries = set()
+            # Remember each of the binary packages produced by the Debian source
+            for version_block in version_blocks:
+                if len(version_block)==0:
+                    continue
+                version_lines = version_block.split('\n')
+                assert version_lines[0].startswith('Package: ')
+                original_source_name = version_lines[0][ len('Package: '): ]
+
+                assert version_lines[1].startswith('Binary: ')
+                binaries_strings = version_lines[1][ len('Binary: '): ]
+                binaries = binaries_strings.split(', ')
+                for binary in binaries:
+                    cpr_binaries.add(binary)
+
+                # TODO: do this for every version available , just the
+                # first, or ???
+                break
+
+            # TODO: descend each of the original binaries and see what
+            # packages they conflict/ provide/ replace?
+
+            if self.package in cpr_binaries:
+                cpr_binaries.remove(self.package)
+            cpr_binaries = list(cpr_binaries) # convert to list
         conflicts = parse_vals(cfg,module_name,'Conflicts')
+        conflicts.extend( cpr_binaries )
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
                                               ', '.join( conflicts )+'\n')
 
         provides = parse_vals(cfg,module_name,'Provides')
+        provides.extend( cpr_binaries )
         provides.insert(0, 'Provides: ${python:Provides}')
         self.package_stanza_extras += ', '.join( provides  )+'\n'
 
         replaces = parse_vals(cfg,module_name,'Replaces')
+        replaces.extend( cpr_binaries )
         if len(replaces):
             self.package_stanza_extras += ('Replaces: ' +
                                               ', '.join( replaces  )+'\n')
+
         self.dirlist = ""
 
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
