@@ -472,7 +472,6 @@ class DebianInfo:
                  default_distribution=NotGiven,
                  default_maintainer=NotGiven,
                  upstream_version=NotGiven,
-                 egg_module_name=NotGiven,
                  has_ext_modules=NotGiven,
                  description=NotGiven,
                  long_description=NotGiven,
@@ -533,7 +532,6 @@ class DebianInfo:
                     forced_upstream_version,
                     debianize_version(forced_upstream_version)))
             self.upstream_version = forced_upstream_version
-        self.egg_module_name = egg_module_name
         self.epoch = parse_val(cfg,module_name,'Epoch')
         if self.epoch != '' and not self.epoch.endswith(':'):
             self.epoch = self.epoch + ':'

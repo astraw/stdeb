@@ -113,9 +113,6 @@ class sdist_dsc(Command):
         egg_info_dirname = ei_cmd.egg_info
         config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
 
-        egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
-        egg_module_name = egg_module_name.split(os.sep)[-1]
-
         cfg_files = []
         if os.path.exists(config_fname):
             cfg_files.append(config_fname)
@@ -150,7 +147,6 @@ class sdist_dsc(Command):
             default_distribution=self.default_distribution,
             default_maintainer=self.default_maintainer,
             upstream_version = self.distribution.get_version(),
-            egg_module_name = egg_module_name,
             has_ext_modules = self.distribution.has_ext_modules(),
             description = self.distribution.get_description()[:60],
             long_description = self.distribution.get_long_description(),
