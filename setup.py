@@ -13,6 +13,5 @@ of the resulting package can be customized via a configuration file.""",
       url='http://github.com/astraw/stdeb',
       packages=['stdeb','stdeb.command'],
       scripts=['scripts/py2dsc',
-               'scripts/stdeb_run_setup',
                ],
 )
