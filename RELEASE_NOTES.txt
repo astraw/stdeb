@@ -5,8 +5,14 @@ Release 0.5.0 (currently unreleased)
 ====================================
 
 This release drops the requirement on setuptools and uses plain
-distutils. The setup.cfg file location has been moved from the
-.egg-info directory into the directory holding setup.py.
+distutils. The following backwards incompatible changes were made:
+
+The setup.cfg file location has been moved from the .egg-info
+directory into the directory holding setup.py.
+
+The --process-dependencies option to py2dsc was dropped, because this
+functionality went beyond the scope of the py2dsc script. The
+functionality could be added to a new script if desired.
 
 Release 0.4.3
 =============

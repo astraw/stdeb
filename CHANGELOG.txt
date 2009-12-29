@@ -1,3 +1,8 @@
+2009-12-29 The --process-dependencies option to py2dsc was dropped,
+           because this functionality went beyond the scope of the
+           py2dsc script. The functionality could be added to a new
+           script if desired.
+
 2009-12-29 Add Section option to stdeb.cfg. (Closes GH-13)
 
 2009-12-29 Move stdeb.cfg file from egg-info directory to alongside setup.py

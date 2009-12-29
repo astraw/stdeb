@@ -19,18 +19,14 @@ from setuptools.package_index import PackageIndex, distros_for_filename, \
                                      EXTENSIONS
 from pkg_resources import Requirement, Distribution
 
-EXTRA_OPTS = [('process-dependencies', 'D', "process package dependencies")]
-
-
 class OptObj: pass
 
 def runit():
     # process command-line options
     bool_opts = map(translate_longopt, stdeb_cmd_bool_opts)
-    bool_opts.append('process-dependencies')
     parser = FancyGetopt(stdeb_cmdline_opts+[
         ('help', 'h', "show detailed help message"),
-        ]+EXTRA_OPTS)
+        ])
     optobj = OptObj()
     args = parser.getopt(object=optobj)
     idx = PackageIndex()
@@ -42,7 +38,7 @@ def runit():
 
     if hasattr(optobj,'help'):
         print USAGE
-        parser.set_option_table(stdeb_cmdline_opts + EXTRA_OPTS)
+        parser.set_option_table(stdeb_cmdline_opts)
         parser.print_help("Options:")
         return 0
 
@@ -80,27 +76,6 @@ def runit():
     dist = list(distros_for_filename(sdist_file))[0]
     idx.scan_egg_links(dist.location)
     package = idx.obtain(Requirement.parse(dist.project_name))
-
-    if hasattr(optobj, 'process_dependencies'):
-        if bool(int(getattr(optobj, 'process_dependencies'))):
-            backup_argv = sys.argv[:]
-            oldargv = sys.argv[:]
-            oldargv.pop(-1)
-
-            if package.requires():
-                log.info("Processing package dependencies for %s", package)
-            for req in package.requires():
-#                print >> sys.stderr
-                new_argv = oldargv + ["%s" % req]
-                log.info("Bulding dependency package %s", req)
-                log.info("  running '%s'", ' '.join(new_argv))
-                sys.argv = new_argv
-                runit()
-#                print >> sys.stderr
-            if package.requires():
-                log.info("Completed building dependencies "
-                         "for %s, continuing...", package)
-        sys.argv = backup_argv
 
     if package is not None and hasattr(optobj, 'extra_cfg_file'):
         # Allow one to have patch-files setup on config file for example
@@ -157,7 +132,7 @@ def runit():
 
     extra_args = []
     for long in parser.long_opts:
-        if long in ['dist-dir=','patch-file=', 'process-dependencies']:
+        if long in ['dist-dir=','patch-file=']:
             continue # dealt with by this invocation
         attr = parser.get_attr_name(long).rstrip('=')
         if hasattr(optobj,attr):
