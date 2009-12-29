@@ -375,9 +375,15 @@ Setup-Env-Vars           Environment variables to set on call to setup.py
                                        binary package to single Python
                                        version, working around Debian bug
                                        548392 of debhelper
+  --force-buildsystem                  If True (the default), set 'DH_OPTIONS=
+                                       --buildsystem=python_distutils'
   --no-backwards-compatibility         If True, set --pycentral-backwards-
                                        compatibility=False and --workaround-
                                        548392=False. (Default=False).
+  --guess-conflicts-provides-replaces  If True, attempt to guess
+                                       Conflicts/Provides/Replaces in
+                                       debian/control based on apt-cache
+                                       output. (Default=False).
   --use-premade-distfile (-P)          use .zip or .tar.gz file already made
                                        by sdist command
 
