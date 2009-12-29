@@ -1,7 +1,6 @@
-import setuptools, sys, os, shutil
-from setuptools import Command
-import pkg_resources
-pkg_resources.require('setuptools>=0.6b2')
+import sys, os, shutil
+
+from distutils.core import Command
 
 from stdeb import log
 from stdeb.util import expand_sdist_file, recursive_hardlink

@@ -1,6 +1,4 @@
-# setuptools is required for distutils.commands plugin we use
 import logging
-import setuptools
 __version__ = '0.4.3+git' # keep in sync with ../setup.py
 
 log = logging.getLogger('stdeb')
