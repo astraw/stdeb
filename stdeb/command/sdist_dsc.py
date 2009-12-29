@@ -111,16 +111,16 @@ class sdist_dsc(Command):
         if self.extra_cfg_file is not None:
             cfg_files.append(self.extra_cfg_file)
 
-        have_egg_info = True
+        use_setuptools = True
         try:
             ei_cmd = self.distribution.get_command_obj('egg_info')
         except DistutilsModuleError, err:
-            have_egg_info = False
+            use_setuptools = False
 
         install_requires = ()
         have_script_entry_points = False # XXX check for scripts somehow
 
-        if have_egg_info:
+        if use_setuptools:
             self.run_command('egg_info')
             egg_info_dirname = ei_cmd.egg_info
             config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
@@ -170,6 +170,7 @@ class sdist_dsc(Command):
             have_script_entry_points = have_script_entry_points,
             pycentral_backwards_compatibility=self.pycentral_backwards_compatibility,
             setup_requires = (), # XXX How do we get the setup_requires?
+            use_setuptools = use_setuptools,
         )
         if debinfo.patch_file != '' and self.patch_already_applied:
             raise RuntimeError('A patch was already applied, but another '

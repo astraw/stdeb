@@ -484,6 +484,7 @@ class DebianInfo:
                  force_buildsystem=None,
                  have_script_entry_points = None,
                  pycentral_backwards_compatibility=None,
+                 use_setuptools = False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -551,7 +552,9 @@ class DebianInfo:
         self.uploaders = parse_vals(cfg,module_name,'Uploaders')
         self.date822 = get_date_822()
 
-        build_deps = ['python-setuptools (>= 0.6b3)']
+        build_deps = []
+        if use_setuptools:
+            build_deps.append('python-setuptools (>= 0.6b3)')
         build_deps.extend(
             get_deb_depends_from_setuptools_requires(setup_requires))
 
