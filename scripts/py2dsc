@@ -15,8 +15,6 @@ from stdeb.util import stdeb_cmdline_opts, stdeb_cmd_bool_opts
 from stdeb.util import expand_sdist_file, apply_patch
 from stdeb import log
 
-from setuptools.package_index import PackageIndex, distros_for_filename, \
-                                     EXTENSIONS
 from pkg_resources import Requirement, Distribution
 
 class OptObj: pass
@@ -29,7 +27,6 @@ def runit():
         ])
     optobj = OptObj()
     args = parser.getopt(object=optobj)
-    idx = PackageIndex()
     for option in optobj.__dict__:
         value = getattr(optobj,option)
         is_string = type(value) == str
@@ -47,10 +44,7 @@ def runit():
         print USAGE
         return 1
 
-
     sdist_file = args[0]
-
-    package = None
 
     final_dist_dir = optobj.__dict__.get('dist_dir','deb_dist')
     tmp_dist_dir = os.path.join(final_dist_dir,'tmp_py2dsc')
@@ -59,34 +53,8 @@ def runit():
     os.makedirs(tmp_dist_dir)
 
     if not os.path.isfile(sdist_file):
-        for ext in EXTENSIONS:
-            if sdist_file.endswith(ext):
-                raise IOError, "File not found"
-        package = Requirement.parse(sdist_file)
-        log.info("Package %s not found, trying PyPI..." % sdist_file)
-        dist = idx.fetch_distribution(package, final_dist_dir,
-                                            force_scan=True,
-                                            source=True)
-        if hasattr(dist, 'location'):
-            sdist_file = dist.location
-        else:
-            raise Exception, "Distribution not found on PyPi"
-        log.info("Got %s", sdist_file)
-
-    dist = list(distros_for_filename(sdist_file))[0]
-    idx.scan_egg_links(dist.location)
-    package = idx.obtain(Requirement.parse(dist.project_name))
-
-    if package is not None and hasattr(optobj, 'extra_cfg_file'):
-        # Allow one to have patch-files setup on config file for example
-        local_parser = SafeConfigParser()
-        local_parser.readfp(open(optobj.__dict__.get('extra_cfg_file')))
-        if local_parser.has_section(package.project_name):
-            for opt in local_parser.options(package.project_name):
-                _opt = opt.replace('_', '-')
-                if parser.has_option(_opt) or parser.has_option(_opt+'='):
-                    setattr(optobj, opt,
-                            local_parser.get(package.project_name, opt))
+        log.error("Package %s not found."%sdist_file)
+        sys.exit(1)
 
     patch_file = optobj.__dict__.get('patch_file',None)
     patch_level = int(optobj.__dict__.get('patch_level',0))
