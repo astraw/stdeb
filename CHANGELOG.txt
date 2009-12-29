@@ -1,3 +1,5 @@
+2009-12-28 Remove dependency on setuptools. (Closes GH-18)
+
 = Release 0.4.3 (2009-12-28) =
 
 2009-12-01 add '--force-buildsystem' command option to allow forcing

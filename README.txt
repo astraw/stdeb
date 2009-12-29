@@ -200,14 +200,9 @@ For the average Python package, its source distribution
 contains nearly everything necessary to make a Debian source
 package. This near-equivalence encouraged me to write this distutils
 extension, which executes the setup.py file to extract relevant
-information. This process is made significantly easier through the use
-of setuptools_.
-
-.. _setuptools: http://peak.telecommunity.com/DevCenter/setuptools
-
-setuptools is used because of some nice features.  For example,
-setuptools makes the job of "Debianizing" python console and gui
-scripts much easier.
+information. `setuptools
+<http://peak.telecommunity.com/DevCenter/setuptools>`_ may optionally
+be used.
 
 I wrote this initially to Debianize several Python packages of my own,
 but I have the feeling it could be generally useful. It appears
