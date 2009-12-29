@@ -6,7 +6,7 @@ if [ $i -eq "1" ]; then
 SOURCE_URL=http://astraw.com/misc_files/simplepack-8.0.1+r23437.tar.gz
 SOURCE_TARBALL=simplepack-8.0.1+r23437.tar.gz
 SOURCE_TARBALL_DIR=simplepack-8.0.1+r23437
-DEBSOURCE=simplepack-8.0.1-r23437
+DEBSOURCE=simplepack-8.0.1+r23437
 elif [ $i -eq "2" ]; then
 SOURCE_URL=http://pypi.python.org/packages/source/R/Reindent/Reindent-0.1.0.tar.gz
 SOURCE_TARBALL=Reindent-0.1.0.tar.gz
@@ -43,7 +43,7 @@ rm -rf deb_dist; if [[ $? -ne 0 ]]; then exit $?; fi
 # ==============================================================
 tar xzf $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
 cd $SOURCE_TARBALL_DIR; if [[ $? -ne 0 ]]; then exit $?; fi
-stdeb_run_setup; if [[ $? -ne 0 ]]; then exit $?; fi
+python setup.py --command-packages=stdeb.command sdist_dsc; if [[ $? -ne 0 ]]; then exit $?; fi
 cd deb_dist/$DEBSOURCE; if [[ $? -ne 0 ]]; then exit $?; fi
 dpkg-buildpackage -rfakeroot -uc -us; if [[ $? -ne 0 ]]; then exit $?; fi
 cd ..; if [[ $? -ne 0 ]]; then exit $?; fi
