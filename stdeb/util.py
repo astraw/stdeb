@@ -611,6 +611,8 @@ class DebianInfo:
             install_requires))
         self.depends = ', '.join(depends)
 
+        self.debian_section = parse_val(cfg,module_name,'Section')
+
         self.description = description
         if long_description != 'UNKNOWN':
             ld2=[]
@@ -824,6 +826,7 @@ XB-Python-Version: ${python:Versions}
         defaults['Source']=source_debianize_name(module_name)
         #defaults['Source']='python-%s'%(debianize_name(module_name),)
         defaults['Package']='python-%s'%(debianize_name(module_name),)
+        defaults['Section']='python'
 
         defaults['Distribution']=default_distribution
 
@@ -1107,7 +1110,7 @@ def build_dsc(debinfo,
 CONTROL_FILE = """\
 Source: %(source)s
 Maintainer: %(maintainer)s
-%(uploaders)sSection: python
+%(uploaders)sSection: %(debian_section)s
 Priority: optional
 Build-Depends: %(build_depends)s
 Standards-Version: 3.7.2

@@ -1,3 +1,5 @@
+2009-12-29 Add Section option to stdeb.cfg. (Closes GH-13)
+
 2009-12-29 Move stdeb.cfg file from egg-info directory to alongside setup.py
 
 2009-12-28 --guess-conflicts-provides-replaces option. Provides

@@ -408,6 +408,7 @@ All available options:
 ======================== ================================================
 Debian-Version           Set Debian version
 Maintainer               Set Debian maintainer
+Section                  Add entry to Section in debian/control
 Forced-Upstream-Version  Force upstream version number
 Upstream-Version-Prefix  Force upstream version prefix (e.g. epoch)
 Upstream-Version-Suffix  Force upstream version suffix
