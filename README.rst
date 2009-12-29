@@ -390,9 +390,18 @@ stdeb.cfg configuration file
 
 You may write config files of the format understood by `ConfigParser
 <http://docs.python.org/lib/module-ConfigParser.html>`_. When building
-each package, stdeb looks for the existance of a ``stdeb.cfg`` file in
-the ``.egg-info`` directory. You may specify an additional config file
-with the command-line option --extra-cfg-file.
+each package, stdeb looks for the existance of a ``stdeb.cfg`` in the
+directory with ``setup.py``. You may specify an additional config file
+with the command-line option --extra-cfg-file. The section should
+should either be [DEFAULT] or [package_name], which package_name is
+specified as the name argument to the setup() command. An example
+stdeb.cfg file is::
+
+  [DEFAULT]
+  Depends: python-numpy
+  XS-Python-Version: >= 2.6
+
+All available options:
 
 ======================== ================================================
   Config file option       Effect

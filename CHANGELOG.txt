@@ -1,4 +1,6 @@
-1009-12-28 --guess-conflicts-provides-replaces option. Provides
+2009-12-29 Move stdeb.cfg file from egg-info directory to alongside setup.py
+
+2009-12-28 --guess-conflicts-provides-replaces option. Provides
            automatic finding of original Debian source package's
            binaries, and create Conflicts/Provides/Replaces entries in
            debian/control for them. (Closes GH-17)

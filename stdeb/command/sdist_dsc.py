@@ -128,16 +128,17 @@ class sdist_dsc(Command):
         install_requires = ()
         have_script_entry_points = False # XXX check for scripts somehow
 
+        config_fname = 'stdeb.cfg'
+        # Distutils fails if not run from setup.py dir, so this is OK.
+        if os.path.exists(config_fname):
+            cfg_files.append(config_fname)
+
         if use_setuptools:
             self.run_command('egg_info')
             egg_info_dirname = ei_cmd.egg_info
-            config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
 
             egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
             egg_module_name = egg_module_name.split(os.sep)[-1]
-
-            if os.path.exists(config_fname):
-                cfg_files.append(config_fname)
 
             try:
                 if not self.ignore_install_requires:
