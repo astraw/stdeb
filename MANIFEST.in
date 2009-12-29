@@ -1,0 +1,3 @@
+include *.txt
+include test.sh
+include stdeb.egg-info/stdeb.cfg

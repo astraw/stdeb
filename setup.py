@@ -1,5 +1,4 @@
-import setuptools
-from setuptools import setup
+from distutils.core import setup
 
 setup(name='stdeb',
       version='0.4.3+git', # keep in sync with stdeb/__init__.py
@@ -12,14 +11,7 @@ packages. It attempts to provide automatic defaults, but many aspects
 of the resulting package can be customized via a configuration file.""",
       license='MIT',
       url='http://github.com/astraw/stdeb',
-      packages=setuptools.find_packages(),
-
-      # register ourselves (using setuptools) with distutils:
-      entry_points = {
-        'distutils.commands':['sdist_dsc = stdeb.command.sdist_dsc:sdist_dsc',
-                              'bdist_deb = stdeb.command.bdist_deb:bdist_deb',
-                              ],
-        'console_scripts':['py2dsc = stdeb.py2dsc:main',
-                           'stdeb_run_setup = stdeb.stdeb_run_setup:main']
-      },
+      packages=['stdeb','stdeb.command'],
+      scripts=['scripts/py2dsc',
+               ],
 )

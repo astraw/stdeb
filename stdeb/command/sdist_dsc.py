@@ -1,7 +1,7 @@
-import setuptools, sys, os, shutil
-from setuptools import Command
-import pkg_resources
-pkg_resources.require('setuptools>=0.6b2')
+import sys, os, shutil
+
+from distutils.core import Command
+from distutils.errors import DistutilsModuleError
 
 from stdeb import log
 from stdeb.util import expand_sdist_file, recursive_hardlink
@@ -107,43 +107,50 @@ class sdist_dsc(Command):
                 self.default_maintainer = "unknown <unknown@unknown>"
 
         #    B. find config files (if any)
-        #         find .egg-info directory
-        ei_cmd = self.distribution.get_command_obj('egg_info')
-
-        self.run_command('egg_info')
-        egg_info_dirname = ei_cmd.egg_info
-        config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
-
-        egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
-        egg_module_name = egg_module_name.split(os.sep)[-1]
-
         cfg_files = []
-        if os.path.exists(config_fname):
-            cfg_files.append(config_fname)
         if self.extra_cfg_file is not None:
             cfg_files.append(self.extra_cfg_file)
 
-        install_requires = ()
+        have_egg_info = True
         try:
-            if not self.ignore_install_requires:
-                install_requires = open(os.path.join(egg_info_dirname,'requires.txt'),'rU').read()
-        except EnvironmentError:
-            pass
+            ei_cmd = self.distribution.get_command_obj('egg_info')
+        except DistutilsModuleError, err:
+            have_egg_info = False
 
-        if 1:
-            # determinc whether script specifies setuptools entry_points
-            ep_fname = os.path.join(egg_info_dirname,'entry_points.txt')
-            if os.path.exists(ep_fname):
-                entry_points = open(ep_fname,'rU').readlines()
-            else:
-                entry_points = ''
-            entry_points = [ep.strip() for ep in entry_points]
+        install_requires = ()
+        have_script_entry_points = False # XXX check for scripts somehow
 
-            if ('[console_scripts]' in entry_points or
-                '[gui_scripts]' in entry_points):
-                have_script_entry_points = True
-            else:
-                have_script_entry_points = False
+        if have_egg_info:
+            self.run_command('egg_info')
+            egg_info_dirname = ei_cmd.egg_info
+            config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
+
+            egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
+            egg_module_name = egg_module_name.split(os.sep)[-1]
+
+            if os.path.exists(config_fname):
+                cfg_files.append(config_fname)
+
+            try:
+                if not self.ignore_install_requires:
+                    install_requires = open(os.path.join(egg_info_dirname,'requires.txt'),'rU').read()
+            except EnvironmentError:
+                pass
+
+            if 1:
+                # determine whether script specifies setuptools entry_points
+                ep_fname = os.path.join(egg_info_dirname,'entry_points.txt')
+                if os.path.exists(ep_fname):
+                    entry_points = open(ep_fname,'rU').readlines()
+                else:
+                    entry_points = ''
+                entry_points = [ep.strip() for ep in entry_points]
+
+                if ('[console_scripts]' in entry_points or
+                    '[gui_scripts]' in entry_points):
+                    have_script_entry_points = True
+                else:
+                    have_script_entry_points = False
 
         debinfo = DebianInfo(
             cfg_files=cfg_files,
@@ -151,7 +158,6 @@ class sdist_dsc(Command):
             default_distribution=self.default_distribution,
             default_maintainer=self.default_maintainer,
             upstream_version = self.distribution.get_version(),
-            egg_module_name = egg_module_name,
             has_ext_modules = self.distribution.has_ext_modules(),
             description = self.distribution.get_description()[:60],
             long_description = self.distribution.get_long_description(),

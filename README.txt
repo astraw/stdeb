@@ -74,11 +74,9 @@ Invocation
 All methods eventually result in a call to the ``sdist_dsc`` distutils
 command. You may prefer to do so directly::
 
-  python -c "import stdeb; execfile('setup.py')" sdist_dsc
+  python setup.py --command-packages=stdeb.command sdist_dsc
 
 Alternatively, two scripts are provided::
-
-  stdeb_run_setup [options] # calls "python setup.py sdist_dsc [options]"
 
   py2dsc [options] mypackage-0.1.tar.gz # uses pre-built Python source package
 
@@ -96,7 +94,7 @@ Debian machinery (e.g. dpkg-buildpackage).
 Also, a ``bdist_deb`` distutils command is installed. This calls the
 sdist_dsc command and then runs dpkg-buildpackage on the result::
 
-  python -c "import stdeb; execfile('setup.py')" bdist_deb
+  python setup.py --command-packages=stdeb.command bdist_deb
 
 Examples
 --------
@@ -104,9 +102,11 @@ Examples
 Quickstart 1: Just tell me the fastest way to make a .deb
 `````````````````````````````````````````````````````````
 
+(First, install stdeb as you normally install Python packages.)
+
 Do this from the directory with your `setup.py` file::
 
-  python -c "import stdeb; execfile('setup.py')" bdist_deb
+  python setup.py --command-packages=stdeb.command bdist_deb
 
 This will make a Debian source package (.dsc, .orig.tar.gz and
 .diff.gz files) and then compile it to a Debian binary package (.deb)
@@ -161,12 +161,7 @@ files ``reindent_0.1.0-1.dsc``, ``reindent_0.1.0.orig.tar.gz`` and
 ``reindent_0.1.0-1.diff.gz``, which, together, are a debian source
 package::
 
-  python setup.py sdist_dsc
-
-(For packages that don't use setuptools, you need to get the stdeb
-monkeypatch for the sdist_dsc distutils command. So, do this: ``python
--c "import stdeb; execfile('setup.py')" sdist_dsc``, or use the
-command ``stdeb_run_setup``, which does just this.)
+  python setup.py --command-packages=stdeb.command sdist_dsc
 
 The source generated in the above way is also extracted (using
 ``dpkg-source -x``) and placed in the ``deb_dist`` subdirectory. To
@@ -205,14 +200,9 @@ For the average Python package, its source distribution
 contains nearly everything necessary to make a Debian source
 package. This near-equivalence encouraged me to write this distutils
 extension, which executes the setup.py file to extract relevant
-information. This process is made significantly easier through the use
-of setuptools_.
-
-.. _setuptools: http://peak.telecommunity.com/DevCenter/setuptools
-
-setuptools is used because of some nice features.  For example,
-setuptools makes the job of "Debianizing" python console and gui
-scripts much easier.
+information. `setuptools
+<http://peak.telecommunity.com/DevCenter/setuptools>`_ may optionally
+be used.
 
 I wrote this initially to Debianize several Python packages of my own,
 but I have the feeling it could be generally useful. It appears

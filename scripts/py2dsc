@@ -172,8 +172,7 @@ def runit():
     if patch_already_applied == 1:
         extra_args.append('--patch-already-applied')
 
-    args = [sys.executable,'-c',"import stdeb, sys; f='setup.py'; " + \
-            "sys.argv[0]=f; execfile(f,{'__file__':f,'__name__':'__main__'})",
+    args = [sys.executable,'setup.py','--command-packages','stdeb.command',
             'sdist_dsc','--dist-dir=%s'%abs_dist_dir,
             '--use-premade-distfile=%s'%os.path.abspath(sdist_file)]+extra_args
 
