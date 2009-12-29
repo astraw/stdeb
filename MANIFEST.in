@@ -1,3 +1,4 @@
 include *.txt
+include *.rst
 include test.sh
 include stdeb.egg-info/stdeb.cfg
