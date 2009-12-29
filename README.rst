@@ -1,13 +1,18 @@
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
-stdeb_ produces Debian source packages from Python packages via a new
-distutils command, ``sdist_dsc``. Automatic defaults are provided for
-the Debian package, but many aspects of the resulting package can be
-customized via a configuration file. An additional command,
-``bdist_deb``, creates a Debian binary package, a .deb file.
+`stdeb <http://github.com/astraw/stdeb>`_ produces Debian source
+packages from Python packages via a new distutils command,
+``sdist_dsc``. Automatic defaults are provided for the Debian package,
+but many aspects of the resulting package can be customized via a
+configuration file. An additional command, ``bdist_deb``, creates a
+Debian binary package, a .deb file.
 
-.. _stdeb: http://github.com/astraw/stdeb
+Two convenience utilities are also provided. ``pypi-install`` will
+query the `Python Package Index (PyPI) <http://pypi.python.org/>`_ for
+a package, download it, create a .deb from it, and then install the
+.deb. ``py2dsc`` will convert a distutils-built source tarball into a
+Debian package.
 
 .. contents::
 
@@ -17,6 +22,10 @@ News
 master branch
 `````````````
 
+This branch is recommended for all users. It requires Debhelper 7, and
+thus *requires Ubuntu Intrepid or Debian Lenny* (unless you use
+backports).
+
  * 2009-12-28: Version 0.4.3 Released. See the `download page`__. See the
    `changelog`__ and `release notes`__.
  * 2009-11-02: Version 0.4.2 Released. See the `download page`__. See the
@@ -24,9 +33,7 @@ master branch
  * 2009-10-04: Version 0.4.1 Released. See the `download page`__. See the
    `changelog`__ and `release notes`__.
  * 2009-09-27: Version 0.4 Released. See the `download page`__. This
-   version switches to debhelper 7, and thus *requires Ubuntu Intrepid
-   or Debian Lenny* at a minimum (unless you use backports). See the
-   `Changelog for 0.4`__
+   version switches to debhelper 7. See the `Changelog for 0.4`__.
 
 __ http://pypi.python.org/pypi/stdeb/0.4.3
 __ http://github.com/astraw/stdeb/blob/release-0.4.3/CHANGELOG.txt
@@ -42,6 +49,9 @@ __ http://github.com/astraw/stdeb/blob/release-0.4/CHANGELOG.txt
 
 old-stable branch (0.3 and earlier)
 ```````````````````````````````````
+
+This branch is recommended if you are operating on older Debian/Ubuntu
+distributions. It is compatible with Ubuntu Hardy.
 
  * 2009-10-04: Version 0.3.2 Released. See the `download page`__. See the `Changelog for 0.3.2`__
  * 2009-09-27: Version 0.3.1 Released. See the `download page`__. See the `Changelog for 0.3.1`__
@@ -68,19 +78,36 @@ __ http://github.com/astraw/stdeb/blob/release-0.2.1/CHANGELOG.txt
 __ http://pypi.python.org/pypi/stdeb/0.2
 __ http://github.com/astraw/stdeb/blob/release-0.2/CHANGELOG.txt
 
-Invocation
-----------
+The commands
+------------
+
+pypi-install, command-line command
+``````````````````````````````````
+
+``pypi-install`` takes a package name, queries PyPI for it, downloads
+it, builds a Debian source package and then .deb from it, and this
+installs it::
+
+  pypi-install [options] mypackage
+
+py2dsc, command-line command
+````````````````````````````
+
+``py2dsc`` takes a .tar.gz source package and build a Debian source
+package from it::
+
+  py2dsc [options] mypackage-0.1.tar.gz # uses pre-built Python source package
+
+
+sdist_dsc, distutils command
+````````````````````````````
 
 All methods eventually result in a call to the ``sdist_dsc`` distutils
 command. You may prefer to do so directly::
 
   python setup.py --command-packages=stdeb.command sdist_dsc
 
-Alternatively, two scripts are provided::
-
-  py2dsc [options] mypackage-0.1.tar.gz # uses pre-built Python source package
-
-In all cases, a Debian source package is produced from unmodified
+A Debian source package is produced from unmodified
 Python packages. The following files are produced in a newly created
 subdirectory ``deb_dist``:
 
@@ -91,15 +118,49 @@ subdirectory ``deb_dist``:
 These can then be compiled into binary packages using the standard
 Debian machinery (e.g. dpkg-buildpackage).
 
+bdist_deb, distutils command
+````````````````````````````
+
 Also, a ``bdist_deb`` distutils command is installed. This calls the
 sdist_dsc command and then runs dpkg-buildpackage on the result::
 
   python setup.py --command-packages=stdeb.command bdist_deb
 
+
+A note about telling distutils to use the stdeb distutils commands
+``````````````````````````````````````````````````````````````````
+
+Distutils command packages can also be specified in distutils
+configuration files (rather than using the ``--command-packages``
+command line argument to ``setup.py``), as specified in the `distutils
+documentation
+<http://docs.python.org/distutils/extending.html>`_. Specifically, you
+could include this in your ``~/.pydistutils.cfg`` file::
+
+  [global]
+  command-packages: stdeb.command
+
 Examples
 --------
 
-Quickstart 1: Just tell me the fastest way to make a .deb
+These all assume you have stdeb installed in your system Python
+path. stdeb also works from a non-system Python path (e.g. a
+`virtualenv <http://pypi.python.org/pypi/virtualenv>`_).
+
+Quickstart 1: Install something from PyPI now, I don't care about anything else
+```````````````````````````````````````````````````````````````````````````````
+
+Do this from the command line::
+
+  pypi-install mypackage
+
+**Warning: Despite doing its best, there is absolutely no way stdeb
+can guarantee all the Debian package dependencies will be properly
+fulfilled without manual intervention. Using pypi-install bypasses
+your ability to customize stdeb's behavior. Read the rest of this
+document to understand how to make better packages.**
+
+Quickstart 2: Just tell me the fastest way to make a .deb
 `````````````````````````````````````````````````````````
 
 (First, install stdeb as you normally install Python packages.)
@@ -124,7 +185,7 @@ version of Debian or Ubuntu.
 
 __ https://help.launchpad.net/Packaging/PPA
 
-Quickstart 2: I read the warning, so show me how to make a source package, then compile it
+Quickstart 3: I read the warning, so show me how to make a source package, then compile it
 ``````````````````````````````````````````````````````````````````````````````````````````
 
 This generates a source package::
