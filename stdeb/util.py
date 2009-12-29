@@ -562,7 +562,7 @@ class DebianInfo:
         build_deps.extend(
             get_deb_depends_from_setuptools_requires(setup_requires))
 
-        depends = ['${python:Depends}', 'python-pkg-resources']
+        depends = ['${python:Depends}']
         need_custom_binary_target = False
 
         self.do_pycentral_removal_preinst = pycentral_backwards_compatibility
