@@ -4,9 +4,9 @@ stdeb - Python to Debian source package conversion utility
 `stdeb <http://github.com/astraw/stdeb>`_ produces Debian source
 packages from Python packages via a new distutils command,
 ``sdist_dsc``. Automatic defaults are provided for the Debian package,
-but many aspects of the resulting package can be customized via a
-configuration file. An additional command, ``bdist_deb``, creates a
-Debian binary package, a .deb file.
+but many aspects of the resulting package can be customized (see the
+customizing section, below). An additional command, ``bdist_deb``,
+creates a Debian binary package, a .deb file.
 
 Two convenience utilities are also provided. ``pypi-install`` will
 query the `Python Package Index (PyPI) <http://pypi.python.org/>`_ for
@@ -313,35 +313,30 @@ Customizing the produced Debian source package (config options)
 stdeb will attempt to provide reasonable defaults, but these are only
 guesses.
 
-To customize the Debian source package produced, you may write config
-files of the format understood by ConfigParser_. When building each
-package, stdeb looks for the existance of a ``stdeb.cfg`` file in the
-``.egg-info`` directory. You may specify an additional config file
-with the command-line option --extra-cfg-file. Other command line
-options may also be provided.
+There are two ways to customize the Debian source package produced by
+stdeb. First, you may provide options to the distutils
+commands. Second, you may provide an ``stdeb.cfg`` file.
 
-.. _ConfigParser: http://docs.python.org/lib/module-ConfigParser.html
+stdeb distutils command options
+```````````````````````````````
 
-======================== ================================================
-  Config file option       Effect
-======================== ================================================
-Debian-Version           Set Debian version
-Maintainer               Set Debian maintainer
-Forced-Upstream-Version  Force upstream version number
-Upstream-Version-Prefix  Force upstream version prefix (e.g. epoch)
-Upstream-Version-Suffix  Force upstream version suffix
-Build-Depends            Add entry to debian/control
-Depends                  Add entry to debian/control
-Package                  Name of (binary) package
-Source                   Nome of source package
-XS-Python-Version        Add to debian/control (limits Python versions)
-MIME-Desktop-Files       Filename of .desktop file(s) to install
-MIME-File                Filename of .mime file(s) to install
-Shared-MIME-File         Filename of .sharedmimeinfo file(s) to install
-Copyright-File           Filename of copyright file to install
-Stdeb-Patch-File         Patches to apply
-Setup-Env-Vars           Environment variables to set on call to setup.py
-======================== ================================================
+Both the sdist_dsc and bdist_deb commands take the same set of
+options. These may be given as command-line options to the distutils
+command. For example::
+
+  python setup.py --command-packages=stdeb.command sdist_dsc --debian-version 0MyName1
+
+Would create a Debian package with the Debian version set to
+"0MyName1".
+
+These options can also be set via distutils configuration
+files. (These are the ``setup.cfg`` file alongside ``setup.py`` and
+the ~/.pydistutils.cfg file.) In that case, put the arguments in the
+``[sdist_dsc]`` or ``[bdist_deb]`` section. For example, a project's
+``~/.setup.cfg`` file might have this::
+
+  [sdist_dsc]
+  force-buildsystem: False
 
 ====================================== =========================================
         Command line option                      Effect
@@ -390,16 +385,43 @@ Setup-Env-Vars           Environment variables to set on call to setup.py
 ====================================== =========================================
 
 
+stdeb.cfg configuration file
+````````````````````````````
+
+You may write config files of the format understood by `ConfigParser
+<http://docs.python.org/lib/module-ConfigParser.html>`_. When building
+each package, stdeb looks for the existance of a ``stdeb.cfg`` file in
+the ``.egg-info`` directory. You may specify an additional config file
+with the command-line option --extra-cfg-file.
+
+======================== ================================================
+  Config file option       Effect
+======================== ================================================
+Debian-Version           Set Debian version
+Maintainer               Set Debian maintainer
+Forced-Upstream-Version  Force upstream version number
+Upstream-Version-Prefix  Force upstream version prefix (e.g. epoch)
+Upstream-Version-Suffix  Force upstream version suffix
+Build-Depends            Add entry to debian/control
+Depends                  Add entry to debian/control
+Package                  Name of (binary) package
+Source                   Nome of source package
+XS-Python-Version        Add to debian/control (limits Python versions)
+MIME-Desktop-Files       Filename of .desktop file(s) to install
+MIME-File                Filename of .mime file(s) to install
+Shared-MIME-File         Filename of .sharedmimeinfo file(s) to install
+Copyright-File           Filename of copyright file to install
+Stdeb-Patch-File         Patches to apply
+Setup-Env-Vars           Environment variables to set on call to setup.py
+======================== ================================================
+
 Prerequisites
 -------------
 
- * Python_ 2.5 or higher (older python OK if you use subprocess.py
-   with backports from Python 2.5)
+ * Python 2.5 or higher
  * Standard Debian utilities such as ``date``, ``dpkg-source`` and
    Debhelper 7 (use stdeb 0.3.x if you need to support older
    distributions without dh7)
-
-.. _Python: http://www.python.org/
 
 Using stdeb on stdeb
 --------------------
