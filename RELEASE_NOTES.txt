@@ -11,18 +11,19 @@ distutils. The following backwards incompatible changes were made:
   directory into the directory holding setup.py. The old location will
   work, but is deprecated and will be removed sometime in the future.
 
-The --process-dependencies option to py2dsc was dropped, because this
-functionality went beyond the scope of the py2dsc script. The
-functionality could be added to a new script if desired.
+* The --process-dependencies option to py2dsc was dropped, because
+  this functionality went beyond the scope of the py2dsc script. The
+  functionality could be added to a new script if desired.
 
-The ability to pass command options to sdist_dsc by specifying them to
-bdist_deb was removed. In other words, if you did this in the past::
+* The ability to pass command options to sdist_dsc by specifying them
+  to bdist_deb was removed. In other words, if you did this in the
+  past::
 
-  python setup.py bdist_deb --no-backwards-compatibility
+    python setup.py bdist_deb --no-backwards-compatibility
 
-You must now do this::
+  You must now do this::
 
-  python setup.py sdist_dsc --no-backwards-compatibility bdist_deb
+    python setup.py sdist_dsc --no-backwards-compatibility bdist_deb
 
 * Some options to the sdist_dsc command have now changed.
   (--default-maintiner should now be --maintainer,
