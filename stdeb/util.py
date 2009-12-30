@@ -740,8 +740,8 @@ class DebianInfo:
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
         self.build_depends = ', '.join(build_deps)
 
-        self.suggests = ', '.join( parse_vals(cfg,module_name,'Suggests') )
-        self.recommends = ', '.join( parse_vals(cfg,module_name,'Recommends') )
+        suggests = ', '.join( parse_vals(cfg,module_name,'Suggests') )
+        recommends = ', '.join( parse_vals(cfg,module_name,'Recommends') )
 
         self.source_stanza_extras = ''
 
@@ -891,6 +891,11 @@ XB-Python-Version: ${python:Versions}
         if len(replaces):
             self.package_stanza_extras += ('Replaces: ' +
                                               ', '.join( replaces  )+'\n')
+        if len(recommends):
+            self.package_stanza_extras += ('Recommends: '+recommends+'\n')
+
+        if len(suggests):
+            self.package_stanza_extras += ('Suggests: '+suggests+'\n')
 
         self.dirlist = ""
 
@@ -1201,8 +1206,6 @@ Standards-Version: 3.7.2
 Package: %(package)s
 Architecture: %(architecture)s
 Depends: %(depends)s
-Recommends: %(recommends)s
-Suggests: %(suggests)s
 %(package_stanza_extras)sDescription: %(description)s
 %(long_description)s
 """
