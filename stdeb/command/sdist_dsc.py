@@ -140,7 +140,7 @@ class sdist_dsc(Command):
             use_setuptools = False
 
         install_requires = ()
-        have_script_entry_points = False # XXX check for scripts somehow
+        have_script_entry_points = None
 
         config_fname = 'stdeb.cfg'
         # Distutils fails if not run from setup.py dir, so this is OK.
@@ -180,8 +180,6 @@ class sdist_dsc(Command):
                 if ('[console_scripts]' in entry_points or
                     '[gui_scripts]' in entry_points):
                     have_script_entry_points = True
-                else:
-                    have_script_entry_points = False
         else:
             # We don't have setuptools, so guess egg_info_dirname to
             # find old stdeb.cfg.
@@ -198,6 +196,8 @@ class sdist_dsc(Command):
                              'should move it alongside setup.py.' % entry)
                     cfg_files.append(config_fname)
 
+        if have_script_entry_points is None:
+            have_script_entry_points = self.distribution.has_scripts()
 
         debinfo = DebianInfo(
             cfg_files=cfg_files,
