@@ -467,6 +467,39 @@ def parse_val(cfg,section,option):
         assert len(vals)==1, (section, option, vals, type(vals))
     return vals[0]
 
+def apt_cache_info(apt_cache_cmd,package_name):
+    if apt_cache_cmd != 'showsrc':
+        raise NotImplementedError(
+            "don't know how to run apt-cache command '%s'"%apt_cache_cmd)
+
+    result_list = []
+    args = ["apt-cache", apt_cache_cmd, package_name]
+    cmd = subprocess.Popen(args,
+                           stdin=subprocess.PIPE,
+                           stdout=subprocess.PIPE)
+    returncode = cmd.wait()
+    if returncode:
+        log.error('ERROR running: %s', ' '.join(args))
+        raise RuntimeError('returncode %d from subprocess %s' % (returncode,
+                                                                 args))
+    inlines = cmd.stdout.read()
+    version_blocks = inlines.split('\n\n')
+    for version_block in version_blocks:
+        block_dict = {}
+
+        if len(version_block)==0:
+            continue
+        version_lines = version_block.split('\n')
+        assert version_lines[0].startswith('Package: ')
+        block_dict['Package'] = version_lines[0][ len('Package: '): ]
+
+        assert version_lines[1].startswith('Binary: ')
+        block_dict['Binary'] = version_lines[1][ len('Binary: '): ]
+        block_dict['Binary'] = block_dict['Binary'].split(', ')
+
+        result_list.append(block_dict)
+    return result_list
+
 class DebianInfo:
     """encapsulate information for Debian distribution system"""
     def __init__(self,
@@ -738,36 +771,22 @@ XB-Python-Version: ${python:Versions}
         else:
             self.dh_binary_lines = '\tdh binary'
 
+        conflicts = parse_vals(cfg,module_name,'Conflicts')
+        provides = parse_vals(cfg,module_name,'Provides')
+        replaces = parse_vals(cfg,module_name,'Replaces')
+
         cpr_binaries = []
 
         if guess_conflicts_provides_replaces:
             # Find list of binaries which we will conflict/provide/replace.
 
-            # Get original Debian information for the package named the same.
-            args = ["apt-cache", "showsrc", self.package]
-            cmd = subprocess.Popen(args,
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE)
-            returncode = cmd.wait()
-            if returncode:
-                log.error('ERROR running: %s', ' '.join(args))
-                raise RuntimeError('returncode %d from subprocess %s' % (returncode,
-                                                                         args))
-            inlines = cmd.stdout.read()
-            version_blocks = inlines.split('\n\n')
             cpr_binaries = set()
-            # Remember each of the binary packages produced by the Debian source
-            for version_block in version_blocks:
-                if len(version_block)==0:
-                    continue
-                version_lines = version_block.split('\n')
-                assert version_lines[0].startswith('Package: ')
-                original_source_name = version_lines[0][ len('Package: '): ]
 
-                assert version_lines[1].startswith('Binary: ')
-                binaries_strings = version_lines[1][ len('Binary: '): ]
-                binaries = binaries_strings.split(', ')
-                for binary in binaries:
+            # Get original Debian information for the package named the same.
+            for version_info in apt_cache_info('showsrc',self.package):
+
+                # Remember each of the binary packages produced by the Debian source
+                for binary in version_info['Binary']:
                     cpr_binaries.add(binary)
 
                 # TODO: do this for every version available , just the
@@ -780,19 +799,18 @@ XB-Python-Version: ${python:Versions}
             if self.package in cpr_binaries:
                 cpr_binaries.remove(self.package)
             cpr_binaries = list(cpr_binaries) # convert to list
-        conflicts = parse_vals(cfg,module_name,'Conflicts')
+
         conflicts.extend( cpr_binaries )
+        provides.extend( cpr_binaries )
+        replaces.extend( cpr_binaries )
+
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
                                               ', '.join( conflicts )+'\n')
 
-        provides = parse_vals(cfg,module_name,'Provides')
-        provides.extend( cpr_binaries )
         provides.insert(0, 'Provides: ${python:Provides}')
         self.package_stanza_extras += ', '.join( provides  )+'\n'
 
-        replaces = parse_vals(cfg,module_name,'Replaces')
-        replaces.extend( cpr_binaries )
         if len(replaces):
             self.package_stanza_extras += ('Replaces: ' +
                                               ', '.join( replaces  )+'\n')
