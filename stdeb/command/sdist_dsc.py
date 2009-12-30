@@ -5,7 +5,8 @@ from distutils.errors import DistutilsModuleError
 
 from stdeb import log
 from stdeb.util import expand_sdist_file, recursive_hardlink
-from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, stdeb_cmd_bool_opts
+from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, \
+     stdeb_cmd_bool_opts, stdeb_cfg_options
 from stdeb.util import repack_tarball_with_debianized_dirname
 
 __all__ = ['sdist_dsc']
@@ -17,7 +18,7 @@ class sdist_dsc(Command):
     user_options = stdeb_cmdline_opts + [
         ('use-premade-distfile=','P',
          'use .zip or .tar.gz file already made by sdist command'),
-        ]
+        ] + stdeb_cfg_options
 
     boolean_options = stdeb_cmd_bool_opts
 
@@ -26,8 +27,6 @@ class sdist_dsc(Command):
         self.remove_expanded_source_dir = 0
         self.patch_posix = 0
         self.dist_dir = None
-        self.default_distribution = None
-        self.default_maintainer = None
         self.extra_cfg_file = None
         self.patch_file = None
         self.patch_level = None
@@ -40,6 +39,17 @@ class sdist_dsc(Command):
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
 
+        # deprecated options
+        self.default_distribution = None
+        self.default_maintainer = None
+
+        # make distutils happy by filling in default values
+        for longopt, shortopt, description in stdeb_cfg_options:
+            assert longopt.endswith('=')
+            name = longopt[:-1]
+            name = name.replace('-','_')
+            setattr( self, name, None )
+
     def finalize_options(self):
         def str_to_bool(mystr):
             if mystr.lower() == 'false':
@@ -50,8 +60,6 @@ class sdist_dsc(Command):
                 raise ValueError('bool string "%s" is not "true" or "false"'%mystr)
         if self.dist_dir is None:
             self.dist_dir = 'deb_dist'
-        if self.default_distribution is None:
-            self.default_distribution = 'unstable'
         if self.patch_level is not None:
             self.patch_level = int(self.patch_level)
 
@@ -97,22 +105,28 @@ class sdist_dsc(Command):
     def run(self):
         ###############################################
         # 1. setup initial variables
-
         #    A. create config defaults
         module_name = self.distribution.get_name()
-        if self.default_maintainer is None:
+
+        if 1:
+            # set default maintainer
             if (self.distribution.get_maintainer() != 'UNKNOWN' and
                 self.distribution.get_maintainer_email() != 'UNKNOWN'):
-                self.default_maintainer = "%s <%s>"%(
+                guess_maintainer = "%s <%s>"%(
                     self.distribution.get_maintainer(),
                     self.distribution.get_maintainer_email())
             elif (self.distribution.get_author() != 'UNKNOWN' and
                   self.distribution.get_author_email() != 'UNKNOWN'):
-                self.default_maintainer = "%s <%s>"%(
+                guess_maintainer = "%s <%s>"%(
                     self.distribution.get_author(),
                     self.distribution.get_author_email())
             else:
-                self.default_maintainer = "unknown <unknown@unknown>"
+                guess_maintainer = "unknown <unknown@unknown>"
+        if self.default_maintainer is not None:
+            log.warn('Deprecation warning: you are using the '
+                     '--default-maintainer option. '
+                     'Switch to the --maintainer option.')
+            guess_maintainer = self.default_maintainer
 
         #    B. find config files (if any)
         cfg_files = []
@@ -189,7 +203,7 @@ class sdist_dsc(Command):
             cfg_files=cfg_files,
             module_name = module_name,
             default_distribution=self.default_distribution,
-            default_maintainer=self.default_maintainer,
+            guess_maintainer=guess_maintainer,
             upstream_version = self.distribution.get_version(),
             has_ext_modules = self.distribution.has_ext_modules(),
             description = self.distribution.get_description()[:60],
@@ -205,6 +219,7 @@ class sdist_dsc(Command):
             setup_requires = (), # XXX How do we get the setup_requires?
             use_setuptools = use_setuptools,
             guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
+            sdist_dsc_command = self,
         )
         if debinfo.patch_file != '' and self.patch_already_applied:
             raise RuntimeError('A patch was already applied, but another '

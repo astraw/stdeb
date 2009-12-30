@@ -24,6 +24,11 @@ You must now do this::
 
   python setup.py sdist_dsc --no-backwards-compatibility bdist_deb
 
+* Some options to the sdist_dsc command have now changed.
+  (--default-maintiner should now be --maintainer,
+  --default-distribution should now be --suite), although the old way
+  will still work, as it is only deprecated for now.
+
 Release 0.4.3
 =============
 

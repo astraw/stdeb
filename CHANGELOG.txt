@@ -1,3 +1,9 @@
+2009-12-30 All stdeb.cfg options can now be set using distutils
+           command option passing. This required a couple of renamings
+           (--default-maintiner should now be --maintainer,
+           --default-distribution should now be --suite), although the
+           old way will still work, as it is only deprecated for now.
+
 2009-12-30 Add pypi-install script to automatically download a package
            distribution, build a .deb file from it, and install it.
 

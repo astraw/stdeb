@@ -18,7 +18,7 @@ else:
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink',
            'apply_patch','repack_tarball_with_debianized_dirname',
-           'expand_sdist_file']
+           'expand_sdist_file','stdeb_cfg_options']
 
 DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
 DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
@@ -61,8 +61,6 @@ stdeb_cmdline_opts = [
      'remove the expanded source directory'),
     ('ignore-install-requires', 'i',
      'ignore the requirements from requires.txt in the egg-info directory'),
-    ('debian-version=',None,
-     'debian version'),
     ('pycentral-backwards-compatibility=',None,
      'If True (currently the default), enable migration from old stdeb '
      'that used pycentral'),
@@ -77,6 +75,54 @@ stdeb_cmdline_opts = [
     ('guess-conflicts-provides-replaces=',None,
      'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
      'based on apt-cache output. (Default=False).'),
+    ]
+
+# old entries from stdeb.cfg:
+
+# These should be settable as distutils command options, but in case
+# we want to support other packaging methods, they should also be
+# settable outside distutils. Consequently, we keep the ability to
+# parse ConfigParser files (specified with --extra-cfg-file). TODO:
+# Also, some (most, in fact) of the above options should also be
+# settable in the ConfigParser file.
+
+stdeb_cfg_options = [
+    # With defaults
+    ('source=',None,
+     'debian/control Source: (Default: <source-debianized-setup-name>)'),
+    ('package=',None,
+     'debian/control Package: (Default: python-<debianized-setup-name>)'),
+    ('suite=',None,
+     'suite (e.g. stable, lucid) in changelog (Default: unstable)'),
+    ('maintainer=',None,
+     'debian/control Maintainer: (Default: <setup-maintainer-or-author>)'),
+    ('debian-version=',None,'debian version (Default: 1)'),
+    ('section=',None,'debian/control Section: (Default: python)'),
+
+    # With no defaults
+    ('epoch=',None,'version epoch'),
+    ('forced-upstream-version=',None,'forced upstream version'),
+    ('upstream-version-prefix=',None,'upstream version prefix'),
+    ('upstream-version-suffix=',None,'upstream version suffix'),
+    ('uploaders=',None,'uploaders'),
+    ('copyright-file=',None,'copyright file'),
+    ('build-depends=',None,'debian/control Build-Depends:'),
+    ('build-conflicts=',None,'debian/control Build-Conflicts:'),
+    ('stdeb-patch-file=',None,'file containing patches for stdeb to apply'),
+    ('stdeb-patch-level=',None,'patch level provided to patch command'),
+    ('depends=',None,'debian/control Depends:'),
+    ('suggests=',None,'debian/control Suggests:'),
+    ('recommends=',None,'debian/control Recommends:'),
+    ('xs-python-version=',None,'debian/control XS-Python-Version:'),
+    ('dpkg-shlibdeps-params=',None,'parameters passed to dpkg-shlibdeps'),
+    ('conflicts=',None,'debian/control Conflicts:'),
+    ('provides=',None,'debian/control Provides:'),
+    ('replaces=',None,'debian/control Replaces:'),
+    ('mime-desktop-files=',None,'MIME desktop files'),
+    ('mime-file=',None,'MIME file'),
+    ('shared-mime-file=',None,'shared MIME file'),
+    ('setup-env-vars=',None,'environment variables passed to setup.py'),
+    ('udev-rules=',None,'file with rules to install to udev'),
     ]
 
 stdeb_cmd_bool_opts = [
@@ -517,7 +563,7 @@ class DebianInfo:
                  cfg_files=NotGiven,
                  module_name=NotGiven,
                  default_distribution=NotGiven,
-                 default_maintainer=NotGiven,
+                 guess_maintainer=NotGiven,
                  upstream_version=NotGiven,
                  has_ext_modules=NotGiven,
                  description=NotGiven,
@@ -533,14 +579,15 @@ class DebianInfo:
                  pycentral_backwards_compatibility=None,
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
+                 sdist_dsc_command = None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
             "module_name must be supplied")
         if default_distribution is NotGiven: raise ValueError(
             "default_distribution must be supplied")
-        if default_maintainer is NotGiven: raise ValueError(
-            "default_maintainer must be supplied")
+        if guess_maintainer is NotGiven: raise ValueError(
+            "guess_maintainer must be supplied")
         if upstream_version is NotGiven: raise ValueError(
             "upstream_version must be supplied")
         if has_ext_modules is NotGiven: raise ValueError(
@@ -553,11 +600,21 @@ class DebianInfo:
         cfg_defaults = self._make_cfg_defaults(
             module_name=module_name,
             default_distribution=default_distribution,
-            default_maintainer=default_maintainer,
+            guess_maintainer=guess_maintainer,
             )
 
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
         cfg.read(cfg_files)
+
+        if sdist_dsc_command is not None:
+            # Allow distutils commands to override config files (this lets
+            # command line options beat file options).
+            for longopt, shortopt, description in stdeb_cfg_options:
+                name = longopt[:-1]
+                name = name.replace('-','_')
+                value = getattr( sdist_dsc_command, name )
+                if value is not None:
+                    cfg.set( module_name, name, value )
 
         self.stdeb_version = __stdeb_version__
         self.module_name = module_name
@@ -595,7 +652,7 @@ class DebianInfo:
             self.epoch,
             self.upstream_version,
             self.packaging_version)
-        self.distname = parse_val(cfg,module_name,'Distribution')
+        self.distname = parse_val(cfg,module_name,'Suite')
         self.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
         self.uploaders = parse_vals(cfg,module_name,'Uploaders')
         self.date822 = get_date_822()
@@ -857,52 +914,40 @@ XB-Python-Version: ${python:Versions}
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
                            default_distribution=NotGiven,
-                           default_maintainer=NotGiven,
+                           guess_maintainer=NotGiven,
                            ):
         defaults = {}
-
-        defaults['Source']=source_debianize_name(module_name)
-        #defaults['Source']='python-%s'%(debianize_name(module_name),)
-        defaults['Package']='python-%s'%(debianize_name(module_name),)
-        defaults['Section']='python'
-
-        defaults['Distribution']=default_distribution
-
-        defaults['Epoch']=''
-        defaults['Debian-Version']='1'
-        defaults['Forced-Upstream-Version']=''
-
-        defaults['Upstream-Version-Prefix']=''
-        defaults['Upstream-Version-Suffix']=''
-
-        defaults['Maintainer'] = default_maintainer
-        defaults['Uploaders'] = ''
-
-        defaults['Copyright-File'] = ''
-
-        defaults['Build-Depends'] = ''
-        defaults['Build-Conflicts'] = ''
-        defaults['Stdeb-Patch-File'] = ''
-        defaults['Stdeb-Patch-Level'] = ''
-        defaults['Depends'] = ''
-        defaults['Suggests'] = ''
-        defaults['Recommends'] = ''
-
-        defaults['XS-Python-Version'] = ''
-
-        defaults['dpkg-shlibdeps-params'] = ''
-
-        defaults['Conflicts'] = ''
-        defaults['Provides'] = ''
-        defaults['Replaces'] = ''
-
-        defaults['MIME-Desktop-Files'] = ''
-        defaults['MIME-File'] = ''
-        defaults['Shared-MIME-File'] = ''
-
-        defaults['Setup-Env-Vars'] = ''
-        defaults['Udev-Rules'] = ''
-
+        default_re = re.compile(r'^.* \(Default: (.*)\)$')
+        for longopt,shortopt,description in stdeb_cfg_options:
+            assert longopt.endswith('=')
+            assert longopt.lower() == longopt
+            key = longopt[:-1]
+            matchobj = default_re.search( description )
+            if matchobj is not None:
+                # has a default value
+                groups = matchobj.groups()
+                assert len(groups)==1
+                value = groups[0]
+                # A few special cases
+                if value == '<source-debianized-setup-name>':
+                    assert key=='source'
+                    value = source_debianize_name(module_name)
+                elif value == 'python-<debianized-setup-name>':
+                    assert key=='package'
+                    value = 'python-' + debianize_name(module_name)
+                elif value == '<setup-maintainer-or-author>':
+                    assert key=='maintainer'
+                    value = guess_maintainer
+                if key=='suite':
+                    if default_distribution is not None:
+                        value = default_distribution
+                        log.warn('Deprecation warning: you are using the '
+                                 '--default-distribution option. '
+                                 'Switch to the --suite option.')
+            else:
+                # no default value
+                value = ''
+            defaults[key] = value
         return defaults
 
 def build_dsc(debinfo,
