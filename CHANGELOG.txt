@@ -1,3 +1,5 @@
+2009-12-30 Don't allow specifying sdist_dsc options to bdist_deb
+
 2009-12-29 The --process-dependencies option to py2dsc was dropped,
            because this functionality went beyond the scope of the
            py2dsc script. The functionality could be added to a new

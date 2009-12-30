@@ -346,23 +346,26 @@ commands. Second, you may provide an ``stdeb.cfg`` file.
 stdeb distutils command options
 ```````````````````````````````
 
-Both the sdist_dsc and bdist_deb commands take the same set of
-options. These may be given as command-line options to the distutils
+The sdist_dsc command takes command-line options to the distutils
 command. For example::
 
   python setup.py --command-packages=stdeb.command sdist_dsc --debian-version 0MyName1
 
-Would create a Debian package with the Debian version set to
+This creates a Debian package with the Debian version set to
 "0MyName1".
 
 These options can also be set via distutils configuration
 files. (These are the ``setup.cfg`` file alongside ``setup.py`` and
 the ~/.pydistutils.cfg file.) In that case, put the arguments in the
-``[sdist_dsc]`` or ``[bdist_deb]`` section. For example, a project's
-``~/.setup.cfg`` file might have this::
+``[sdist_dsc]`` section. For example, a project's ``~/.setup.cfg``
+file might have this::
 
   [sdist_dsc]
   force-buildsystem: False
+
+To pass these commands to sdist_dsc when calling bdist_deb, do this::
+
+  python setup.py sdist_dsc --debian-version 0MyName1 bdist_deb
 
 ====================================== =========================================
         Command line option                      Effect

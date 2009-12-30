@@ -111,8 +111,9 @@ def main():
                 expanded_dir = entry
 
         os.chdir( expanded_dir )
-        cmd = ('%s setup.py --command-packages=stdeb.command bdist_deb '
-               '--guess-conflicts-provides-replaces=True' % (sys.executable, ) )
+        cmd = ('%s setup.py --command-packages=stdeb.command sdist_dsc '
+               '--guess-conflicts-provides-replaces=True bdist_deb' %
+               (sys.executable, ) )
         if options.verbose >= 2:
             myprint('executing: %s'%cmd)
         subprocess.check_call(cmd, shell=True)
