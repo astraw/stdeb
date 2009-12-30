@@ -1,11 +1,3 @@
-Note: this is the documentation for the in-development version of
-stdeb. Documentation for recent releases:
-`0.4.3 <http://github.com/astraw/stdeb/tree/release-0.4.3>`_,
-`0.4.2 <http://github.com/astraw/stdeb/tree/release-0.4.2>`_,
-`0.3.2 <http://github.com/astraw/stdeb/tree/release-0.3.2>`_.
-
-
-
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
@@ -20,7 +12,7 @@ Two convenience utilities are also provided. ``pypi-install`` will
 query the `Python Package Index (PyPI) <http://pypi.python.org/>`_ for
 a package, download it, create a .deb from it, and then install the
 .deb. ``py2dsc`` will convert a distutils-built source tarball into a
-Debian package.
+Debian source package.
 
 .. contents::
 
@@ -33,6 +25,25 @@ master branch
 This branch is recommended for all users. It requires Debhelper 7, and
 thus *requires Ubuntu Intrepid or Debian Lenny* (unless you use
 backports).
+
+ * 2009-12-30: **Version 0.5.0**. See the `download page
+   <http://pypi.python.org/pypi/stdeb/0.5.0>`__. Highlights for this
+   release (you may also wish to consult the full `changelog
+   <http://github.com/astraw/stdeb/blob/release-0.5.0/CHANGELOG.txt>`__):
+
+   - A new ``pypi-install`` script will automatically download, make a
+     .deb, and install packages from the `Python Package Index (PyPI)`_.
+
+   - Removal of the setuptools dependency.
+
+   - New option (`--guess-conflicts-provides-replaces`) to query
+     original Debian packages for Conflicts/Provides/Replaces
+     information.
+
+   - As a result of these changes and to fix a couple bugs/warts, some
+     minor backwards incompatible changes and deprecations were
+     made. Please check the `release notes
+     <http://github.com/astraw/stdeb/blob/release-0.5.0/RELEASE_NOTES.txt>`__.
 
  * 2009-12-28: Version 0.4.3 Released. See the `download page`__. See the
    `changelog`__ and `release notes`__.
