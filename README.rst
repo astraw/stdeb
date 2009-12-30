@@ -281,7 +281,7 @@ more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.4.3"
+  STDEB_VERSION="0.5.0"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
