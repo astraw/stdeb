@@ -137,6 +137,14 @@ class sdist_dsc(Command):
             self.run_command('egg_info')
             egg_info_dirname = ei_cmd.egg_info
 
+            # Pickup old location of stdeb.cfg
+            config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
+            if os.path.exists(config_fname):
+                log.warn('Deprecation warning: stdeb detected old location of '
+                         'stdeb.cfg in %s. This file will be used, but you '
+                         'should move it alongside setup.py.' %egg_info_dirname)
+                cfg_files.append(config_fname)
+
             egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
             egg_module_name = egg_module_name.split(os.sep)[-1]
 
@@ -160,6 +168,22 @@ class sdist_dsc(Command):
                     have_script_entry_points = True
                 else:
                     have_script_entry_points = False
+        else:
+            # We don't have setuptools, so guess egg_info_dirname to
+            # find old stdeb.cfg.
+
+            entries = os.listdir(os.curdir)
+            for entry in entries:
+                if not (entry.endswith('.egg-info') and os.path.isdir(entry)):
+                    continue
+                # Pickup old location of stdeb.cfg
+                config_fname = os.path.join(entry,'stdeb.cfg')
+                if os.path.exists(config_fname):
+                    log.warn('Deprecation warning: stdeb detected '
+                             'stdeb.cfg in %s. This file will be used, but you '
+                             'should move it alongside setup.py.' % entry)
+                    cfg_files.append(config_fname)
+
 
         debinfo = DebianInfo(
             cfg_files=cfg_files,
