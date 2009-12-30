@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -rf deb_dist
+
 for i in `seq 1 3`; do
 
 if [ $i -eq "1" ]; then
