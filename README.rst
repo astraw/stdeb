@@ -1,3 +1,11 @@
+Note: this is the documentation for the in-development version of
+stdeb. Documentation for recent releases:
+`0.4.3 <http://github.com/astraw/stdeb/tree/release-0.4.3>`_,
+`0.4.2 <http://github.com/astraw/stdeb/tree/release-0.4.2>`_,
+`0.3.2 <http://github.com/astraw/stdeb/tree/release-0.3.2>`_.
+
+
+
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
