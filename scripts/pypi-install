@@ -14,8 +14,12 @@ def myprint(mystr,fd=None):
     else:
         print >> fd, mystr
 
+USER_AGENT = 'pypi-install/0.4.3+git +http://github.com/astraw/stdeb'
+
 def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
-    pypi = xmlrpclib.ServerProxy(pypi_url)
+    transport = xmlrpclib.Transport()
+    transport.user_agent = USER_AGENT
+    pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
 
     download_url = None
     expected_md5_digest = None
@@ -56,8 +60,10 @@ def get_source_tarball(package_name,verbose=0):
     download_url, expected_md5_digest = find_tar_gz(package_name,verbose=verbose)
     if verbose >= 1:
         myprint( 'downloading %s' % download_url )
-    request = urllib2.urlopen(download_url)
-    package_tar_gz = request.read()
+    request = urllib2.Request(download_url)
+    request.add_header('User-Agent', USER_AGENT )
+    opener = urllib2.build_opener()
+    package_tar_gz = opener.open(request).read()
     if verbose >= 1:
         myprint( 'done downloading %d bytes.' % ( len(package_tar_gz), ) )
     if expected_md5_digest is not None:
