@@ -1,4 +1,6 @@
 include *.txt
 include *.rst
 include test.sh
-include stdeb.egg-info/stdeb.cfg
+include test-pypi-install.sh
+include stdeb.cfg
+include MANIFEST.in
