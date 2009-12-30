@@ -57,7 +57,8 @@ def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
     return download_url, expected_md5_digest
 
 def get_source_tarball(package_name,verbose=0):
-    download_url, expected_md5_digest = find_tar_gz(package_name,verbose=verbose)
+    download_url, expected_md5_digest = find_tar_gz(package_name,
+                                                    verbose=verbose)
     if verbose >= 1:
         myprint( 'downloading %s' % download_url )
     request = urllib2.Request(download_url)
