@@ -45,7 +45,7 @@ def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
             if result['download_url'] != 'UNKNOWN':
                 download_url = result['download_url']
                 # no download URL provided, see if PyPI itself has download
-                urls = pypi.release_urls( hit['name'], hit['version'] )
+                urls = pypi.release_urls( result['name'], result['version'] )
     if download_url is None:
         raise ValueError('no package "%s" was found'%package_name)
     return download_url, expected_md5_digest
