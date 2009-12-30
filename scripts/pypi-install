@@ -24,6 +24,8 @@ def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
         myprint( 'querying PyPI (%s) for package name "%s"' % (pypi_url,
                                                                package_name) )
     releases = pypi.package_releases(package_name)
+    if verbose >= 2:
+        myprint( 'found releases: %s' % (', '.join(releases),) )
     if len(releases) > 1:
         # XXX how to sort versions?
         raise NotImplementedError('no ability to handle more than one release')
