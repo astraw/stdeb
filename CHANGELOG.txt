@@ -1,3 +1,6 @@
+2009-12-30 Add pypi-install script to automatically download a package
+           distribution, build a .deb file from it, and install it.
+
 2009-12-30 Don't allow specifying sdist_dsc options to bdist_deb
 
 2009-12-29 The --process-dependencies option to py2dsc was dropped,
