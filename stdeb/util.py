@@ -468,7 +468,7 @@ def parse_val(cfg,section,option):
     return vals[0]
 
 def apt_cache_info(apt_cache_cmd,package_name):
-    if apt_cache_cmd != 'showsrc':
+    if apt_cache_cmd not in ('showsrc','show'):
         raise NotImplementedError(
             "don't know how to run apt-cache command '%s'"%apt_cache_cmd)
 
@@ -493,10 +493,21 @@ def apt_cache_info(apt_cache_cmd,package_name):
         assert version_lines[0].startswith('Package: ')
         block_dict['Package'] = version_lines[0][ len('Package: '): ]
 
-        assert version_lines[1].startswith('Binary: ')
-        block_dict['Binary'] = version_lines[1][ len('Binary: '): ]
-        block_dict['Binary'] = block_dict['Binary'].split(', ')
+        if apt_cache_cmd == 'showsrc':
+            assert version_lines[1].startswith('Binary: ')
+            block_dict['Binary'] = version_lines[1][ len('Binary: '): ]
+            block_dict['Binary'] = block_dict['Binary'].split(', ')
 
+        elif apt_cache_cmd == 'show':
+            for start in ('Provides: ','Conflicts: ','Replaces: '):
+                key = start[:-2]
+                for line in version_lines[2:]:
+                    if line.startswith(start):
+                        unsplit_line_result = line[ len(start): ]
+                        split_result = unsplit_line_result.split(', ')
+                        block_dict[key] = split_result
+                if key not in block_dict:
+                    block_dict[key] = []
         result_list.append(block_dict)
     return result_list
 
@@ -775,8 +786,6 @@ XB-Python-Version: ${python:Versions}
         provides = parse_vals(cfg,module_name,'Provides')
         replaces = parse_vals(cfg,module_name,'Replaces')
 
-        cpr_binaries = []
-
         if guess_conflicts_provides_replaces:
             # Find list of binaries which we will conflict/provide/replace.
 
@@ -793,16 +802,27 @@ XB-Python-Version: ${python:Versions}
                 # first, or ???
                 break
 
-            # TODO: descend each of the original binaries and see what
-            # packages they conflict/ provide/ replace?
+            # Descend each of the original binaries and see what
+            # packages they conflict/ provide/ replace:
+            for orig_binary in cpr_binaries:
+                for version_info in apt_cache_info('show',orig_binary):
+                    provides.extend( version_info['Provides'])
+                    conflicts.extend(version_info['Conflicts'])
+                    replaces.extend( version_info['Replaces'])
 
             if self.package in cpr_binaries:
-                cpr_binaries.remove(self.package)
+                cpr_binaries.remove(self.package) # don't include ourself
+
             cpr_binaries = list(cpr_binaries) # convert to list
 
-        conflicts.extend( cpr_binaries )
-        provides.extend( cpr_binaries )
-        replaces.extend( cpr_binaries )
+            conflicts.extend( cpr_binaries )
+            provides.extend( cpr_binaries )
+            replaces.extend( cpr_binaries )
+
+            # round-trip through set to get unique entries
+            conflicts = list(set(conflicts))
+            provides = list(set(provides))
+            replaces = list(set(replaces))
 
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
