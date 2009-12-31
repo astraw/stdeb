@@ -500,17 +500,6 @@ Prerequisites
    Debhelper 7 (use stdeb 0.3.x if you need to support older
    distributions without dh7)
 
-Using stdeb on stdeb
---------------------
-
-There is a chicken-and-egg problem when trying to make a Debian
-package of stdeb with stdeb. Here's a recipe to avoid it::
-
- # in the stdeb distribution directory (with setup.py)
- python setup.py sdist
- python setup.py build
- PYTHONPATH="build/lib" python stdeb/py2dsc.py dist/stdeb-VERSION.tar.gz
-
 TODO
 ----
 
