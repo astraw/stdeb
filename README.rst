@@ -276,8 +276,8 @@ Install (or, using stdeb to create an stdeb installer)
 ------------------------------------------------------
 
 For a bit of fun, here's how to install stdeb using stdeb. Note that
-stdeb is also in Debian, so this recipe is only necessary to install a
-more recent stdeb.
+stdeb is also in Debian and Ubuntu, so this recipe is only necessary
+to install a more recent stdeb.
 
 ::
 
