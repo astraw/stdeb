@@ -331,8 +331,7 @@ Features
   package names.
 
 * Attempt to automatically convert version numbers such that ordering
-  is maintained. (The setuptools version sorting is different than the
-  Debian version sorting.) See also the config option
+  is maintained. See also the config option
   ``Forced-Upstream-Version``.
 
 * Fine grained control of version numbers. (``Debian-Version``,
