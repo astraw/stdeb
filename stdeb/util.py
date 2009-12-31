@@ -723,6 +723,7 @@ class DebianInfo:
                     ld2.append(' '+line)
                 else:
                     ld2.append(' .')
+            ld2 = ld2[:20]
             self.long_description = '\n'.join(ld2)
         else:
             self.long_description = ''
