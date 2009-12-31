@@ -393,11 +393,6 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when
                                        py2dsc calls sdist_dsc)
-  --default-distribution (-z)          distribution name to use if not
-                                       specified in .cfg (default='unstable')
-  --default-maintainer (-m)            maintainer name and email to use if not
-                                       specified in .cfg (default from
-                                       setup.py)
   --extra-cfg-file (-x)                additional .cfg file (in addition to
                                        .egg-info/stdeb.cfg if present)
   --patch-file (-p)                    patch file applied before setup.py
@@ -408,9 +403,7 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        specified in .cfg)
   --patch-posix (-q)                   apply the patch with --posix mode
   --remove-expanded-source-dir (-r)    remove the expanded source directory
-  --ignore-install-requires (-i)       ignore the requirements from
                                        requires.txt in the egg-info directory
-  --debian-version                     debian version
   --pycentral-backwards-compatibility  If True (currently the default), enable
                                        migration from old stdeb that used
                                        pycentral
@@ -433,6 +426,12 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
 ====================================== =========================================
 
 
+You may also pass any arguments described below for the stdeb.cfg file
+via distutils options. Passing the arguments this way (either on the
+command line, or in the ``[sdist_dsc]`` section of a distutils .cfg
+file) will take precedence. The option name should be given in lower
+case.
+
 stdeb.cfg configuration file
 ````````````````````````````
 
@@ -451,27 +450,48 @@ stdeb.cfg file is::
 
 All available options:
 
-======================== ================================================
-  Config file option       Effect
-======================== ================================================
-Debian-Version           Set Debian version
-Maintainer               Set Debian maintainer
-Section                  Add entry to Section in debian/control
-Forced-Upstream-Version  Force upstream version number
-Upstream-Version-Prefix  Force upstream version prefix (e.g. epoch)
-Upstream-Version-Suffix  Force upstream version suffix
-Build-Depends            Add entry to debian/control
-Depends                  Add entry to debian/control
-Package                  Name of (binary) package
-Source                   Nome of source package
-XS-Python-Version        Add to debian/control (limits Python versions)
-MIME-Desktop-Files       Filename of .desktop file(s) to install
-MIME-File                Filename of .mime file(s) to install
-Shared-MIME-File         Filename of .sharedmimeinfo file(s) to install
-Copyright-File           Filename of copyright file to install
-Stdeb-Patch-File         Patches to apply
-Setup-Env-Vars           Environment variables to set on call to setup.py
-======================== ================================================
+====================================== =========================================
+  Config file option                     Effect
+====================================== =========================================
+  Source                               debian/control Source: (Default:
+                                       <source-debianized-setup-name>)
+  Package                              debian/control Package: (Default:
+                                       python-<debianized-setup-name>)
+  Suite                                suite (e.g. stable, lucid) in changelog
+                                       (Default: unstable)
+  Maintainer                           debian/control Maintainer: (Default:
+                                       <setup-maintainer-or-author>)
+  Debian-Version                       debian version (Default: 1)
+  Section                              debian/control Section: (Default:
+                                       python)
+  Epoch                                version epoch
+  Forced-Upstream-Version              forced upstream version
+  Upstream-Version-Prefix              upstream version prefix
+  Upstream-Version-Suffix              upstream version suffix
+  Uploaders                            uploaders
+  Copyright-File                       copyright file
+  Build-Depends                        debian/control Build-Depends:
+  Build-Conflicts                      debian/control Build-Conflicts:
+  Stdeb-Patch-File                     file containing patches for stdeb to
+                                       apply
+  Stdeb-Patch-Level                    patch level provided to patch command
+  Depends                              debian/control Depends:
+  Suggests                             debian/control Suggests:
+  Recommends                           debian/control Recommends:
+  XS-Python-Version                    debian/control XS-Python-Version:
+  Dpkg-Shlibdeps-Params                parameters passed to dpkg-shlibdeps
+  Conflicts                            debian/control Conflicts:
+  Provides                             debian/control Provides:
+  Replaces                             debian/control Replaces:
+  MIME-Desktop-Files                   MIME desktop files
+  MIME-File                            MIME file
+  Shared-MIME-File                     shared MIME file
+  Setup-Env-Vars                       environment variables passed to
+                                       setup.py
+  Udev-Rules                           file with rules to install to udev
+====================================== =========================================
+
+The option names in stdeb.cfg files are not case sensitive.
 
 Prerequisites
 -------------
