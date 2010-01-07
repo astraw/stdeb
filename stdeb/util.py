@@ -609,7 +609,7 @@ class DebianInfo:
         if sdist_dsc_command is not None:
             # Allow distutils commands to override config files (this lets
             # command line options beat file options).
-            for longopt, shortopt, description in stdeb_cfg_options:
+            for longopt, shortopt, desc in stdeb_cfg_options:
                 name = longopt[:-1]
                 name = name.replace('-','_')
                 value = getattr( sdist_dsc_command, name )
