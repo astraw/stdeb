@@ -236,7 +236,7 @@ class sdist_dsc(Command):
         source_tarball = None
         cleanup_dirs = []
 
-        exclude_dirs = ['.svn']
+        exclude_dirs = ['.svn', '.git']
         # copy source tree
         if os.path.exists(fullpath_repackaged_dirname):
             shutil.rmtree(fullpath_repackaged_dirname)
