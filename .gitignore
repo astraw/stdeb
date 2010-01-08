@@ -1,4 +1,5 @@
 build
+deb_dist
 *.pyc
 stdeb.egg-info/PKG-INFO
 stdeb.egg-info/SOURCES.txt
