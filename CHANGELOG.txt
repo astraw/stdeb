@@ -1,3 +1,5 @@
+= Release 0.5.1 (2010-01-09) =
+
 2010-01-08 Fix bug where default description was wrong. Patch by
            Roland Sommer. (Closes GH-19).
 
