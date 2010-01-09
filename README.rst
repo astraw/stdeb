@@ -572,6 +572,7 @@ Additional Credits
 * Alexander D. Sedov for bug fixes and suggestions
 * Michele Mattioni for bug fix
 * Alexander V. Nikolaev for the debhelper buildsystem specification
+* Roland Sommer for the description field bugfix.
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 
