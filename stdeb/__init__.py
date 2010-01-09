@@ -1,5 +1,5 @@
 import logging
-__version__ = '0.5.0+git' # keep in sync with ../setup.py
+__version__ = '0.5.1' # keep in sync with ../setup.py
 
 log = logging.getLogger('stdeb')
 log.setLevel(logging.INFO)
