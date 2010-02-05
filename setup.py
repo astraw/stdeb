@@ -1,4 +1,6 @@
 from distutils.core import setup
+#import stdeb.command
+#import stdeb.command.sdist_dsc
 
 setup(name='stdeb',
       # Keep version in sync with stdeb/__init__.py, Install section
