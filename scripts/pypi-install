@@ -14,7 +14,7 @@ def myprint(mystr,fd=None):
     else:
         print >> fd, mystr
 
-USER_AGENT = 'pypi-install/0.5.1 ( http://github.com/astraw/stdeb )'
+USER_AGENT = 'pypi-install/0.5.1+git ( http://github.com/astraw/stdeb )'
 
 def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
     transport = xmlrpclib.Transport()
