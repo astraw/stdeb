@@ -6,7 +6,6 @@ import ConfigParser
 import subprocess
 import tempfile
 import stdeb
-import pkg_resources
 from stdeb import log, __version__ as __stdeb_version__
 
 if hasattr(os,'link'):
@@ -238,6 +237,8 @@ def load_module(name,fname):
     return module
 
 def get_deb_depends_from_setuptools_requires(requirements):
+    import pkg_resources
+
     depends = [] # This will be the return value from this function.
 
     parsed_reqs=[]
@@ -660,8 +661,9 @@ class DebianInfo:
         build_deps = []
         if use_setuptools:
             build_deps.append('python-setuptools (>= 0.6b3)')
-        build_deps.extend(
-            get_deb_depends_from_setuptools_requires(setup_requires))
+	if setup_requires is not None and len(setup_requires):
+            build_deps.extend(
+                get_deb_depends_from_setuptools_requires(setup_requires))
 
         depends = ['${python:Depends}']
         need_custom_binary_target = False
@@ -708,8 +710,9 @@ class DebianInfo:
                 '%s usr/share/applications'%mime_desktop_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
-        depends.extend(get_deb_depends_from_setuptools_requires(
-            install_requires))
+	if install_requires is not None and len(install_requires):
+            depends.extend(get_deb_depends_from_setuptools_requires(
+                install_requires))
         self.depends = ', '.join(depends)
 
         self.debian_section = parse_val(cfg,module_name,'Section')
