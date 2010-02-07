@@ -558,6 +558,27 @@ def apt_cache_info(apt_cache_cmd,package_name):
         result_list.append(block_dict)
     return result_list
 
+def check_cfg_files(cfg_files,module_name):
+    """check if the configuration files actually specify something
+
+    If config files are given, give warning if they don't contain
+    information. This may indicate a wrong module name name, for
+    example.
+    """
+
+    cfg = ConfigParser.SafeConfigParser()
+    cfg.read(cfg_files)
+    if cfg.has_section(module_name):
+        section_items = cfg.items(module_name)
+    else:
+        section_items = []
+    default_items = cfg.items('DEFAULT')
+
+    n_items = len(section_items) + len(default_items)
+    if n_items==0:
+        log.warn('configuration files were specified, but no options were '
+                 'found in "%s" or "DEFAULT" sections.' % (module_name,) )
+
 class DebianInfo:
     """encapsulate information for Debian distribution system"""
     def __init__(self,
@@ -603,6 +624,9 @@ class DebianInfo:
             default_distribution=default_distribution,
             guess_maintainer=guess_maintainer,
             )
+
+        if len(cfg_files):
+            check_cfg_files(cfg_files,module_name)
 
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
         cfg.read(cfg_files)
