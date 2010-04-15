@@ -261,8 +261,8 @@ def get_deb_depends_from_setuptools_requires(requirements):
     # e.g. setuptools itself have "foo.egg-info/BLAH" files but not a
     # "foo.egg-info" directory.
 
-    egginfore=("(/(%s)(?:[-_][^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)"
-               % '|'.join(req.project_name for req in parsed_reqs))
+    egginfore=("(/(%s)(?:-[^/]+)?(?:-py[0-9]\.[0-9.]+)?\.egg-info)"
+               % '|'.join(req.project_name.replace('-', '_') for req in parsed_reqs))
 
     args = ["apt-file", "search", "--ignore-case", "--regexp", egginfore]
     try:
