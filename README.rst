@@ -23,8 +23,7 @@ master branch
 `````````````
 
 This branch is recommended for all users. It requires Debhelper 7, and
-thus *requires Ubuntu Intrepid or Debian Lenny* (unless you use
-backports).
+thus *requires Ubuntu 8.10 (or newer) or Debian Lenny (or newer)*.
 
  * 2009-01-09: **Version 0.5.1**. Bugfix release. See the `download
    page <http://pypi.python.org/pypi/stdeb/0.5.1>`__, the `changelog
