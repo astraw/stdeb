@@ -988,6 +988,7 @@ def build_dsc(debinfo,
               orig_sdist=None,
               patch_posix=0,
               remove_expanded_source_dir=0,
+              debian_dir_only=False,
               ):
     """make debian source package"""
     #    A. Find new dirname and delete any pre-existing contents
@@ -996,7 +997,10 @@ def build_dsc(debinfo,
 
     # the location of the copied original source package (it was
     # re-recreated in dist_dir)
-    fullpath_repackaged_dirname = os.path.join(dist_dir,repackaged_dirname)
+    if debian_dir_only:
+        fullpath_repackaged_dirname = os.path.abspath(os.curdir)
+    else:
+        fullpath_repackaged_dirname = os.path.join(dist_dir,repackaged_dirname)
 
     ###############################################
     # 1. make temporary original source tarball
@@ -1011,25 +1015,26 @@ def build_dsc(debinfo,
     # of "python setup.py sdist" (done above) so that we avoid
     # packaging .svn directories, for example.
 
-    repackaged_orig_tarball = ('%(source)s_%(upstream_version)s.orig.tar.gz'%
-                               debinfo.__dict__)
-    repackaged_orig_tarball_path = os.path.join(dist_dir,
-                                                repackaged_orig_tarball)
-    if orig_sdist is not None:
-        if os.path.exists(repackaged_orig_tarball_path):
-            os.unlink(repackaged_orig_tarball_path)
-        link_func(orig_sdist,repackaged_orig_tarball_path)
-    else:
-        make_tarball(repackaged_orig_tarball,
-                     repackaged_dirname,
-                     cwd=dist_dir)
+    if not debian_dir_only:
+        repackaged_orig_tarball = ('%(source)s_%(upstream_version)s.orig.tar.gz'%
+                                   debinfo.__dict__)
+        repackaged_orig_tarball_path = os.path.join(dist_dir,
+                                                    repackaged_orig_tarball)
+        if orig_sdist is not None:
+            if os.path.exists(repackaged_orig_tarball_path):
+                os.unlink(repackaged_orig_tarball_path)
+            link_func(orig_sdist,repackaged_orig_tarball_path)
+        else:
+            make_tarball(repackaged_orig_tarball,
+                         repackaged_dirname,
+                         cwd=dist_dir)
 
-    # apply patch
-    if debinfo.patch_file != '':
-        apply_patch(debinfo.patch_file,
-                    posix=patch_posix,
-                    level=debinfo.patch_level,
-                    cwd=fullpath_repackaged_dirname)
+        # apply patch
+        if debinfo.patch_file != '':
+            apply_patch(debinfo.patch_file,
+                        posix=patch_posix,
+                        level=debinfo.patch_level,
+                        cwd=fullpath_repackaged_dirname)
 
     for fname in ['Makefile','makefile']:
         if os.path.exists(os.path.join(fullpath_repackaged_dirname,fname)):
@@ -1136,6 +1141,9 @@ def build_dsc(debinfo,
             raise ValueError('udev rules file specified, but does not exist')
         link_func(fname,
                   os.path.join(debian_dir,'%s.udev'%debinfo.package))
+
+    if debian_dir_only:
+        return
 
     ###############################################
     # 3. unpack original source tarball

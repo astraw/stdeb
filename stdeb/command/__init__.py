@@ -1,1 +1,1 @@
-__all__ = ['sdist_dsc','bdist_deb']
+__all__ = ['sdist_dsc','bdist_deb','debianize']
