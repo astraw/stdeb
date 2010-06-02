@@ -706,25 +706,17 @@ class DebianInfo:
         self.shared_mime_file = parse_val(cfg,module_name,'Shared-MIME-File')
 
         if self.mime_file == '' and self.shared_mime_file == '':
-            self.dh_installmime_line = ''
+            self.dh_installmime_indep_line = ''
         else:
             need_custom_binary_target = True
-            self.dh_installmime_line = '\tdh_installmime'
-            if self.architecture == 'all':
-                self.dh_installmime_line += ' -i'
-            else:
-                self.dh_installmime_line += ' -a'
+            self.dh_installmime_indep_line = '\tdh_installmime'
 
         mime_desktop_files = parse_vals(cfg,module_name,'MIME-Desktop-Files')
         if len(mime_desktop_files):
             need_custom_binary_target = True
-            self.dh_desktop_line = '\tdh_desktop'
-            if self.architecture == 'all':
-                self.dh_desktop_line += ' -i'
-            else:
-                self.dh_desktop_line += ' -a'
+            self.dh_desktop_indep_line = '\tdh_desktop'
         else:
-            self.dh_desktop_line = ''
+            self.dh_desktop_indep_line = ''
 
         #    E. any mime .desktop files
         self.install_file_lines = []
@@ -859,12 +851,12 @@ XB-Python-Version: ${python:Versions}
             cfg,module_name,'dpkg-shlibdeps-params')
         if dpkg_shlibdeps_params:
             need_custom_binary_target = True
-            self.dh_binary_lines = """\tdh binary --before dh_shlibdeps
+            self.dh_binary_arch_lines = """\tdh binary-arch --before dh_shlibdeps
 \tdh_shlibdeps -a --dpkg-shlibdeps-params=%s
 \tdh binary --after dh_shlibdeps"""%dpkg_shlibdeps_params
-
         else:
-            self.dh_binary_lines = '\tdh binary'
+            self.dh_binary_arch_lines = '\tdh binary-arch'
+        self.dh_binary_indep_lines = '\tdh binary-indep'
 
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         provides = parse_vals(cfg,module_name,'Provides')
@@ -939,7 +931,15 @@ XB-Python-Version: ${python:Versions}
         self.udev_rules = parse_val(cfg,module_name,'Udev-Rules')
 
         if need_custom_binary_target:
-            self.binary_target_lines = RULES_BINARY_TARGET%self.__dict__
+            if self.architecture == 'all':
+                self.binary_target_lines = ( \
+                    RULES_BINARY_ALL_TARGET%self.__dict__ + \
+                    RULES_BINARY_INDEP_TARGET%self.__dict__ )
+            else:
+                self.binary_target_lines = ( \
+                    RULES_BINARY_TARGET%self.__dict__ + \
+                    RULES_BINARY_INDEP_TARGET%self.__dict__ + \
+                    RULES_BINARY_ARCH_TARGET%self.__dict__ )
         else:
             self.binary_target_lines = ''
 
@@ -1268,10 +1268,23 @@ unexport LDFLAGS
 """
 
 RULES_BINARY_TARGET = """
-binary: build
-%(dh_binary_lines)s
-%(dh_installmime_line)s
-%(dh_desktop_line)s
+binary: binary-arch binary-indep
+"""
+
+RULES_BINARY_ALL_TARGET = """
+binary: binary-indep
+"""
+
+RULES_BINARY_ARCH_TARGET = """
+binary-arch: build
+%(dh_binary_arch_lines)s
+"""
+
+RULES_BINARY_INDEP_TARGET = """
+binary-indep: build
+%(dh_binary_indep_lines)s
+%(dh_installmime_indep_line)s
+%(dh_desktop_indep_line)s
 """
 
 PREINST = """#! /bin/sh
