@@ -1,5 +1,6 @@
 import sys, os, shutil
 
+from stdeb import log
 from distutils.core import Command
 from distutils.errors import DistutilsModuleError
 
