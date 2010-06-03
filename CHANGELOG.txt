@@ -1,3 +1,19 @@
+2010-06-03 Update to Standards-Version 3.8.3
+
+2010-06-02 Bugfix: separate binary-arch and binary-indep targets.
+
+2010-05-02 Add 'debianize' distutils command to create debian
+           directory. This was suggested by Barry Warsaw in Python
+           issue 1054967.
+
+2010-05-02 Don't change dots to dashes in debian package names. (This
+           was suggested by Barry Warsaw in Python issue 1054967.)
+           Allow underscores in python package names, replace dashes
+           with underscores (Derek Smith).
+
+2010-02-05 Bugfix: add python-pkg-resouces to Depends for stdeb
+           itself.
+
 = Release 0.5.1 (2010-01-09) =
 
 2010-01-08 Fix bug where default description was wrong. Patch by
