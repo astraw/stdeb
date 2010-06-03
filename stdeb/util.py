@@ -1240,7 +1240,7 @@ Maintainer: %(maintainer)s
 %(uploaders)sSection: %(debian_section)s
 Priority: optional
 Build-Depends: %(build_depends)s
-Standards-Version: 3.7.2
+Standards-Version: 3.8.3
 %(source_stanza_extras)s
 Package: %(package)s
 Architecture: %(architecture)s
