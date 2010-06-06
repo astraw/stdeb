@@ -578,12 +578,12 @@ Authors
 Additional Credits
 ------------------
 
-* Zooko O'Whielacronx for the autofind-depends patch
-* Brett (last name unknown) for the --ignore-install-requires patch
-* Ximin Luo for a bug fix
-* Alexander D. Sedov for bug fixes and suggestions
-* Michele Mattioni for bug fix
-* Alexander V. Nikolaev for the debhelper buildsystem specification
+* Zooko O'Whielacronx for the autofind-depends patch.
+* Brett (last name unknown) for the --ignore-install-requires patch.
+* Ximin Luo for a bug fix.
+* Alexander D. Sedov for bug fixes and suggestions.
+* Michele Mattioni for bug fix.
+* Alexander V. Nikolaev for the debhelper buildsystem specification.
 * Roland Sommer for the description field bugfix.
 * Barry Warsaw for suggesting the debianize command.
 * GitHub_ for hosting services.
