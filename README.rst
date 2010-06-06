@@ -6,7 +6,9 @@ packages from Python packages via a new distutils command,
 ``sdist_dsc``. Automatic defaults are provided for the Debian package,
 but many aspects of the resulting package can be customized (see the
 customizing section, below). An additional command, ``bdist_deb``,
-creates a Debian binary package, a .deb file.
+creates a Debian binary package, a .deb file. The ``debianize``
+command builds a ``debian/`` directory directly alongside your
+setup.py.
 
 Two convenience utilities are also provided. ``pypi-install`` will
 query the `Python Package Index (PyPI) <http://pypi.python.org/>`_ for
@@ -150,6 +152,19 @@ sdist_dsc command and then runs dpkg-buildpackage on the result::
 
   python setup.py --command-packages=stdeb.command bdist_deb
 
+
+debianize, distutils command
+````````````````````````````
+
+The ``debianize`` distutils command builds the same ``debian/``
+directory as used in the previous command, but the output is placed
+directly in the project's root folder (alongside setup.py). This is
+useful for customizing the Debian package directly (rather than using
+the various stdeb options to tune the generated package).
+
+::
+
+  python setup.py --command-packages=stdeb.command debianize
 
 A note about telling distutils to use the stdeb distutils commands
 ``````````````````````````````````````````````````````````````````
@@ -570,6 +585,7 @@ Additional Credits
 * Michele Mattioni for bug fix
 * Alexander V. Nikolaev for the debhelper buildsystem specification
 * Roland Sommer for the description field bugfix.
+* Barry Warsaw for suggesting the debianize command.
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 
