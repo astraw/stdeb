@@ -642,6 +642,8 @@ class DebianInfo:
                 name = name.replace('-','_')
                 value = getattr( sdist_dsc_command, name )
                 if value is not None:
+                    if not cfg.has_section(module_name):
+                        cfg.add_section(module_name)
                     cfg.set( module_name, name, value )
 
         self.stdeb_version = __stdeb_version__
