@@ -51,7 +51,7 @@ stdeb_cmdline_opts = [
      'maintainer name and email to use if not specified in .cfg '
      '(default from setup.py)'),
     ('extra-cfg-file=','x',
-     'additional .cfg file (in addition to .egg-info/stdeb.cfg if present)'),
+     'additional .cfg file (in addition to stdeb.cfg if present)'),
     ('patch-file=','p',
      'patch file applied before setup.py called '
      '(incompatible with file specified in .cfg)'),
