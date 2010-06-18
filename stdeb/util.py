@@ -1148,6 +1148,12 @@ def build_dsc(debinfo,
         link_func(fname,
                   os.path.join(debian_dir,'%s.udev'%debinfo.package))
 
+    #    J. debian/source/format
+    os.mkdir(os.path.join(debian_dir,'source'))
+    fd = open( os.path.join(debian_dir,'source','format'), mode='w')
+    fd.write('1.0\n')
+    fd.close()
+
     if debian_dir_only:
         return
 
