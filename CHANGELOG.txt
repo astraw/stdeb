@@ -19,6 +19,8 @@
 2010-01-08 Fix bug where default description was wrong. Patch by
            Roland Sommer. (Closes GH-19).
 
+2009-12-30 The option 'Distribution' option is changed to 'Suite'
+
 2009-12-30 Limit long description to 20 lines.
 
 = Release 0.5.0 (2009-12-30) =
