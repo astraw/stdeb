@@ -1,4 +1,4 @@
-2010-06-03 Update to Standards-Version 3.8.3
+2010-06-03 Update to Standards-Version 3.8.4
 
 2010-06-02 Bugfix: separate binary-arch and binary-indep targets.
 
