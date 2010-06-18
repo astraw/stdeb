@@ -29,6 +29,7 @@ PYSUPPORT_MIN_VERS = '0.8.4' # Namespace package support was added
 
 import exceptions
 class CalledProcessError(exceptions.Exception): pass
+class CantSatisfyRequirement(exceptions.Exception): pass
 
 def check_call(*popenargs, **kwargs):
     retcode = subprocess.call(*popenargs, **kwargs)
@@ -239,7 +240,17 @@ def load_module(name,fname):
         fd.close()
     return module
 
-def get_deb_depends_from_setuptools_requires(requirements):
+def get_deb_depends_from_setuptools_requires(requirements, on_failure="warn"):
+    """
+    Suppose you can't confidently figure out a .deb which satisfies a given
+    requirement.  If on_failure == 'warn', then log a warning.  If on_failure
+    == 'raise' then raise CantSatisfyRequirement exception.  If on_failure ==
+    'guess' then guess that python-$FOO will satisfy the dependency and that
+    the Python version numbers will apply to the Debian packages (in addition
+    to logging a warning message).
+    """
+    assert on_failure in ("raise", "warn", "guess"), on_failure
+
     import pkg_resources
 
     depends = [] # This will be the return value from this function.
@@ -329,9 +340,25 @@ def get_deb_depends_from_setuptools_requires(requirements):
                          "\"%s\" -- ignoring."
                          % (', '.join(debs), req.project_name, req))
         if not gooddebs:
-            log.warn("I found no Debian package which provides the required "
-                     "Python package \"%s\" with version requirements "
-                     "\"%s\"."% (req.project_name, req.specs))
+            if on_failure == 'warn':
+                log.warn(
+                    "I found no Debian package which provides the required "
+                    "Python package \"%s\" with version requirements "
+                    "\"%s\"."% (req.project_name, req.specs))
+            elif on_failure == "raise":
+                raise CantSatisfyRequirement(
+                    "I found no Debian package which "
+                    "provides the required Python package \"%s\" with version "
+                    "requirements \"%s\"." % (req.project_name, req.specs), req)
+            elif on_failure == "guess":
+                log.warn("I found no Debian package which provides the "
+                         "required Python package \"%s\" with version "
+                         "requirements \"%s\".  Guessing blindly that the "
+                         "name \"python-%s\" will be it, and that the Python "
+                         "package version number requirements will apply to "
+                         "the Debian package." % (req.project_name,
+                                                  req.specs, reqname))
+                gooddebs.add("python-" + reqname)
         elif len(gooddebs) == 1:
             log.info("I found a Debian package which provides the require "
                      "Python package.  Python package: \"%s\", "
