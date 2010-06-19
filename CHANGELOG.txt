@@ -1,5 +1,8 @@
 2010-06-19 Do not workaround Debian Bug #548392 by default.
 
+2010-06-19 By default, do not attempt to migrate old stdeb based
+           packages that used pycentral.
+
 = Release 0.6 (2010-06-18) =
 
 2010-06-18 Do not die if sources.list does not contain deb-src

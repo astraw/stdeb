@@ -11,6 +11,10 @@ makes no effort to workaround this bug, and thus "XS-Python-Version:
 all". If you are using stdeb on an older version of Debian/Ubuntu with
 a buggy version of debhelper, use "--workaround-548392=True".
 
+Remove the default attempt to migrate old stdeb based packages that
+used pycentral. (If you still have old stdeb based packages, use
+"--pycentral-backwards-compatibility=True".
+
 Release 0.6.0
 =============
 

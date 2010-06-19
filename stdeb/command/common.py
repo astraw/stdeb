@@ -74,8 +74,7 @@ class common_debian_package_command(Command):
             self.force_buildsystem = True
 
         if self.pycentral_backwards_compatibility is None:
-            self.pycentral_backwards_compatibility=True
-             # emit future change warnging?
+            self.pycentral_backwards_compatibility=False
 
         if self.guess_conflicts_provides_replaces is None:
             # the default

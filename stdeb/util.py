@@ -66,8 +66,7 @@ stdeb_cmdline_opts = [
     ('ignore-install-requires', 'i',
      'ignore the requirements from requires.txt in the egg-info directory'),
     ('pycentral-backwards-compatibility=',None,
-     'If True (currently the default), enable migration from old stdeb '
-     'that used pycentral'),
+     'If True, enable migration from old stdeb that used pycentral. (Default=False).'),
     ('workaround-548392=',None,
      'If True, limit binary package to single Python version, '
      'working around Debian bug 548392 of debhelper. (Default=False).'),
