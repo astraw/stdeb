@@ -1,6 +1,8 @@
 2010-06-18 Document need to call "apt-file update". Emit nicer error
            when user needs to call "apt-file update". (Closes #568122)
 
+2010-06-16 Added {$misc:Depends} to depends. (Closes #568692)
+
 2010-06-03 Update to Standards-Version 3.8.4
 
 2010-06-02 Bugfix: separate binary-arch and binary-indep targets.
