@@ -73,8 +73,8 @@ stdeb_cmdline_opts = [
     ('force-buildsystem=',None,
      "If True (the default), set 'DH_OPTIONS=--buildsystem=python_distutils'"),
     ('no-backwards-compatibility',None,
-     'If True, set --pycentral-backwards-compatibility=False and '
-     '--workaround-548392=False. (Default=False).'),
+     'This option has no effect, is here for backwards compatibility, and may '
+     'be removed someday.'),
     ('guess-conflicts-provides-replaces=',None,
      'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
      'based on apt-cache output. (Default=False).'),

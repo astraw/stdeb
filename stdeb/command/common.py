@@ -57,16 +57,6 @@ class common_debian_package_command(Command):
         if self.force_buildsystem is not None:
             self.force_buildsystem = str_to_bool(self.force_buildsystem)
 
-        if self.no_backwards_compatibility:
-            if self.pycentral_backwards_compatibility==True:
-                raise ValueError('inconsistent backwards compatibility '
-                                 'command line options')
-            if self.workaround_548392==True:
-                raise ValueError('inconsistent backwards compatibility '
-                                 'command line options')
-            self.workaround_548392=False
-            self.pycentral_backwards_compatibility=False
-
         if self.workaround_548392 is None:
             self.workaround_548392=False
 

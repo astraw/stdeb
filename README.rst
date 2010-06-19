@@ -450,9 +450,9 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        (Default=False).
   --force-buildsystem                  If True (the default), set 'DH_OPTIONS=
                                        --buildsystem=python_distutils'
-  --no-backwards-compatibility         If True, set --pycentral-backwards-
-                                       compatibility=False and --workaround-
-                                       548392=False. (Default=False).
+  --no-backwards-compatibility         This option has no effect, is here for
+                                       backwards compatibility, and may be
+                                       removed someday.
   --guess-conflicts-provides-replaces  If True, attempt to guess
                                        Conflicts/Provides/Replaces in
                                        debian/control based on apt-cache
