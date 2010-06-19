@@ -1,3 +1,6 @@
+2010-06-18 Do not die if sources.list does not contain deb-src
+           lines. (Debian Bug#580376)
+
 2010-06-18 Document need to call "apt-file update". Emit nicer error
            when user needs to call "apt-file update". (Closes #568122)
 

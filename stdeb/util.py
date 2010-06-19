@@ -564,11 +564,14 @@ def apt_cache_info(apt_cache_cmd,package_name):
     args = ["apt-cache", apt_cache_cmd, package_name]
     cmd = subprocess.Popen(args,
                            stdin=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
                            stdout=subprocess.PIPE)
     returncode = cmd.wait()
     if returncode:
-        log.error('ERROR running: %s', ' '.join(args))
-        raise RuntimeError('returncode %d from subprocess %s' % (returncode,
+        errline = cmd.stderr.read()
+        if not (returncode == 100 and errline == "E: You must put some 'source' URIs in your sources.list\n"):
+            log.error('ERROR running: %s', ' '.join(args))
+            raise RuntimeError('returncode %d from subprocess %s' % (returncode,
                                                                  args))
     inlines = cmd.stdout.read()
     version_blocks = inlines.split('\n\n')
