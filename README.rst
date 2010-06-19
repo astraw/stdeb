@@ -27,7 +27,7 @@ master branch
 This branch is recommended for all users. It requires Debhelper 7, and
 thus *requires Ubuntu 8.10 (or newer) or Debian Lenny (or newer)*.
 
- * 2009-06-18: **Version 0.6.0**. See the `download page
+ * 2010-06-18: **Version 0.6.0**. See the `download page
    <http://pypi.python.org/pypi/stdeb/0.6.0>`__. Highlights for this
    release (you may also wish to consult the full `changelog
    <http://github.com/astraw/stdeb/blob/release-0.6.0/CHANGELOG.txt>`__):
@@ -37,7 +37,7 @@ thus *requires Ubuntu 8.10 (or newer) or Debian Lenny (or newer)*.
 
    - Bugfixes.
 
- * 2009-01-09: **Version 0.5.1**. Bugfix release. See the `download
+ * 2010-01-09: **Version 0.5.1**. Bugfix release. See the `download
    page <http://pypi.python.org/pypi/stdeb/0.5.1>`__, the `changelog
    <http://github.com/astraw/stdeb/blob/release-0.5.1/CHANGELOG.txt>`__
    and `release notes
