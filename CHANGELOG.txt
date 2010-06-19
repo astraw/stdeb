@@ -1,3 +1,5 @@
+= Release 0.6 (2010-06-18) =
+
 2010-06-18 Do not die if sources.list does not contain deb-src
            lines. (Debian Bug#580376)
 

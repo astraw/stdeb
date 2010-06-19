@@ -1,6 +1,14 @@
 (See CHANGELOG.txt for lists of changes. This file provides
 information for those upgrading from previous versions of stdeb.)
 
+Release 0.6.0
+=============
+
+A new ``debianize`` command was added. This command builds a
+``debian/`` directory alongside your setup.py file.
+
+No backwards incompatible changes were made with this release.
+
 Release 0.5.1
 =============
 
