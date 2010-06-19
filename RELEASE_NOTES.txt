@@ -1,6 +1,16 @@
 (See CHANGELOG.txt for lists of changes. This file provides
 information for those upgrading from previous versions of stdeb.)
 
+Next release
+============
+
+The default behavior of stdeb has changed with respect to Debian bug
+#548392. Previously, the default was to workaround this bug by placing
+"XS-Python-Version: current" into debian/control. The new default
+makes no effort to workaround this bug, and thus "XS-Python-Version:
+all". If you are using stdeb on an older version of Debian/Ubuntu with
+a buggy version of debhelper, use "--workaround-548392=True".
+
 Release 0.6.0
 =============
 

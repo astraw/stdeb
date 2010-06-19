@@ -70,8 +70,7 @@ class common_debian_package_command(Command):
             self.pycentral_backwards_compatibility=False
 
         if self.workaround_548392 is None:
-            self.workaround_548392=True
-            # emit future change warnging?
+            self.workaround_548392=False
 
         if self.force_buildsystem is None:
             self.force_buildsystem = True

@@ -436,10 +436,10 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --pycentral-backwards-compatibility  If True (currently the default), enable
                                        migration from old stdeb that used
                                        pycentral
-  --workaround-548392                  If True (currently the default), limit
-                                       binary package to single Python
-                                       version, working around Debian bug
-                                       548392 of debhelper
+  --workaround-548392                  If True, limit binary package to single
+                                       Python version, working around Debian
+                                       bug 548392 of debhelper.
+                                       (Default=False).
   --force-buildsystem                  If True (the default), set 'DH_OPTIONS=
                                        --buildsystem=python_distutils'
   --no-backwards-compatibility         If True, set --pycentral-backwards-

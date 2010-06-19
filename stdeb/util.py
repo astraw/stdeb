@@ -69,8 +69,8 @@ stdeb_cmdline_opts = [
      'If True (currently the default), enable migration from old stdeb '
      'that used pycentral'),
     ('workaround-548392=',None,
-     'If True (currently the default), limit binary package to single Python '
-     'version, working around Debian bug 548392 of debhelper'),
+     'If True, limit binary package to single Python version, '
+     'working around Debian bug 548392 of debhelper. (Default=False).'),
     ('force-buildsystem=',None,
      "If True (the default), set 'DH_OPTIONS=--buildsystem=python_distutils'"),
     ('no-backwards-compatibility',None,
