@@ -422,8 +422,15 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when
                                        py2dsc calls sdist_dsc)
+  --default-distribution               deprecated (see --suite)
+  --suite (-z)                         distribution name to use if not
+                                       specified in .cfg (default='unstable')
+  --default-maintainer                 deprecated (see --maintainer)
+  --maintainer (-m)                    maintainer name and email to use if not
+                                       specified in .cfg (default from
+                                       setup.py)
   --extra-cfg-file (-x)                additional .cfg file (in addition to
-                                       .egg-info/stdeb.cfg if present)
+                                       stdeb.cfg if present)
   --patch-file (-p)                    patch file applied before setup.py
                                        called (incompatible with file
                                        specified in .cfg)
@@ -432,6 +439,7 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        specified in .cfg)
   --patch-posix (-q)                   apply the patch with --posix mode
   --remove-expanded-source-dir (-r)    remove the expanded source directory
+  --ignore-install-requires (-i)       ignore the requirements from
                                        requires.txt in the egg-info directory
   --pycentral-backwards-compatibility  If True (currently the default), enable
                                        migration from old stdeb that used
@@ -451,6 +459,42 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        output. (Default=False).
   --use-premade-distfile (-P)          use .zip or .tar.gz file already made
                                        by sdist command
+  --source                             debian/control Source: (Default:
+                                       <source-debianized-setup-name>)
+  --package                            debian/control Package: (Default:
+                                       python-<debianized-setup-name>)
+  --suite                              suite (e.g. stable, lucid) in changelog
+                                       (Default: unstable)
+  --maintainer                         debian/control Maintainer: (Default:
+                                       <setup-maintainer-or-author>)
+  --debian-version                     debian version (Default: 1)
+  --section                            debian/control Section: (Default:
+                                       python)
+  --epoch                              version epoch
+  --forced-upstream-version            forced upstream version
+  --upstream-version-prefix            upstream version prefix
+  --upstream-version-suffix            upstream version suffix
+  --uploaders                          uploaders
+  --copyright-file                     copyright file
+  --build-depends                      debian/control Build-Depends:
+  --build-conflicts                    debian/control Build-Conflicts:
+  --stdeb-patch-file                   file containing patches for stdeb to
+                                       apply
+  --stdeb-patch-level                  patch level provided to patch command
+  --depends                            debian/control Depends:
+  --suggests                           debian/control Suggests:
+  --recommends                         debian/control Recommends:
+  --xs-python-version                  debian/control XS-Python-Version:
+  --dpkg-shlibdeps-params              parameters passed to dpkg-shlibdeps
+  --conflicts                          debian/control Conflicts:
+  --provides                           debian/control Provides:
+  --replaces                           debian/control Replaces:
+  --mime-desktop-files                 MIME desktop files
+  --mime-file                          MIME file
+  --shared-mime-file                   shared MIME file
+  --setup-env-vars                     environment variables passed to
+                                       setup.py
+  --udev-rules                         file with rules to install to udev
 
 ====================================== =========================================
 
