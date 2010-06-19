@@ -49,10 +49,8 @@ class common_debian_package_command(Command):
             self.patch_level = int(self.patch_level)
 
         if self.pycentral_backwards_compatibility is not None:
-            print '='*50,repr(self.pycentral_backwards_compatibility)
             self.pycentral_backwards_compatibility = str_to_bool(
                 self.pycentral_backwards_compatibility)
-            print '='*50,repr(self.pycentral_backwards_compatibility)
         if self.workaround_548392 is not None:
             self.workaround_548392 = str_to_bool(self.workaround_548392)
 
