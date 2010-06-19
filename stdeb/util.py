@@ -279,6 +279,17 @@ def get_deb_depends_from_setuptools_requires(requirements, on_failure="warn"):
                % '|'.join(req.project_name.replace('-', '_') for req in parsed_reqs))
 
     args = ["apt-file", "search", "--ignore-case", "--regexp", egginfore]
+
+    if 1:
+        # do dry run on apt-file
+        dry_run_args = args[:] + ['--dummy','--non-interactive']
+        cmd = subprocess.Popen(dry_run_args,stderr=subprocess.PIPE)
+        returncode = cmd.wait()
+        if returncode:
+            err_output = cmd.stderr.read()
+            raise RuntimeError('Error running "apt-file search": ' +
+                               err_output.strip())
+
     try:
         cmd = subprocess.Popen(args, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,

@@ -519,6 +519,9 @@ Prerequisites
  * Standard Debian utilities such as ``date``, ``dpkg-source`` and
    Debhelper 7 (use stdeb 0.3.x if you need to support older
    distributions without dh7)
+ * If your setup.py uses the setuptools features ``setup_requires`` or
+   ``install_requires``, you must run ``apt-file update`` prior to
+   running any stdeb command.
 
 TODO
 ----
