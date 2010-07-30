@@ -29,40 +29,38 @@ class sdist_dsc(common_debian_package_command):
             raise RuntimeError('A patch was already applied, but another '
                                'patch is requested.')
 
-        ###############################################
-        # 2. Build source tree and rename it to be in self.dist_dir
-
-        #    A. create source archive in new directory
         repackaged_dirname = debinfo.source+'-'+debinfo.upstream_version
         fullpath_repackaged_dirname = os.path.join(self.dist_dir,
                                                    repackaged_dirname)
 
-        source_tarball = None
         cleanup_dirs = []
+        if self.use_premade_distfile is None:
+            # generate original tarball
+            sdist_cmd = self.distribution.get_command_obj('sdist')
+            self.run_command('sdist')
 
-        exclude_dirs = ['.svn', '.git']
+            source_tarball = None
+            for archive_file in sdist_cmd.get_archive_files():
+                if archive_file.endswith('.tar.gz'):
+                    source_tarball = archive_file
+
+            if source_tarball is None:
+                raise RuntimeError('sdist did not produce .tar.gz file')
+
+            # make copy of source tarball in deb_dist/
+            local_source_tarball = os.path.split(source_tarball)[-1]
+            shutil.copy2( source_tarball, local_source_tarball )
+            source_tarball = local_source_tarball
+            self.use_premade_distfile = source_tarball
+        else:
+            source_tarball = self.use_premade_distfile
+
         # copy source tree
         if os.path.exists(fullpath_repackaged_dirname):
             shutil.rmtree(fullpath_repackaged_dirname)
         os.makedirs(fullpath_repackaged_dirname)
-        orig_dir = os.path.abspath(os.curdir)
-        for src in os.listdir(orig_dir):
-            if src not in exclude_dirs+[self.dist_dir,'build','dist']:
-                dst = os.path.join(fullpath_repackaged_dirname,src)
-                if os.path.isdir(src):
-                    shutil.copytree(src, dst, symlinks=True)
-                else:
-                    shutil.copy2(src, dst )
-        # remove .pyc files which dpkg-source cannot package
-        for root, dirs, files in os.walk(fullpath_repackaged_dirname):
-            for name in files:
-                if name.endswith('.pyc'):
-                    fullpath = os.path.join(root,name)
-                    os.unlink(fullpath)
-            for name in dirs:
-                if name in exclude_dirs:
-                    fullpath = os.path.join(root,name)
-                    shutil.rmtree(fullpath)
+        expand_sdist_file( os.path.abspath(source_tarball),
+                           cwd=fullpath_repackaged_dirname )
 
         if self.use_premade_distfile is not None:
         # ensure premade sdist can actually be used
@@ -115,11 +113,6 @@ class sdist_dsc(common_debian_package_command):
                         if name.endswith('.pyc'):
                             raise RuntimeError('original source dist cannot '
                                                'contain .pyc files')
-        else:
-            if 0:
-                # haven't figured out why
-                raise NotImplementedError("the code path is broken right now")
-
 
         ###############################################
         # 3. Find all directories
