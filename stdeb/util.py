@@ -72,7 +72,7 @@ stdeb_cmdline_opts = [
      'This option has no effect, is here for backwards compatibility, and may '
      'be removed someday.'),
     ('force-buildsystem=',None,
-     "If True (the default), set 'DH_OPTIONS=--buildsystem=python_distutils'"),
+     "If True, pass '--buildsystem=python_distutils' to dh sequencer"),
     ('no-backwards-compatibility',None,
      'This option has no effect, is here for backwards compatibility, and may '
      'be removed someday.'),
@@ -911,9 +911,12 @@ XB-Python-Version: ${python:Versions}
 
         self.dirlist = ""
 
-        setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
+        sequencer_options = []
         if force_buildsystem:
-            setup_env_vars.append('DH_OPTIONS=--buildsystem=python_distutils')
+            sequencer_options.append('--buildsystem=python_distutils')
+        self.sequencer_options = ' '.join(sequencer_options)
+
+        setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
         self.force_buildsystem = force_buildsystem
         self.exports = ""
         if len(setup_env_vars):
@@ -1254,7 +1257,7 @@ unexport LDFLAGS
 %(exports)s
 
 %(percent_symbol)s:
-        dh $@
+        dh $@ %(sequencer_options)s
 
 %(binary_target_lines)s
 """
