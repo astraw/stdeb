@@ -729,7 +729,7 @@ class DebianInfo:
         build_deps = []
         if use_setuptools:
             build_deps.append('python-setuptools (>= 0.6b3)')
-	if setup_requires is not None and len(setup_requires):
+        if setup_requires is not None and len(setup_requires):
             build_deps.extend(
                 get_deb_depends_from_setuptools_requires(setup_requires))
 
@@ -768,7 +768,7 @@ class DebianInfo:
                 '%s usr/share/applications'%mime_desktop_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
-	if install_requires is not None and len(install_requires):
+        if install_requires is not None and len(install_requires):
             depends.extend(get_deb_depends_from_setuptools_requires(
                 install_requires))
         self.depends = ', '.join(depends)
