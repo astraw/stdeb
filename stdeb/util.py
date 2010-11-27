@@ -66,10 +66,11 @@ stdeb_cmdline_opts = [
     ('ignore-install-requires', 'i',
      'ignore the requirements from requires.txt in the egg-info directory'),
     ('pycentral-backwards-compatibility=',None,
-     'If True, enable migration from old stdeb that used pycentral. (Default=False).'),
+     'This option has no effect, is here for backwards compatibility, and may '
+     'be removed someday.'),
     ('workaround-548392=',None,
-     'If True, limit binary package to single Python version, '
-     'working around Debian bug 548392 of debhelper. (Default=False).'),
+     'This option has no effect, is here for backwards compatibility, and may '
+     'be removed someday.'),
     ('force-buildsystem=',None,
      "If True (the default), set 'DH_OPTIONS=--buildsystem=python_distutils'"),
     ('no-backwards-compatibility',None,
@@ -638,10 +639,8 @@ class DebianInfo:
                  install_requires=None,
                  setup_requires=None,
                  debian_version=None,
-                 workaround_548392=None,
                  force_buildsystem=None,
                  have_script_entry_points = None,
-                 pycentral_backwards_compatibility=None,
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
                  sdist_dsc_command = None,
@@ -737,8 +736,6 @@ class DebianInfo:
         depends = ['${misc:Depends}', '${python:Depends}']
         need_custom_binary_target = False
 
-        self.do_pycentral_removal_preinst = pycentral_backwards_compatibility
-
         if has_ext_modules:
             self.architecture = 'any'
             depends.append('${shlibs:Depends}')
@@ -793,10 +790,7 @@ class DebianInfo:
             self.long_description = ''
 
         if have_script_entry_points:
-            if workaround_548392:
-                build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS)
-            else:
-                build_deps.append( 'debhelper (>= %s)'%DH_IDEAL_VERS )
+            build_deps.append( 'debhelper (>= %s)'%DH_IDEAL_VERS )
         else:
             build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS )
 
@@ -838,53 +832,6 @@ class DebianInfo:
                 self.patch_level = 0
 
         xs_python_version = parse_vals(cfg,module_name,'XS-Python-Version')
-        if have_script_entry_points and workaround_548392:
-
-            # Trap cases that might trigger Debian bug #548392 and
-            # workaround. Disable this block once the bugfix has
-            # become widespread and change Build-Depends: to include
-            # sufficiently recent debhelper.
-
-            if len(xs_python_version)==0:
-                # No Python version specified. For now, just use default Python
-                log.warn('working around Debian #548392, changing '
-                         'XS-Python-Version: to \'current\'')
-                xs_python_version = ['current']
-            else:
-
-                # The user specified a Python version. Check if s/he
-                # specified more than one. (Specifying a single
-                # version won't trigger the bug.)
-
-                pyversions_fname = '/usr/bin/pyversions'
-                assert os.path.exists(pyversions_fname)
-                pyversions = load_module('pyversions',pyversions_fname)
-                vstring = ', '.join(xs_python_version)
-                pyversions_result = pyversions.parse_versions(vstring)
-                if ('versions' in pyversions_result and
-                    len(pyversions_result['versions'])>1):
-
-                    vers = list(pyversions_result['versions'])
-                    # More than one Python version specified.
-
-                    # This is dubious as the following comparison
-                    # happens at source build time, but what matters
-                    # is what runs when building the binary package.
-
-                    default_vers = pyversions.default_version(version_only=True)
-                    if default_vers in vers:
-                        log.warn('working around Debian #548392, changing '
-                                 'XS-Python-Version: to \'current\'')
-                        xs_python_version = ['current']
-                    else:
-                        vers.sort()
-                        log.warn('working around Debian #548392, changing '
-                                 'XS-Python-Version: to \'%s\''%vers[-1])
-                        xs_python_version = [vers[-1]]
-                elif 'all' in pyversions_result:
-                    log.warn('working around Debian #548392, changing '
-                             'XS-Python-Version: to \'current\'')
-                    xs_python_version = ['current']
 
         if len(xs_python_version)!=0:
             self.source_stanza_extras += ('XS-Python-Version: '+
@@ -1167,13 +1114,6 @@ def build_dsc(debinfo,
         link_func( debinfo.copyright_file,
                  os.path.join(debian_dir,'copyright'))
 
-    #    G. debian/<package>.preinst
-    if debinfo.do_pycentral_removal_preinst:
-        preinst = PREINST%debinfo.__dict__
-        fd = open( os.path.join(debian_dir,'%s.preinst'%debinfo.package), mode='w')
-        fd.write(preinst)
-        fd.close()
-
     #    H. debian/<package>.install
     if len(debinfo.install_file_lines):
         fd = open( os.path.join(debian_dir,'%s.install'%debinfo.package), mode='w')
@@ -1337,20 +1277,4 @@ binary-indep: build
 %(dh_binary_indep_lines)s
 %(dh_installmime_indep_line)s
 %(dh_desktop_indep_line)s
-"""
-
-PREINST = """#! /bin/sh
-
-set -e
-
-# This was added by stdeb to workaround Debian #479852. In a nutshell,
-# pycentral does not remove normally remove its symlinks on an
-# upgrade. Since we're using python-support, however, those symlinks
-# will be broken. This tells python-central to clean up any symlinks.
-if [ -e /var/lib/dpkg/info/%(package)s.list ] && which pycentral >/dev/null 2>&1
-then
-    pycentral pkgremove %(package)s
-fi
-
-#DEBHELPER#
 """

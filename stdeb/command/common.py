@@ -18,8 +18,6 @@ class common_debian_package_command(Command):
         self.patch_level = None
         self.ignore_install_requires = None
         self.debian_version = None
-        self.pycentral_backwards_compatibility = None
-        self.workaround_548392 = None
         self.force_buildsystem = None
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
@@ -48,23 +46,11 @@ class common_debian_package_command(Command):
         if self.patch_level is not None:
             self.patch_level = int(self.patch_level)
 
-        if self.pycentral_backwards_compatibility is not None:
-            self.pycentral_backwards_compatibility = str_to_bool(
-                self.pycentral_backwards_compatibility)
-        if self.workaround_548392 is not None:
-            self.workaround_548392 = str_to_bool(self.workaround_548392)
-
         if self.force_buildsystem is not None:
             self.force_buildsystem = str_to_bool(self.force_buildsystem)
 
-        if self.workaround_548392 is None:
-            self.workaround_548392=False
-
         if self.force_buildsystem is None:
             self.force_buildsystem = True
-
-        if self.pycentral_backwards_compatibility is None:
-            self.pycentral_backwards_compatibility=False
 
         if self.guess_conflicts_provides_replaces is None:
             # the default
@@ -183,10 +169,8 @@ class common_debian_package_command(Command):
             patch_level = self.patch_level,
             install_requires = install_requires,
             debian_version = self.debian_version,
-            workaround_548392=self.workaround_548392,
             force_buildsystem=self.force_buildsystem,
             have_script_entry_points = have_script_entry_points,
-            pycentral_backwards_compatibility=self.pycentral_backwards_compatibility,
             setup_requires = (), # XXX How do we get the setup_requires?
             use_setuptools = use_setuptools,
             guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
