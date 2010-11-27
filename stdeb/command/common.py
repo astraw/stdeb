@@ -96,7 +96,6 @@ class common_debian_package_command(Command):
         except DistutilsModuleError, err:
             use_setuptools = False
 
-        install_requires = ()
         have_script_entry_points = None
 
         config_fname = 'stdeb.cfg'
@@ -118,12 +117,6 @@ class common_debian_package_command(Command):
 
             egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
             egg_module_name = egg_module_name.split(os.sep)[-1]
-
-            try:
-                if not self.ignore_install_requires:
-                    install_requires = open(os.path.join(egg_info_dirname,'requires.txt'),'rU').read()
-            except EnvironmentError:
-                pass
 
             if 1:
                 # determine whether script specifies setuptools entry_points
@@ -167,7 +160,6 @@ class common_debian_package_command(Command):
             long_description = self.distribution.get_long_description(),
             patch_file = self.patch_file,
             patch_level = self.patch_level,
-            install_requires = install_requires,
             debian_version = self.debian_version,
             force_buildsystem=self.force_buildsystem,
             have_script_entry_points = have_script_entry_points,
