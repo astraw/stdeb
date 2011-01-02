@@ -71,7 +71,7 @@ stdeb_cmdline_opts = [
      'If True, limit binary package to single Python version, '
      'working around Debian bug 548392 of debhelper. (Default=False).'),
     ('force-buildsystem=',None,
-     "If True (the default), set 'DH_OPTIONS=--buildsystem=python_distutils'"),
+     "If True, set 'DH_OPTIONS=--buildsystem=python_distutils'"),
     ('no-backwards-compatibility',None,
      'This option has no effect, is here for backwards compatibility, and may '
      'be removed someday.'),
