@@ -1,0 +1,113 @@
+#!/usr/bin/python
+
+"""Command-line convenience wrapper
+"""
+
+import shutil
+
+from mercurial import hg, commands, node
+from mercurial.ui import ui as _ui
+
+import os, sys
+import tempfile
+
+import subprocess
+
+def dpkg_stdeb(repouri, rev=None, name=None, branch=None, deb_ver=1, keep=False, stdebcfg=None, dist_dir=None, install=False):
+	tmpdir = os.path.abspath(tempfile.mkdtemp())
+	cwd = os.getcwd()
+	os.chdir(tmpdir)
+
+	rtype, repouri = repouri.split('+') if '+' in repouri else (repouri, os.path.abspath(cwd))
+
+	if 'git' == rtype:
+		subprocess.check_call('git clone %s %s' % (repouri, tmpdir), shell=True)
+		
+		if branch:
+			subprocess.check_call('git checkout %s' % branch, shell=True)
+			
+		if rev:
+			subprocess.check_call('git reset %s' % rev, shell=True)
+		rev = ('%s+git' % rev[:8]) if rev else 'master+git'
+		repouri = repouri[:-4]
+	elif 'svn' == rtype:
+		os.chdir('..')
+		os.rmdir(tmpdir)
+		subprocess.check_call('svn export %s %s' % (repouri, tmpdir), shell=True)
+		os.chdir(tmpdir)
+		rev = ('r%s+svn' % rev[:8]) if rev else 'HEAD+svn'
+	elif 'hg' == rtype:
+		ui = _ui()
+		commands.clone(ui, repouri + (('#' + rev) if rev else ''), tmpdir)
+		repo = hg.repository(ui, tmpdir)
+		
+		rev = ('%s+hg' % rev[:8]) if rev else 'tip+hg'
+	elif 'pypi' == rtype:
+		subprocess.check_call('pip install --upgrade --no-install %s --download-cache %s' % (repouri, tmpdir), shell=True)
+		
+		os.chdir(os.path.join('build', repouri.split('==')[0]))
+	else:
+		raise SystemExit('Unknown VCS: %s' % rtype)
+		
+	try:
+		if stdebcfg:
+			print >>open('stdeb.cfg', 'w'), open(os.path.join(cwd, stdebcfg), 'r').read(),
+			
+		if not os.path.exists('setup.py'):
+			pname = name or os.path.basename(repouri)
+			print >>open('setup.py', 'w'), """
+import os
+from setuptools import setup, find_packages
+
+setup(
+	name='%(pname)s',
+	version='%(rev)s',
+	py_modules=[x.replace('.py', '') for x in os.listdir('.') if x.endswith('.py') and x != 'setup.py'],
+	packages=find_packages()
+)
+			""" % locals()
+
+		from time import time
+		cmd = ('%s setup.py --command-packages=stdeb.command sdist_dsc --debian-version=0ubuntu1~stdeb.%s --guess-conflicts-provides-replaces=True bdist_deb' % (sys.executable, int(time())))
+		subprocess.check_call(cmd, shell=True)
+
+		os.chdir( 'deb_dist' )
+		
+		if install:
+			cmd = 'sudo dpkg -i *.deb'
+			subprocess.check_call(cmd, shell=True)
+		
+		if dist_dir:
+			dist_dir = os.path.join(cwd, dist_dir)
+			
+			if not os.path.exists(dist_dir):
+				os.makedirs(dist_dir)
+				
+			for p in [x for x in os.listdir(os.getcwd()) if not os.path.isdir(x)]:
+				shutil.copy(p, dist_dir)
+	finally:
+		os.chdir(cwd)
+		
+		if not keep:
+			shutil.rmtree(tmpdir)
+		
+if __name__ == '__main__':
+	from argparse import ArgumentParser
+	
+	p = ArgumentParser("""usage: %(name)s [options] <repository URI>
+
+Packages a python module for Debian/Ubuntu using stdeb.
+	""")
+	
+	p.add_argument('repo', help='The URI for the repo. This should always start with the VCS name (e.g. svn+http://myproj.com/svn/trunk or hg+http://bitbucket.org/me/someproj). Valid VCS are hg, git and svn.')
+	p.add_argument('-n', '--name', default=None, help='The name for the package; defaults to the last element of the URI')
+	p.add_argument('-r', '--rev', default=None, help='Package a specific revision')
+	p.add_argument('-i', '--install', action='store_true', help='Install the built package')
+	p.add_argument('-k', '--keep', action='store_true', help='Keep the intermediate build directory after the install completes')
+	p.add_argument('-d', '--dist-dir', default='dist', help='Copy built files here')
+	p.add_argument('--extra-cfg-file')
+	
+	args = p.parse_args()
+	
+	dpkg_stdeb(repouri=args.repo, rev=args.rev, name=args.name, keep=args.keep, stdebcfg=args.extra_cfg_file, dist_dir=args.dist_dir, install=args.install)
+	
