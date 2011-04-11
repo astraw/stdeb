@@ -678,13 +678,13 @@ class DebianInfo:
             # Allow distutils commands to override config files (this lets
             # command line options beat file options).
             for longopt, shortopt, desc in stdeb_cfg_options:
-                name = longopt[:-1]
-                name = name.replace('-','_')
+                opt_name = longopt[:-1]
+                name = opt_name.replace('-','_')
                 value = getattr( sdist_dsc_command, name )
                 if value is not None:
                     if not cfg.has_section(module_name):
                         cfg.add_section(module_name)
-                    cfg.set( module_name, name, value )
+                    cfg.set( module_name, opt_name, value )
 
         self.stdeb_version = __stdeb_version__
         self.module_name = module_name
