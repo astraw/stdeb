@@ -61,7 +61,7 @@ class common_debian_package_command(Command):
             self.workaround_548392=False
 
         if self.force_buildsystem is None:
-            self.force_buildsystem = True
+            self.force_buildsystem = False
 
         if self.pycentral_backwards_compatibility is None:
             self.pycentral_backwards_compatibility=False

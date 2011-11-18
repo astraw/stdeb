@@ -15,5 +15,6 @@ setup(name='stdeb',
       packages=['stdeb','stdeb.command'],
       scripts=['scripts/py2dsc',
                'scripts/pypi-install',
+               'scripts/dpkg-stdeb'
                ],
 )
