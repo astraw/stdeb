@@ -103,16 +103,6 @@ class sdist_dsc(common_debian_package_command):
                                                        source_tarball,
                                                        debianized_dirname,
                                                        original_dirname )
-            if source_tarball is not None:
-                # Because we deleted all .pyc files above, if the
-                # original source dist has them, we will have
-                # (wrongly) deleted them. So, quit loudly rather
-                # than fail silently.
-                for root, dirs, files in os.walk(fullpath_repackaged_dirname):
-                    for name in files:
-                        if name.endswith('.pyc'):
-                            raise RuntimeError('original source dist cannot '
-                                               'contain .pyc files')
 
         ###############################################
         # 3. Find all directories
