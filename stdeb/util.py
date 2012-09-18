@@ -126,6 +126,12 @@ stdeb_cfg_options = [
     ('shared-mime-file=',None,'shared MIME file'),
     ('setup-env-vars=',None,'environment variables passed to setup.py'),
     ('udev-rules=',None,'file with rules to install to udev'),
+    ('init=',None,'the package init script'),
+    ('default=',None,'the package default file'),
+    ('preinst=',None,'the script to execute before installation'),
+    ('postinst=',None,'the script to execute after installation'),
+    ('prerm=',None,'the script to execute before remove'),
+    ('postrm=',None,'the script to execute after remove'),
     ]
 
 stdeb_cmd_bool_opts = [
@@ -747,6 +753,14 @@ class DebianInfo:
             self.architecture = 'all'
 
         self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
+        self.init_file = parse_val(cfg, module_name, 'init')
+        
+        self.default_file = parse_val(cfg, module_name, 'default')
+        self.preinst = parse_val(cfg, module_name, 'preinst')
+        self.postinst = parse_val(cfg, module_name, 'postinst')
+        self.prerm = parse_val(cfg, module_name, 'prerm')
+        self.postrm = parse_val(cfg, module_name, 'postrm')
+
         self.mime_file = parse_val(cfg,module_name,'MIME-File')
 
         self.shared_mime_file = parse_val(cfg,module_name,'Shared-MIME-File')
@@ -1193,6 +1207,37 @@ def build_dsc(debinfo,
     fd = open( os.path.join(debian_dir,'source','format'), mode='w')
     fd.write('1.0\n')
     fd.close()
+
+    # debian/<package>.init
+    print debinfo.init_file
+    if debinfo.init_file != '':
+        link_func(debinfo.init_file, 
+                  os.path.join(debian_dir, '%s.init' % debinfo.package))
+
+    # debian/<package>.default
+    if debinfo.default_file != '':
+        link_func(debinfo.default_file, 
+                  os.path.join(debian_dir, '%s.default' % debinfo.package))
+
+    # debian/preinst
+    if debinfo.preinst != '':
+        link_func(debinfo.preinst, 
+                  os.path.join(debian_dir, 'preinst'))
+
+    # debian/postinst
+    if debinfo.postinst != '':
+        link_func(debinfo.postinst, 
+                  os.path.join(debian_dir, 'postinst'))
+
+    # debian/prerm
+    if debinfo.prerm != '':
+        link_func(debinfo.prerm, 
+                  os.path.join(debian_dir, 'prerm'))
+
+    # debian/postrm
+    if debinfo.postrm != '':
+        link_func(debinfo.postrm, 
+                  os.path.join(debian_dir, 'postrm'))
 
     if debian_dir_only:
         return
