@@ -645,7 +645,7 @@ class DebianInfo:
                  setup_requires=None,
                  debian_version=None,
                  workaround_548392=None,
-                 force_buildsystem=None,
+                 force_buildsystem=False,
                  have_script_entry_points = None,
                  pycentral_backwards_compatibility=None,
                  use_setuptools = False,
