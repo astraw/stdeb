@@ -979,8 +979,8 @@ XB-Python-Version: ${python:Versions}
         self.dirlist = ""
 
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
-        if force_buildsystem:
-            setup_env_vars.append('DH_OPTIONS=--buildsystem=python_distutils')
+        #if force_buildsystem:
+        #    setup_env_vars.append('DH_OPTIONS=--buildsystem=python_distutils')
         self.force_buildsystem = force_buildsystem
         self.exports = ""
         if len(setup_env_vars):
