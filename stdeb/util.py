@@ -20,7 +20,7 @@ __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'expand_sdist_file','stdeb_cfg_options']
 
 DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
-DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
+DH_IDEAL_VERS = '7.0.15' # fixes Debian bug 548392
 
 PYSUPPORT_MIN_VERS = '0.8.4' # Namespace package support was added
                              # sometime between 0.7.5ubuntu1 and
@@ -1208,8 +1208,17 @@ def build_dsc(debinfo,
     fd.write('1.0\n')
     fd.close()
 
+    print """DEBINFO
+    init: %s
+    default: %s
+    preinst: %s
+    postinst: %s
+    prerm: %s
+    postrm: %s""" % (debinfo.init_file, debinfo.default_file, debinfo.preinst,
+		    	debinfo.postinst, debinfo.prerm, debinfo.postrm)
+
+
     # debian/<package>.init
-    print debinfo.init_file
     if debinfo.init_file != '':
         link_func(debinfo.init_file, 
                   os.path.join(debian_dir, '%s.init' % debinfo.package))
