@@ -22,10 +22,7 @@ __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
 DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
 DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
 
-PYSUPPORT_MIN_VERS = '0.8.4' # Namespace package support was added
-                             # sometime between 0.7.5ubuntu1 and
-                             # 0.8.4lenny1 (Lenny). Might be able to
-                             # back this down.
+PYTHON_ALL_MIN_VERS = '2.6.6-3'
 
 import exceptions
 class CalledProcessError(exceptions.Exception): pass
@@ -66,12 +63,13 @@ stdeb_cmdline_opts = [
     ('ignore-install-requires', 'i',
      'ignore the requirements from requires.txt in the egg-info directory'),
     ('pycentral-backwards-compatibility=',None,
-     'If True, enable migration from old stdeb that used pycentral. (Default=False).'),
+     'This option has no effect, is here for backwards compatibility, and may '
+     'be removed someday.'),
     ('workaround-548392=',None,
-     'If True, limit binary package to single Python version, '
-     'working around Debian bug 548392 of debhelper. (Default=False).'),
+     'This option has no effect, is here for backwards compatibility, and may '
+     'be removed someday.'),
     ('force-buildsystem=',None,
-     "If True (the default), set 'DH_OPTIONS=--buildsystem=python_distutils'"),
+     "If True, pass '--buildsystem=python_distutils' to dh sequencer"),
     ('no-backwards-compatibility',None,
      'This option has no effect, is here for backwards compatibility, and may '
      'be removed someday.'),
@@ -168,13 +166,13 @@ def recursive_hardlink(src,dst):
 
 def debianize_name(name):
     "make name acceptable as a Debian (binary) package name"
-    name = name.replace('_','')
+    name = name.replace('_','-')
     name = name.lower()
     return name
 
 def source_debianize_name(name):
     "make name acceptable as a Debian source package name"
-    name = name.replace('_','')
+    name = name.replace('_','-')
     name = name.replace('.','-')
     name = name.lower()
     return name
@@ -635,13 +633,10 @@ class DebianInfo:
                  long_description=NotGiven,
                  patch_file=None,
                  patch_level=None,
-                 install_requires=None,
                  setup_requires=None,
                  debian_version=None,
-                 workaround_548392=None,
                  force_buildsystem=None,
                  have_script_entry_points = None,
-                 pycentral_backwards_compatibility=None,
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
                  sdist_dsc_command = None,
@@ -730,21 +725,20 @@ class DebianInfo:
         build_deps = []
         if use_setuptools:
             build_deps.append('python-setuptools (>= 0.6b3)')
-	if setup_requires is not None and len(setup_requires):
+        if setup_requires is not None and len(setup_requires):
             build_deps.extend(
                 get_deb_depends_from_setuptools_requires(setup_requires))
 
         depends = ['${misc:Depends}', '${python:Depends}']
         need_custom_binary_target = False
 
-        self.do_pycentral_removal_preinst = pycentral_backwards_compatibility
-
         if has_ext_modules:
             self.architecture = 'any'
+            build_deps.append('python-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
             depends.append('${shlibs:Depends}')
-            build_deps.append('python-all-dev')
         else:
             self.architecture = 'all'
+            build_deps.append('python-all (>= %s)'%PYTHON_ALL_MIN_VERS)
 
         self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         self.mime_file = parse_val(cfg,module_name,'MIME-File')
@@ -771,9 +765,6 @@ class DebianInfo:
                 '%s usr/share/applications'%mime_desktop_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
-	if install_requires is not None and len(install_requires):
-            depends.extend(get_deb_depends_from_setuptools_requires(
-                install_requires))
         self.depends = ', '.join(depends)
 
         self.debian_section = parse_val(cfg,module_name,'Section')
@@ -793,14 +784,9 @@ class DebianInfo:
             self.long_description = ''
 
         if have_script_entry_points:
-            if workaround_548392:
-                build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS)
-            else:
-                build_deps.append( 'debhelper (>= %s)'%DH_IDEAL_VERS )
+            build_deps.append( 'debhelper (>= %s)'%DH_IDEAL_VERS )
         else:
             build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS )
-
-        build_deps.append('python-support (>= %s)'%PYSUPPORT_MIN_VERS)
 
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
         self.build_depends = ', '.join(build_deps)
@@ -838,60 +824,10 @@ class DebianInfo:
                 self.patch_level = 0
 
         xs_python_version = parse_vals(cfg,module_name,'XS-Python-Version')
-        if have_script_entry_points and workaround_548392:
-
-            # Trap cases that might trigger Debian bug #548392 and
-            # workaround. Disable this block once the bugfix has
-            # become widespread and change Build-Depends: to include
-            # sufficiently recent debhelper.
-
-            if len(xs_python_version)==0:
-                # No Python version specified. For now, just use default Python
-                log.warn('working around Debian #548392, changing '
-                         'XS-Python-Version: to \'current\'')
-                xs_python_version = ['current']
-            else:
-
-                # The user specified a Python version. Check if s/he
-                # specified more than one. (Specifying a single
-                # version won't trigger the bug.)
-
-                pyversions_fname = '/usr/bin/pyversions'
-                assert os.path.exists(pyversions_fname)
-                pyversions = load_module('pyversions',pyversions_fname)
-                vstring = ', '.join(xs_python_version)
-                pyversions_result = pyversions.parse_versions(vstring)
-                if ('versions' in pyversions_result and
-                    len(pyversions_result['versions'])>1):
-
-                    vers = list(pyversions_result['versions'])
-                    # More than one Python version specified.
-
-                    # This is dubious as the following comparison
-                    # happens at source build time, but what matters
-                    # is what runs when building the binary package.
-
-                    default_vers = pyversions.default_version(version_only=True)
-                    if default_vers in vers:
-                        log.warn('working around Debian #548392, changing '
-                                 'XS-Python-Version: to \'current\'')
-                        xs_python_version = ['current']
-                    else:
-                        vers.sort()
-                        log.warn('working around Debian #548392, changing '
-                                 'XS-Python-Version: to \'%s\''%vers[-1])
-                        xs_python_version = [vers[-1]]
-                elif 'all' in pyversions_result:
-                    log.warn('working around Debian #548392, changing '
-                             'XS-Python-Version: to \'current\'')
-                    xs_python_version = ['current']
 
         if len(xs_python_version)!=0:
-            self.source_stanza_extras += ('XS-Python-Version: '+
+            self.source_stanza_extras += ('X-Python-Version: '+
                                           ', '.join(xs_python_version)+'\n')
-        self.package_stanza_extras = """\
-XB-Python-Version: ${python:Versions}
-"""
 
         dpkg_shlibdeps_params = parse_val(
             cfg,module_name,'dpkg-shlibdeps-params')
@@ -946,12 +882,15 @@ XB-Python-Version: ${python:Versions}
             provides = list(set(provides))
             replaces = list(set(replaces))
 
+        self.package_stanza_extras = ''
+
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
                                               ', '.join( conflicts )+'\n')
 
-        provides.insert(0, 'Provides: ${python:Provides}')
-        self.package_stanza_extras += ', '.join( provides  )+'\n'
+        if len(provides):
+            self.package_stanza_extras += ('Provides: '+
+                                             ', '.join( provides  )+'\n')
 
         if len(replaces):
             self.package_stanza_extras += ('Replaces: ' +
@@ -964,9 +903,12 @@ XB-Python-Version: ${python:Versions}
 
         self.dirlist = ""
 
-        setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
+        sequencer_options = ['--with python2']
         if force_buildsystem:
-            setup_env_vars.append('DH_OPTIONS=--buildsystem=python_distutils')
+            sequencer_options.append('--buildsystem=python_distutils')
+        self.sequencer_options = ' '.join(sequencer_options)
+
+        setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
         self.force_buildsystem = force_buildsystem
         self.exports = ""
         if len(setup_env_vars):
@@ -1167,13 +1109,6 @@ def build_dsc(debinfo,
         link_func( debinfo.copyright_file,
                  os.path.join(debian_dir,'copyright'))
 
-    #    G. debian/<package>.preinst
-    if debinfo.do_pycentral_removal_preinst:
-        preinst = PREINST%debinfo.__dict__
-        fd = open( os.path.join(debian_dir,'%s.preinst'%debinfo.package), mode='w')
-        fd.write(preinst)
-        fd.close()
-
     #    H. debian/<package>.install
     if len(debinfo.install_file_lines):
         fd = open( os.path.join(debian_dir,'%s.install'%debinfo.package), mode='w')
@@ -1230,7 +1165,7 @@ def build_dsc(debinfo,
             shutil.rmtree(tmp_dir)
 
     if 1:
-        # check versions of debhelper and python-support
+        # check versions of debhelper and python-all
         debhelper_version_str = get_version_str('debhelper')
         if len(debhelper_version_str)==0:
             log.warn('This version of stdeb requires debhelper >= %s, but you '
@@ -1244,18 +1179,18 @@ def build_dsc(debinfo,
                          'compatible with older versions of debhelper.'%(
                     DH_MIN_VERS,))
 
-        pysupport_version_str = get_version_str('python-support')
-        if len(pysupport_version_str)==0:
-            log.warn('This version of stdeb requires python-support >= %s, '
-                     'but you do not have python-support installed. '
-                     'Could not check compatibility.'%PYSUPPORT_MIN_VERS)
+        python_defaults_version_str = get_version_str('python-all')
+        if len(python_defaults_version_str)==0:
+            log.warn('This version of stdeb requires python-all >= %s, '
+                     'but you do not have this package installed. '
+                     'Could not check compatibility.'%PYTHON_ALL_MIN_VERS)
         else:
             if not dpkg_compare_versions(
-                pysupport_version_str, 'ge', PYSUPPORT_MIN_VERS ):
-                log.warn('This version of stdeb requires python-support >= %s. '
-                         'Use stdeb 0.3.x to generate source packages '
-                         'compatible with older versions of python-support.'%(
-                    PYSUPPORT_MIN_VERS,))
+                python_defaults_version_str, 'ge', PYTHON_ALL_MIN_VERS):
+                log.warn('This version of stdeb requires python-all >= %s. '
+                         'Use stdeb 0.6.0 or older to generate source packages '
+                         'that use python-support.'%(
+                    PYTHON_ALL_MIN_VERS,))
 
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
@@ -1288,7 +1223,7 @@ Maintainer: %(maintainer)s
 %(uploaders)sSection: %(debian_section)s
 Priority: optional
 Build-Depends: %(build_depends)s
-Standards-Version: 3.8.4
+Standards-Version: 3.9.1
 %(source_stanza_extras)s
 Package: %(package)s
 Architecture: %(architecture)s
@@ -1302,19 +1237,9 @@ RULES_MAIN = """\
 
 # This file was automatically generated by stdeb %(stdeb_version)s at
 # %(date822)s
-
-# Unset the environment variables set by dpkg-buildpackage. (This is
-# necessary because distutils is brittle with compiler/linker flags
-# set. Specifically, packages using f2py will break without this.)
-unexport CPPFLAGS
-unexport CFLAGS
-unexport CXXFLAGS
-unexport FFLAGS
-unexport LDFLAGS
 %(exports)s
-
 %(percent_symbol)s:
-        dh $@
+        dh $@ %(sequencer_options)s
 
 %(binary_target_lines)s
 """
@@ -1337,20 +1262,4 @@ binary-indep: build
 %(dh_binary_indep_lines)s
 %(dh_installmime_indep_line)s
 %(dh_desktop_indep_line)s
-"""
-
-PREINST = """#! /bin/sh
-
-set -e
-
-# This was added by stdeb to workaround Debian #479852. In a nutshell,
-# pycentral does not remove normally remove its symlinks on an
-# upgrade. Since we're using python-support, however, those symlinks
-# will be broken. This tells python-central to clean up any symlinks.
-if [ -e /var/lib/dpkg/info/%(package)s.list ] && which pycentral >/dev/null 2>&1
-then
-    pycentral pkgremove %(package)s
-fi
-
-#DEBHELPER#
 """
