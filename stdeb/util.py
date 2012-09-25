@@ -166,13 +166,13 @@ def recursive_hardlink(src,dst):
 
 def debianize_name(name):
     "make name acceptable as a Debian (binary) package name"
-    name = name.replace('_','')
+    name = name.replace('_','-')
     name = name.lower()
     return name
 
 def source_debianize_name(name):
     "make name acceptable as a Debian source package name"
-    name = name.replace('_','')
+    name = name.replace('_','-')
     name = name.replace('.','-')
     name = name.lower()
     return name
