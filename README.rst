@@ -441,13 +441,6 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --remove-expanded-source-dir (-r)    remove the expanded source directory
   --ignore-install-requires (-i)       ignore the requirements from
                                        requires.txt in the egg-info directory
-  --pycentral-backwards-compatibility  If True, enable migration from old
-                                       stdeb that used pycentral.
-                                       (Default=False).
-  --workaround-548392                  If True, limit binary package to single
-                                       Python version, working around Debian
-                                       bug 548392 of debhelper.
-                                       (Default=False).
   --force-buildsystem                  If True (the default), set 'DH_OPTIONS=
                                        --buildsystem=python_distutils'
   --no-backwards-compatibility         This option has no effect, is here for
