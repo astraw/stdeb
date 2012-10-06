@@ -4,6 +4,7 @@ import xmlrpclib
 import urllib2
 import hashlib
 import warnings
+import glob
 from optparse import OptionParser
 import tempfile
 import subprocess
@@ -90,6 +91,8 @@ def main():
     parser.add_option('--verbose', type='int',
                       help='verbosity level',
                       default=0)
+    parser.add_option('--build-here', action='store_true',
+                      help='build the pieces in this dir, skip install')
     parser.add_option('--keep', action='store_true',
                       default=False,
                       help='do not remove temporary files')
@@ -99,10 +102,18 @@ def main():
         parser.print_help()
         sys.exit(1)
 
+    if options.build_here:
+        options.keep = True
+
     package_name = args[0]
 
     orig_dir = os.path.abspath( os.curdir )
-    tmpdir = os.path.abspath(tempfile.mkdtemp())
+    if options.build_here:
+        tmpdir = os.path.abspath(package_name)
+        if not os.path.isdir(tmpdir):
+            os.mkdir(tmpdir)
+    else:
+        tmpdir = os.path.abspath(tempfile.mkdtemp())
     try:
         if options.verbose >= 2:
             myprint('downloading to %s'%tmpdir)
@@ -127,12 +138,14 @@ def main():
             myprint('executing: %s'%cmd)
         subprocess.check_call(cmd, shell=True)
 
-        os.chdir( 'deb_dist' )
-        cmd = 'sudo dpkg -i *.deb'
-        if options.verbose >= 2:
-            myprint('executing: %s'%cmd)
-        subprocess.check_call(cmd, shell=True)
-
+        if not options.build_here:
+            os.chdir( 'deb_dist' )
+            cmd = 'sudo dpkg -i *.deb'
+            if options.verbose >= 2:
+                myprint('executing: %s'%cmd)
+            subprocess.check_call(cmd, shell=True)
+        else:
+            print "Now dpkg -i", " ".join(glob.glob(os.path.join(tmpdir, expanded_dir, "deb_dist/*.deb")))
     finally:
         os.chdir( orig_dir )
         if not options.keep:
