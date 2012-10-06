@@ -29,6 +29,22 @@ def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
         myprint( 'querying PyPI (%s) for package name "%s"' % (pypi_url,
                                                                package_name) )
     releases = pypi.package_releases(package_name)
+    if not releases:
+        print package_name, "not found, trying search:"
+        matches = pypi.search(dict(name=package_name))
+        if not matches:
+            raise ValueError("No pypi search results for %s, try google" % package_name)
+        for match in matches:
+            print match["name"], match["version"]
+            print match["summary"]
+        if len(matches) > 1:
+            raise ValueError("Multiple options, pick one and try again")
+        package_name = matches[0]["name"]
+        releases = pypi.package_releases(package_name)
+        if not releases:
+            raise ValueError("%s found, but no releases found" % package_name)
+        print "Assuming you meant", package_name
+
     if verbose >= 2:
         myprint( 'found releases: %s' % (', '.join(releases),) )
     if len(releases) > 1:
