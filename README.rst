@@ -201,12 +201,13 @@ Quickstart 1: Install something from PyPI now, I don't care about anything else
 
 Do this from the command line::
 
-  pypi-install mypackage
+  pypi-install --build-here mypackage
 
 **Warning: Despite doing its best, there is absolutely no way stdeb
 can guarantee all the Debian package dependencies will be properly
-fulfilled without manual intervention. Using pypi-install bypasses
-your ability to customize stdeb's behavior. Read the rest of this
+fulfilled without manual intervention. Consider the output of this to
+be a "first draft", which you can use as a stopgap, and then refine in
+place. Read the rest of this
 document to understand how to make better packages.**
 
 Quickstart 2: Just tell me the fastest way to make a .deb
