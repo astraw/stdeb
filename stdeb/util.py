@@ -419,7 +419,11 @@ def expand_tarball(tarball_fname,cwd=None):
 
 def expand_zip(zip_fname,cwd=None):
     "expand a zip"
-    args = ['/usr/bin/unzip',zip_fname]
+    unzip_path = '/usr/bin/unzip'
+    if not os.path.exists(unzip_path):
+        log.error('ERROR: {} does not exist'.format(unzip_path))
+        sys.exit(1)
+    args = [unzip_path, zip_fname]
     # Does it have a top dir
     res = subprocess.Popen(
         [args[0], '-l', args[1]], cwd=cwd,
