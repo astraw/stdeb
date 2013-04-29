@@ -23,6 +23,7 @@ class common_debian_package_command(Command):
         self.force_buildsystem = None
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
+        self.guess_depends_package_name = None
 
         # deprecated options
         self.default_distribution = None
@@ -204,6 +205,7 @@ class common_debian_package_command(Command):
             setup_requires = (), # XXX How do we get the setup_requires?
             use_setuptools = use_setuptools,
             guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
+            guess_depends_package_name=self.guess_depends_package_name,
             sdist_dsc_command = self,
         )
         return debinfo

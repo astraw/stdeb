@@ -79,6 +79,9 @@ stdeb_cmdline_opts = [
     ('guess-conflicts-provides-replaces=',None,
      'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
      'based on apt-cache output. (Default=False).'),
+    ('guess-depends-package-name=',None,
+     'If True, attempt to guess Depends in debian/control '
+     'based on setup.py install_requires package names. (Default=False).'),
     ]
 
 # old entries from stdeb.cfg:
@@ -645,6 +648,7 @@ class DebianInfo:
                  pycentral_backwards_compatibility=None,
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
+                 guess_depends_package_name = False,
                  sdist_dsc_command = None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
@@ -733,7 +737,8 @@ class DebianInfo:
             build_deps.append('python-setuptools (>= 0.6b3)')
 	if setup_requires is not None and len(setup_requires):
             build_deps.extend(
-                get_deb_depends_from_setuptools_requires(setup_requires))
+                get_deb_depends_from_setuptools_requires(setup_requires,
+                    'guess' if guess_depends_package_name else 'warn'))
 
         depends = ['${misc:Depends}', '${python:Depends}']
         need_custom_binary_target = False
@@ -774,7 +779,8 @@ class DebianInfo:
         depends.extend(parse_vals(cfg,module_name,'Depends') )
 	if install_requires is not None and len(install_requires):
             depends.extend(get_deb_depends_from_setuptools_requires(
-                install_requires))
+                install_requires,
+                'guess' if guess_depends_package_name else 'warn'))
         self.depends = ', '.join(depends)
 
         self.debian_section = parse_val(cfg,module_name,'Section')
