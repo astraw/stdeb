@@ -82,6 +82,9 @@ stdeb_cmdline_opts = [
     ('guess-depends-package-name=',None,
      'If True, attempt to guess Depends in debian/control '
      'based on setup.py install_requires package names. (Default=False).'),
+    ('suppress-packaging-version=',None,
+     'Do not append packaging version (-number) to setup.py version when '
+     'generating Debian package version. (Default=False). '),
     ]
 
 # old entries from stdeb.cfg:
@@ -649,6 +652,7 @@ class DebianInfo:
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
                  guess_depends_package_name = False,
+                 suppress_packaging_version = False,
                  sdist_dsc_command = None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
@@ -716,17 +720,24 @@ class DebianInfo:
         self.epoch = parse_val(cfg,module_name,'Epoch')
         if self.epoch != '' and not self.epoch.endswith(':'):
             self.epoch = self.epoch + ':'
-        self.packaging_version = parse_val(cfg,module_name,'Debian-Version')
-        if debian_version is not None:
-            # command-line arg overrides file
-            self.packaging_version = debian_version
-        self.dsc_version = '%s-%s'%(
+
+        if suppress_packaging_version:
+            version_suffix = ''
+        else:
+            self.packaging_version = parse_val(cfg, module_name,
+                                                              'Debian-Version')
+            if debian_version is not None:
+                # command-line arg overrides file
+                self.packaging_version = debian_version
+            version_suffix = '-%s' % self.packaging_version
+
+        self.dsc_version = '%s%s'%(
             self.upstream_version,
-            self.packaging_version)
-        self.full_version = '%s%s-%s'%(
+            version_suffix)
+        self.full_version = '%s%s%s'%(
             self.epoch,
             self.upstream_version,
-            self.packaging_version)
+            version_suffix)
         self.distname = parse_val(cfg,module_name,'Suite')
         self.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
         self.uploaders = parse_vals(cfg,module_name,'Uploaders')

@@ -24,6 +24,7 @@ class common_debian_package_command(Command):
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
         self.guess_depends_package_name = None
+        self.suppress_packaging_version = None
 
         # deprecated options
         self.default_distribution = None
@@ -206,6 +207,7 @@ class common_debian_package_command(Command):
             use_setuptools = use_setuptools,
             guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
             guess_depends_package_name=self.guess_depends_package_name,
+            suppress_packaging_version=self.suppress_packaging_version,
             sdist_dsc_command = self,
         )
         return debinfo
