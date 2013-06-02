@@ -16,7 +16,7 @@ def myprint(mystr,fd=None):
 
 USER_AGENT = 'pypi-install/0.6.0+git ( http://github.com/astraw/stdeb )'
 
-def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
+def find_tar_gz(package_name, release=None, pypi_url = 'http://python.org/pypi',verbose=0):
     transport = xmlrpclib.Transport()
     transport.user_agent = USER_AGENT
     pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
@@ -30,11 +30,25 @@ def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
     releases = pypi.package_releases(package_name)
     if verbose >= 2:
         myprint( 'found releases: %s' % (', '.join(releases),) )
-    if len(releases) > 1:
-        # XXX how to sort versions?
-        raise NotImplementedError('no ability to handle more than one release')
-    for version in releases:
+        
+    if not release:
+        if len(releases) > 1:
+            myprint ( 'multiple releases available: %s' % (', '.join(releases),) )
+            myprint ( 'use --release to select a release.' )
+            raise NotImplementedError('no ability to handle more than one release')
+        else:
+            selected = releases[0]
+    else:
+        selected = None
+        for version in releases:
+            if version == release:
+                selected = version
+        if not selected:
+            myprint ( 'release %s not found' % options.release )
+            raise ValueError(options.release)
 
+    for version in [ release ]:
+        
         urls = pypi.release_urls( package_name,version)
         for url in urls:
             if url['packagetype']=='sdist':
@@ -56,8 +70,8 @@ def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
         raise ValueError('no package "%s" was found'%package_name)
     return download_url, expected_md5_digest
 
-def get_source_tarball(package_name,verbose=0):
-    download_url, expected_md5_digest = find_tar_gz(package_name,
+def get_source_tarball(package_name,release=None,verbose=0):
+    download_url, expected_md5_digest = find_tar_gz(package_name, release=release,
                                                     verbose=verbose)
     if verbose >= 1:
         myprint( 'downloading %s' % download_url )
@@ -90,6 +104,9 @@ def main():
     parser.add_option('--verbose', type='int',
                       help='verbosity level',
                       default=0)
+    parser.add_option('--release', type='string',
+                      help='package release to use',
+                      default=None)
     parser.add_option('--keep', action='store_true',
                       default=False,
                       help='do not remove temporary files')
@@ -107,7 +124,7 @@ def main():
         if options.verbose >= 2:
             myprint('downloading to %s'%tmpdir)
         os.chdir( tmpdir )
-        tarball_fname = get_source_tarball(package_name,verbose=options.verbose)
+        tarball_fname = get_source_tarball(package_name,release=options.release,verbose=options.verbose)
         cmd = 'tar xzf %s' % tarball_fname
         if options.verbose >= 2:
             myprint('executing: %s'%cmd)
