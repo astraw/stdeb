@@ -24,9 +24,8 @@ DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
 
 PYTHON_ALL_MIN_VERS = '2.6.6-3'
 
-import exceptions
-class CalledProcessError(exceptions.Exception): pass
-class CantSatisfyRequirement(exceptions.Exception): pass
+class CalledProcessError(Exception): pass
+class CantSatisfyRequirement(Exception): pass
 
 def check_call(*popenargs, **kwargs):
     retcode = subprocess.call(*popenargs, **kwargs)
