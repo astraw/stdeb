@@ -85,6 +85,10 @@ def get_source_tarball(package_name,verbose=0):
     return fname
 
 def main():
+    if os.geteuid() != 0:
+        myprint('%s must be run as root'%os.path.basename(sys.argv[0]),fd=sys.stderr)
+        sys.exit(1)
+
     usage = '%prog PACKAGE_NAME [options]'
     parser = OptionParser(usage)
     parser.add_option('--verbose', type='int',
@@ -128,7 +132,7 @@ def main():
         subprocess.check_call(cmd, shell=True)
 
         os.chdir( 'deb_dist' )
-        cmd = 'sudo dpkg -i *.deb'
+        cmd = 'dpkg -i *.deb'
         if options.verbose >= 2:
             myprint('executing: %s'%cmd)
         subprocess.check_call(cmd, shell=True)
