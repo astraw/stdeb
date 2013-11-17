@@ -1,3 +1,4 @@
+import os
 import xmlrpclib
 import urllib2
 import hashlib
@@ -54,6 +55,19 @@ def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
 def get_source_tarball(package_name,verbose=0):
     download_url, expected_md5_digest = find_tar_gz(package_name,
                                                     verbose=verbose)
+    fname = download_url.split('/')[-1]
+    if expected_md5_digest is not None:
+        if os.path.exists(fname):
+            m = hashlib.md5()
+            m.update(open(fname,mode='r').read())
+            actual_md5_digest = m.hexdigest()
+            if actual_md5_digest == expected_md5_digest:
+                if verbose >= 1:
+                    myprint( 'Download URL: %s' % download_url )
+                    myprint( 'File "%s" already exists with correct checksum.' % fname )
+                return fname
+            else:
+                raise ValueError('File "%s" exists but has wrong checksum.'%fname)
     if verbose >= 1:
         myprint( 'downloading %s' % download_url )
     request = urllib2.Request(download_url)
@@ -73,7 +87,7 @@ def get_source_tarball(package_name,verbose=0):
             raise ValueError('actual and expected md5 digests do not match')
     else:
         warnings.warn('no md5 digest found -- cannot verify source file')
-    fname = download_url.split('/')[-1]
+
     fd = open(fname,mode='wb')
     fd.write( package_tar_gz )
     fd.close()
