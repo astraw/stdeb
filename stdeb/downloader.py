@@ -10,9 +10,9 @@ def myprint(mystr,fd=None):
     else:
         print >> fd, mystr
 
-USER_AGENT = 'pypi-install/0.6.0+git ( http://github.com/astraw/stdeb )'
+USER_AGENT = 'pypi-install/0.6.0+git ( https://github.com/astraw/stdeb )'
 
-def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
+def find_tar_gz(package_name, pypi_url = 'https://python.org/pypi',verbose=0):
     transport = xmlrpclib.Transport()
     transport.user_agent = USER_AGENT
     pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
@@ -52,9 +52,15 @@ def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
         raise ValueError('no package "%s" was found'%package_name)
     return download_url, expected_md5_digest
 
-def get_source_tarball(package_name,verbose=0):
+def get_source_tarball(package_name,verbose=0,allow_unsafe_download=False):
     download_url, expected_md5_digest = find_tar_gz(package_name,
                                                     verbose=verbose)
+    if not download_url.startswith('https://'):
+        if allow_unsafe_download:
+            warnings.warn('downloading from unsafe url: %s' % download_url)
+        else:
+            raise ValueError('PYPI returned unsafe url: %s' % download_url)
+
     fname = download_url.split('/')[-1]
     if expected_md5_digest is not None:
         if os.path.exists(fname):
