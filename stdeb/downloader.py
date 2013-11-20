@@ -4,6 +4,20 @@ import urllib2
 import hashlib
 import warnings
 
+class Urllib2Transport(xmlrpclib.Transport):
+    def __init__(self, opener=None, https=False, use_datetime=0):
+        xmlrpclib.Transport.__init__(self, use_datetime)
+        self.opener = opener or urllib2.build_opener()
+        self.https = https
+
+    def request(self, host, handler, request_body, verbose=0):
+        proto = ('http', 'https')[bool(self.https)]
+        req = urllib2.Request('%s://%s%s' % (proto, host, handler), request_body)
+        req.add_header('User-agent', self.user_agent)
+        req.add_header('Content-Type', 'text/xml')
+        self.verbose = verbose
+        return self.parse_response(self.opener.open(req))
+
 def myprint(mystr,fd=None):
     if fd is None:
         print mystr
@@ -13,7 +27,7 @@ def myprint(mystr,fd=None):
 USER_AGENT = 'pypi-install/0.6.0+git ( https://github.com/astraw/stdeb )'
 
 def find_tar_gz(package_name, pypi_url = 'https://python.org/pypi',verbose=0):
-    transport = xmlrpclib.Transport()
+    transport = Urllib2Transport(https=pypi_url.startswith("https"))
     transport.user_agent = USER_AGENT
     pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
 
