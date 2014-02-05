@@ -99,18 +99,18 @@ def runit():
     abs_dist_dir = os.path.abspath(final_dist_dir)
 
     extra_args = []
-    for long in parser.long_opts:
-        if long in ['dist-dir=','patch-file=']:
+    for lopt in parser.long_opts:
+        if lopt in ['dist-dir=','patch-file=']:
             continue # dealt with by this invocation
-        attr = parser.get_attr_name(long).rstrip('=')
+        attr = parser.get_attr_name(lopt).rstrip('=')
         if hasattr(optobj,attr):
             val = getattr(optobj,attr)
             if attr=='extra_cfg_file':
                 val = os.path.abspath(val)
-            if long in bool_opts or long.replace('-', '_') in bool_opts:
-                extra_args.append('--%s' % long)
+            if lopt in bool_opts or lopt.replace('-', '_') in bool_opts:
+                extra_args.append('--%s' % lopt)
             else:
-                extra_args.append('--'+long+str(val))
+                extra_args.append('--'+lopt+str(val))
 
     if patch_already_applied == 1:
         extra_args.append('--patch-already-applied')
