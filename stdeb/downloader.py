@@ -12,7 +12,7 @@ def myprint(mystr,fd=None):
 
 USER_AGENT = 'pypi-install/0.6.0+git ( https://github.com/astraw/stdeb )'
 
-def find_tar_gz(package_name, pypi_url = 'https://python.org/pypi',verbose=0):
+def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',verbose=0):
     transport = xmlrpclib.Transport()
     transport.user_agent = USER_AGENT
     pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
