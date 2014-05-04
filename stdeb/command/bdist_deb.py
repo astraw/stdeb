@@ -26,23 +26,24 @@ class bdist_deb(Command):
         dsc_tree = sdist_dsc.dist_dir
 
         # execute system command and read output (execute and read output of find cmd)
-        target_dir = None
+        target_dirs = []
         for entry in os.listdir(dsc_tree):
             fulldir = os.path.join(dsc_tree,entry)
             if os.path.isdir(fulldir):
-                if target_dir is not None:
-                    raise ValueError('more than one directory in deb_dist. '
-                                     'Unsure which is source directory')
-                else:
-                    if entry == 'tmp_py2dsc':
-                        continue
-                    else:
-                        target_dir = fulldir
-        if target_dir is None:
+                if entry == 'tmp_py2dsc':
+                    continue
+                target_dirs.append( fulldir )
+
+        if len(target_dirs)>1:
+            raise ValueError('More than one directory in deb_dist. '
+                             'Unsure which is source directory. All: %r'%(
+                target_dirs,))
+
+        if len(target_dirs)==0:
             raise ValueError('could not find debian source directory')
 
         # define system command to execute (gen .deb binary pkg)
         syscmd = ['dpkg-buildpackage','-rfakeroot','-uc','-b']
 
-        util.process_command(syscmd,cwd=target_dir)
+        util.process_command(syscmd,cwd=target_dirs[0])
 
