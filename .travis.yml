@@ -5,6 +5,8 @@ python:
 before_install:
     - sudo apt-get update
     - sudo apt-get install python-all-dev debhelper python-setuptools apt-file
+    - which python
+    - dpkg --status python2.7
 
     # Fail early if not using a debian version of the distutils
     # install command. Otherwise the debhelper tools give a problem
