@@ -34,7 +34,10 @@ class bdist_deb(Command):
                     raise ValueError('more than one directory in deb_dist. '
                                      'Unsure which is source directory')
                 else:
-                    target_dir = fulldir
+                    if entry == 'tmp_py2dsc':
+                        continue
+                    else:
+                        target_dir = fulldir
         if target_dir is None:
             raise ValueError('could not find debian source directory')
 
