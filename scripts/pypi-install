@@ -17,6 +17,9 @@ def main():
     parser.add_option('--keep', action='store_true',
                       default=False,
                       help='do not remove temporary files')
+    parser.add_option('--allow-unsafe-download', action='store_true',
+                      default=False,
+                      help='allow unsafe downloads')
     (options, args) = parser.parse_args()
     if len(args) != 1:
         myprint('need exactly one PACKAGE_NAME',fd=sys.stderr)
@@ -32,7 +35,8 @@ def main():
             myprint('downloading to %s'%tmpdir)
         os.chdir( tmpdir )
         tarball_fname = get_source_tarball(package_name,verbose=options.verbose,
-                                           release=options.release)
+                                           release=options.release,
+                                           allow_unsafe_download=options.allow_unsafe_download)
         cmd = 'tar xzf %s' % tarball_fname
         if options.verbose >= 2:
             myprint('executing: %s'%cmd)
