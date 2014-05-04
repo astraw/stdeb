@@ -24,10 +24,11 @@ def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
     if verbose >= 2:
         myprint( 'querying PyPI (%s) for package name "%s"' % (pypi_url,
                                                                package_name) )
+
+    show_hidden=True
+    all_releases = pypi.package_releases(package_name,show_hidden)
     if release is not None:
-        # A specific release is requested. Get a list of all available.
-        show_hidden=True
-        all_releases = pypi.package_releases(package_name,show_hidden)
+        # A specific release is requested.
         if verbose >= 2:
             myprint( 'found all available releases: %s' % (', '.join(all_releases),) )
 
@@ -37,7 +38,10 @@ def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
         version = release
     else:
         default_releases = pypi.package_releases(package_name)
-        assert len(default_releases)==1
+        if len(default_releases)!=1:
+            raise RuntimeError('Expected one and only one release. '
+                               'Non-hidden: %r. All: %r'%(
+                default_releases,all_releases))
         default_release = default_releases[0]
         if verbose >= 2:
             myprint( 'found default release: %s' % (', '.join(default_releases),) )
