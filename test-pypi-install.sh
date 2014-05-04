@@ -6,7 +6,7 @@ pypi-install pyflakes --verbose=2
 sudo dpkg --purge python-pyflakes
 
 # Package with no source tarball on PyPI: (v 0.6.2, 2009-12-30)
-pypi-install posix_ipc --verbose=2
+pypi-install posix_ipc --release=0.6.2 --verbose=2
 sudo dpkg --purge python-posixipc
 
 echo "skipping known failure tests"
