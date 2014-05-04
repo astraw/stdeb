@@ -23,7 +23,7 @@ fi
 # ==============================================================
 wget $SOURCE_URL; if [[ $? -ne 0 ]]; then exit $?; fi
 
-# case 1: build from pre-existing source tarball
+# case 1: build from pre-existing source tarball with py2dsc
 # ==============================================================
 py2dsc $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
 
@@ -36,7 +36,7 @@ dpkg --contents deb_dist/*.deb; if [[ $? -ne 0 ]]; then exit $?; fi
 #cleanup case 1
 rm -rf deb_dist; if [[ $? -ne 0 ]]; then exit $?; fi
 
-# case 2: build from pre-existing source tarball
+# case 2: build from pre-existing source tarball using distutils
 # ==============================================================
 tar xzf $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
 cd $SOURCE_TARBALL_DIR; if [[ $? -ne 0 ]]; then exit $?; fi
@@ -51,6 +51,18 @@ cd ../..
 #cleanup case 2
 # ==============================================================
 rm -rf $SOURCE_TARBALL_DIR; if [[ $? -ne 0 ]]; then exit $?; fi
+
+
+# case 3: build from pre-existing source tarball with py2dsc
+# ==============================================================
+py2dsc-deb $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
+
+echo "contents of .deb from $SOURCE_TARBALL in case 3:"
+dpkg --contents deb_dist/*.deb; if [[ $? -ne 0 ]]; then exit $?; fi
+
+#cleanup case 3
+rm -rf deb_dist; if [[ $? -ne 0 ]]; then exit $?; fi
+
 
 #cleanup original tarball
 rm -rf $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
