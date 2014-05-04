@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/astraw/stdeb.png
+        :target: https://travis-ci.org/astraw/stdeb
+
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
