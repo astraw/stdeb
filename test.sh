@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 rm -rf deb_dist
 
@@ -21,51 +22,51 @@ fi
 
 # get a file to work with
 # ==============================================================
-wget $SOURCE_URL; if [[ $? -ne 0 ]]; then exit $?; fi
+wget $SOURCE_URL
 
 # case 1: build from pre-existing source tarball with py2dsc
 # ==============================================================
-py2dsc $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
+py2dsc $SOURCE_TARBALL
 
-cd deb_dist/$DEBSOURCE; if [[ $? -ne 0 ]]; then exit $?; fi
-dpkg-buildpackage -rfakeroot -uc -us; if [[ $? -ne 0 ]]; then exit $?; fi
-cd ../..; if [[ $? -ne 0 ]]; then exit $?; fi
+cd deb_dist/$DEBSOURCE
+dpkg-buildpackage -rfakeroot -uc -us
+cd ../..
 echo "contents of .deb from $SOURCE_TARBALL in case 1:"
-dpkg --contents deb_dist/*.deb; if [[ $? -ne 0 ]]; then exit $?; fi
+dpkg --contents deb_dist/*.deb
 
 #cleanup case 1
-rm -rf deb_dist; if [[ $? -ne 0 ]]; then exit $?; fi
+rm -rf deb_dist
 
 # case 2: build from pre-existing source tarball using distutils
 # ==============================================================
-tar xzf $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
-cd $SOURCE_TARBALL_DIR; if [[ $? -ne 0 ]]; then exit $?; fi
-python setup.py --command-packages=stdeb.command sdist_dsc; if [[ $? -ne 0 ]]; then exit $?; fi
-cd deb_dist/$DEBSOURCE; if [[ $? -ne 0 ]]; then exit $?; fi
-dpkg-buildpackage -rfakeroot -uc -us; if [[ $? -ne 0 ]]; then exit $?; fi
-cd ..; if [[ $? -ne 0 ]]; then exit $?; fi
+tar xzf $SOURCE_TARBALL
+cd $SOURCE_TARBALL_DIR
+python setup.py --command-packages=stdeb.command sdist_dsc
+cd deb_dist/$DEBSOURCE
+dpkg-buildpackage -rfakeroot -uc -us
+cd ..
 echo "contents of .deb from $SOURCE_TARBALL in case 2:"
-dpkg --contents *.deb; if [[ $? -ne 0 ]]; then exit $?; fi
+dpkg --contents *.deb
 cd ../..
 
 #cleanup case 2
 # ==============================================================
-rm -rf $SOURCE_TARBALL_DIR; if [[ $? -ne 0 ]]; then exit $?; fi
+rm -rf $SOURCE_TARBALL_DIR
 
 
 # case 3: build from pre-existing source tarball with py2dsc
 # ==============================================================
-py2dsc-deb $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
+py2dsc-deb $SOURCE_TARBALL
 
 echo "contents of .deb from $SOURCE_TARBALL in case 3:"
-dpkg --contents deb_dist/*.deb; if [[ $? -ne 0 ]]; then exit $?; fi
+dpkg --contents deb_dist/*.deb
 
 #cleanup case 3
-rm -rf deb_dist; if [[ $? -ne 0 ]]; then exit $?; fi
+rm -rf deb_dist
 
 
 #cleanup original tarball
-rm -rf $SOURCE_TARBALL; if [[ $? -ne 0 ]]; then exit $?; fi
+rm -rf $SOURCE_TARBALL
 
 done
 
