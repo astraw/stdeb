@@ -1,6 +1,5 @@
 import os
 import stdeb.util as util
-from stdeb.command.sdist_dsc import sdist_dsc
 
 from distutils.core import Command
 
@@ -22,8 +21,11 @@ class bdist_deb(Command):
         # generate .dsc source pkg
         self.run_command('sdist_dsc')
 
+        # get relevant options passed to sdist_dsc
+        sdist_dsc = self.get_finalized_command('sdist_dsc')
+        dsc_tree = sdist_dsc.dist_dir
+
         # execute system command and read output (execute and read output of find cmd)
-        dsc_tree = 'deb_dist'
         target_dir = None
         for entry in os.listdir(dsc_tree):
             fulldir = os.path.join(dsc_tree,entry)
