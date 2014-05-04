@@ -11,6 +11,9 @@ def main():
     parser.add_option('--verbose', type='int',
                       help='verbosity level',
                       default=0)
+    parser.add_option('--release', type='str',
+                      help='specify a particular release',
+                      default=None)
     parser.add_option('--keep', action='store_true',
                       default=False,
                       help='do not remove temporary files')
@@ -28,7 +31,8 @@ def main():
         if options.verbose >= 2:
             myprint('downloading to %s'%tmpdir)
         os.chdir( tmpdir )
-        tarball_fname = get_source_tarball(package_name,verbose=options.verbose)
+        tarball_fname = get_source_tarball(package_name,verbose=options.verbose,
+                                           release=options.release)
         cmd = 'tar xzf %s' % tarball_fname
         if options.verbose >= 2:
             myprint('executing: %s'%cmd)
