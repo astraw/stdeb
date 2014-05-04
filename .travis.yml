@@ -1,18 +1,14 @@
 # http://travis-ci.org/#!/astraw/stdeb
 language: python
 python:
-    - 2.7_with_system_site_packages
+    - 2.7
 before_install:
     - sudo apt-get update
     - sudo apt-get install python-all-dev debhelper python-setuptools apt-file
+    - export PATH=/usr/bin:$PATH
 install:
-    # Use system python, not virtualenv, to use Debian/Ubuntu patches
-    - deactivate # the virtualenv
-
-    # Build a .deb file
+    # Build a .deb file and then install it.
     - python setup.py --command-packages=stdeb.command bdist_deb
-
-    # Install it as a normal package.
     - sudo dpkg -i deb_dist/*.deb
 script:
     - ./test.sh
