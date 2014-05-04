@@ -76,9 +76,9 @@ def get_source_tarball(package_name,verbose=0,allow_unsafe_download=False,
                                                     release=release)
     if not download_url.startswith('https://'):
         if allow_unsafe_download:
-            warnings.warn('downloading from unsafe url: %s' % download_url)
+            warnings.warn('downloading from unsafe url: %r' % download_url)
         else:
-            raise ValueError('PYPI returned unsafe url: %s' % download_url)
+            raise ValueError('PYPI returned unsafe url: %r' % download_url)
 
     fname = download_url.split('/')[-1]
     if expected_md5_digest is not None:
