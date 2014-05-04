@@ -2,7 +2,7 @@
 
 rm -rf deb_dist
 
-for i in `seq 1 3`; do
+for i in `seq 1 2`; do
 
 if [ $i -eq "1" ]; then
 SOURCE_URL=http://astraw.com/misc_files/simplepack-8.0.1+r23437.tar.gz
@@ -14,11 +14,6 @@ SOURCE_URL=http://pypi.python.org/packages/source/R/Reindent/Reindent-0.1.0.tar.
 SOURCE_TARBALL=Reindent-0.1.0.tar.gz
 SOURCE_TARBALL_DIR=Reindent-0.1.0
 DEBSOURCE=reindent-0.1.0
-elif [ $i -eq "3" ]; then
-SOURCE_URL=http://astraw.com/misc_files/twisted-svn-r23437.tar.gz
-SOURCE_TARBALL=twisted-svn-r23437.tar.gz
-SOURCE_TARBALL_DIR=twisted.svn
-DEBSOURCE=twisted-8.0.1-r23437
 else
     echo "unknown case"
     exit 1
