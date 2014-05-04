@@ -1,19 +1,14 @@
 (See CHANGELOG.txt for lists of changes. This file provides
 information for those upgrading from previous versions of stdeb.)
 
-Next release
-============
+Release 0.7.0
+=============
 
-The default behavior of stdeb has changed with respect to Debian bug
-#548392. Previously, the default was to workaround this bug by placing
-"XS-Python-Version: current" into debian/control. The new default
-makes no effort to workaround this bug, and thus "XS-Python-Version:
-all". If you are using stdeb on an older version of Debian/Ubuntu with
-a buggy version of debhelper, use "--workaround-548392=True".
+stdeb uses dh_python2 instead of dh_pysupport (thanks to Piotr
+Ożarowski).
 
-Remove the default attempt to migrate old stdeb based packages that
-used pycentral. (If you still have old stdeb based packages, use
-"--pycentral-backwards-compatibility=True".
+A long time passed between releases, so there are probably backwards
+incompatible changes that have crept in.
 
 Release 0.6.0
 =============

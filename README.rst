@@ -13,13 +13,25 @@ creates a Debian binary package, a .deb file. The ``debianize``
 command builds a ``debian/`` directory directly alongside your
 setup.py.
 
-Two convenience utilities are also provided. ``pypi-install`` will
-query the `Python Package Index (PyPI) <http://pypi.python.org/>`_ for
-a package, download it, create a .deb from it, and then install the
-.deb. ``py2dsc`` will convert a distutils-built source tarball into a
-Debian source package.
+Several convenience utilities are also provided:
+
+* ``pypi-download`` will query the `Python Package Index (PyPI)
+  <http://pypi.python.org/>`_ for a package and download it.
+* ``pypi-install`` will query the `Python Package Index (PyPI)
+  <http://pypi.python.org/>`_ for a package, download it, create a
+  .deb from it, and then install the .deb.
+* ``py2dsc`` will convert a distutils-built source tarball into a
+  Debian source package.
+* ``py2dsc-deb`` will convert a distutils-built source tarball into a
+  Debian source package and then use the Debian machinery to build a
+  .deb file from this.
 
 .. contents::
+
+Python 3
+--------
+
+No attempt had been yet made to get stdeb to work with Python 3.
 
 News
 ----
@@ -27,8 +39,21 @@ News
 master branch
 `````````````
 
-This branch is recommended for all users. It requires Debhelper 7, and
-thus *requires Ubuntu 8.10 (or newer) or Debian Lenny (or newer)*.
+This branch is recommended for all users. It is currently tested on
+Ubuntu 12.04.
+
+ * 2014-05-04: **Version 0.7.0**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.7.0>`__. Highlights for this
+   release (you may also wish to consult the full `changelog
+   <http://github.com/astraw/stdeb/blob/release-0.7.0/CHANGELOG.txt>`__):
+
+   - New commands: pypi-download and pypi-install to directly download
+     and install packages from PyPI, respectively. py2dsc-deb directly
+     creates a .deb file from a source tarball.
+
+   - Many bugfixes, including the new URL for PyPI.
+
+   - Thanks to many, especially Piotr Ożarowski for help with stdeb.
 
  * 2010-06-18: **Version 0.6.0**. See the `download page
    <http://pypi.python.org/pypi/stdeb/0.6.0>`__. Highlights for this
@@ -120,6 +145,14 @@ __ http://github.com/astraw/stdeb/blob/release-0.2/CHANGELOG.txt
 The commands
 ------------
 
+pypi-download, command-line command
+```````````````````````````````````
+
+``pypi-download`` takes a package name, queries PyPI for it and downloads
+it.
+
+  pypi-download [options] mypackage
+
 pypi-install, command-line command
 ``````````````````````````````````
 
@@ -137,10 +170,16 @@ package from it::
 
   py2dsc [options] mypackage-0.1.tar.gz # uses pre-built Python source package
 
+py2dsc-deb, command-line command
+````````````````````````````````
+
+``py2dsc-deb`` takes a .tar.gz source package and build a Debian source
+package and then a .deb file from it::
+
+  py2dsc-deb [options] mypackage-0.1.tar.gz # uses pre-built Python source package
 
 sdist_dsc, distutils command
 ````````````````````````````
-
 All methods eventually result in a call to the ``sdist_dsc`` distutils
 command. You may prefer to do so directly::
 
@@ -159,16 +198,13 @@ Debian machinery (e.g. dpkg-buildpackage).
 
 bdist_deb, distutils command
 ````````````````````````````
-
 Also, a ``bdist_deb`` distutils command is installed. This calls the
 sdist_dsc command and then runs dpkg-buildpackage on the result::
 
   python setup.py --command-packages=stdeb.command bdist_deb
 
-
 debianize, distutils command
 ````````````````````````````
-
 The ``debianize`` distutils command builds the same ``debian/``
 directory as used in the previous command, but the output is placed
 directly in the project's root folder (alongside setup.py). This is
@@ -186,8 +222,8 @@ Distutils command packages can also be specified in distutils
 configuration files (rather than using the ``--command-packages``
 command line argument to ``setup.py``), as specified in the `distutils
 documentation
-<http://docs.python.org/distutils/extending.html>`_. Specifically, you
-could include this in your ``~/.pydistutils.cfg`` file::
+<https://docs.python.org/2/distutils/extending.html>`_. Specifically,
+you could include this in your ``~/.pydistutils.cfg`` file::
 
   [global]
   command-packages: stdeb.command
@@ -299,7 +335,7 @@ Download
 Files are available at the `download page`_ (for ancient releases, see
 the `old download page`_).
 
-.. _download page: http://pypi.python.org/pypi/stdeb
+.. _download page: https://pypi.python.org/pypi/stdeb
 .. _old download page: http://stdeb.python-hosting.com/wiki/Download
 
 The git repository is available at
@@ -314,7 +350,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.6.0"
+  STDEB_VERSION="0.7.0"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
@@ -616,7 +652,7 @@ Please address all questions to the distutils-SIG_
 License
 -------
 
-MIT-style license. Copyright (c) 2006-2009 stdeb authors.
+MIT-style license. Copyright (c) 2006-2014 stdeb authors.
 
 See the LICENSE.txt file provided with the source distribution for
 full details.
@@ -639,9 +675,13 @@ Additional Credits
 * Alexander V. Nikolaev for the debhelper buildsystem specification.
 * Roland Sommer for the description field bugfix.
 * Barry Warsaw for suggesting the debianize command.
+* Asheesh Laroia for updating the PyPI URL.
+* Piotr Ożarowski for implementing dh_python2 support.
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
+* TravisCI_ for continuous integration
 
 .. _GitHub: http://github.com/
 .. _WebFaction: http://webfaction.com/
 .. _python-hosting: http://python-hosting.com/
+..  _TravisCI: http://travis-ci.org/
