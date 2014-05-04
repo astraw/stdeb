@@ -12,7 +12,8 @@ def myprint(mystr,fd=None):
 
 USER_AGENT = 'pypi-install/0.6.0+git ( https://github.com/astraw/stdeb )'
 
-def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',verbose=0):
+def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
+                verbose=0, release=None):
     transport = xmlrpclib.Transport()
     transport.user_agent = USER_AGENT
     pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
@@ -23,38 +24,52 @@ def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',verbose=
     if verbose >= 2:
         myprint( 'querying PyPI (%s) for package name "%s"' % (pypi_url,
                                                                package_name) )
-    releases = pypi.package_releases(package_name)
-    if verbose >= 2:
-        myprint( 'found releases: %s' % (', '.join(releases),) )
-    if len(releases) > 1:
-        # XXX how to sort versions?
-        raise NotImplementedError('no ability to handle more than one release')
-    for version in releases:
+    if release is not None:
+        # A specific release is requested. Get a list of all available.
+        show_hidden=True
+        all_releases = pypi.package_releases(package_name,show_hidden)
+        if verbose >= 2:
+            myprint( 'found all available releases: %s' % (', '.join(all_releases),) )
 
-        urls = pypi.release_urls( package_name,version)
-        for url in urls:
-            if url['packagetype']=='sdist':
-                assert url['python_version']=='source', 'how can an sdist not be a source?'
-                if url['url'].endswith('.tar.gz'):
-                    download_url = url['url']
-                    if 'md5_digest' in url:
-                        expected_md5_digest = url['md5_digest']
-                    break
+        if release not in all_releases:
+            raise ValueError('your desired release %r is not among available '
+                             'releases %r'%(release,all_releases))
+        version = release
+    else:
+        default_releases = pypi.package_releases(package_name)
+        assert len(default_releases)==1
+        default_release = default_releases[0]
+        if verbose >= 2:
+            myprint( 'found default release: %s' % (', '.join(default_releases),) )
 
-        if download_url is None:
-            # PyPI doesn't have package. Is download URL provided?
-            result = pypi.release_data(package_name,version)
-            if result['download_url'] != 'UNKNOWN':
-                download_url = result['download_url']
-                # no download URL provided, see if PyPI itself has download
-                urls = pypi.release_urls( result['name'], result['version'] )
+        version = default_release
+
+    urls = pypi.release_urls( package_name,version)
+    for url in urls:
+        if url['packagetype']=='sdist':
+            assert url['python_version']=='source', 'how can an sdist not be a source?'
+            if url['url'].endswith('.tar.gz'):
+                download_url = url['url']
+                if 'md5_digest' in url:
+                    expected_md5_digest = url['md5_digest']
+                break
+
+    if download_url is None:
+        # PyPI doesn't have package. Is download URL provided?
+        result = pypi.release_data(package_name,version)
+        if result['download_url'] != 'UNKNOWN':
+            download_url = result['download_url']
+            # no download URL provided, see if PyPI itself has download
+            urls = pypi.release_urls( result['name'], result['version'] )
     if download_url is None:
         raise ValueError('no package "%s" was found'%package_name)
     return download_url, expected_md5_digest
 
-def get_source_tarball(package_name,verbose=0,allow_unsafe_download=False):
+def get_source_tarball(package_name,verbose=0,allow_unsafe_download=False,
+                       release=None):
     download_url, expected_md5_digest = find_tar_gz(package_name,
-                                                    verbose=verbose)
+                                                    verbose=verbose,
+                                                    release=release)
     if not download_url.startswith('https://'):
         if allow_unsafe_download:
             warnings.warn('downloading from unsafe url: %s' % download_url)
