@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 USAGE = """\
-usage: py2dsc [options] distfile
-   or: py2dsc --help
+usage: py2dsc-deb [options] distfile
+   or: py2dsc-deb --help
 
 where distfile is a .zip or .tar.gz file built with the sdist command
 of distutils.
@@ -11,7 +11,7 @@ import stdeb.cli_runner
 import sys
 
 def main():
-    sys.exit(stdeb.cli_runner.runit(cmd='sdist_dsc'))
+    sys.exit(stdeb.cli_runner.runit(cmd='bdist_deb'))
 
 if __name__=='__main__':
     main()
