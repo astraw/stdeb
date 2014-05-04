@@ -149,7 +149,7 @@ pypi-download, command-line command
 ```````````````````````````````````
 
 ``pypi-download`` takes a package name, queries PyPI for it and downloads
-it.
+it::
 
   pypi-download [options] mypackage
 
