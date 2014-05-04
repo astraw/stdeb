@@ -9,6 +9,12 @@ def main():
     parser.add_option('--verbose', type='int',
                       help='verbosity level',
                       default=0)
+    parser.add_option('--release', type='str',
+                      help='specify a particular release',
+                      default=None)
+    parser.add_option('--allow-unsafe-download', action='store_true',
+                      default=False,
+                      help='allow unsafe downloads')
     (options, args) = parser.parse_args()
     if len(args) != 1:
         myprint('need exactly one PACKAGE_NAME',fd=sys.stderr)
@@ -17,7 +23,9 @@ def main():
 
     package_name = args[0]
 
-    tarball_fname = get_source_tarball(package_name,verbose=options.verbose)
+    tarball_fname = get_source_tarball(package_name,verbose=options.verbose,
+                                       release=options.release,
+                                       allow_unsafe_download=options.allow_unsafe_download)
     myprint('OK: %s' % tarball_fname)
 
 if __name__=='__main__':
