@@ -9,9 +9,9 @@ packages from Python packages via a new distutils command,
 ``sdist_dsc``. Automatic defaults are provided for the Debian package,
 but many aspects of the resulting package can be customized (see the
 customizing section, below). An additional command, ``bdist_deb``,
-creates a Debian binary package, a .deb file. The ``debianize``
-command builds a ``debian/`` directory directly alongside your
-setup.py.
+creates a Debian binary package, a .deb file. The ``install_deb``
+command installs this .deb file. The ``debianize`` command builds a
+``debian/`` directory directly alongside your setup.py.
 
 Several convenience utilities are also provided:
 
@@ -200,10 +200,18 @@ Debian machinery (e.g. dpkg-buildpackage).
 
 bdist_deb, distutils command
 ````````````````````````````
-Also, a ``bdist_deb`` distutils command is installed. This calls the
+A ``bdist_deb`` distutils command is installed. This calls the
 sdist_dsc command and then runs dpkg-buildpackage on the result::
 
   python setup.py --command-packages=stdeb.command bdist_deb
+
+install_deb, distutils command
+``````````````````````````````
+
+The ``install_deb`` distutils command calls the bdist_deb command and
+then installs the result. You need to run this with superuser privilege::
+
+  sudo python setup.py --command-packages=stdeb.command install_deb
 
 debianize, distutils command
 ````````````````````````````
@@ -293,6 +301,20 @@ This installs it::
 
   cd ..
   sudo dpkg -i python-reindent_0.1.0-1_all.deb
+
+Quickstart 4: Install from a Python package direct to a debian system package
+`````````````````````````````````````````````````````````````````````````````
+
+(First, install stdeb as you normally install Python packages.)
+
+Do this from the directory with your `setup.py` file::
+
+  python setup.py --command-packages=stdeb.command install_deb
+
+This will make a Debian source package (.dsc, .orig.tar.gz and
+.diff.gz files), compile it to a Debian binary package (.deb) for your
+current system and then install it using ``dpkg``.
+
 
 Another example, with more explanation
 ``````````````````````````````````````
