@@ -16,6 +16,11 @@ pypi-download --help > /dev/null
 pypi-install --help > /dev/null
 
 ## Run test cases on each of the following packages
+
+# Set an upper bound on the size of the compressed diff. We are not
+# applying any patches here so this should be pretty small.
+MAX_DIFF_SIZE=5000
+
 for i in `seq 1 3`; do
 if [ $i -eq "1" ]; then
 SOURCE_PACKAGE=requests
@@ -53,6 +58,13 @@ dpkg-buildpackage -rfakeroot -uc -us
 cd ../..
 echo "contents of .deb from $SOURCE_TARBALL in case 1:"
 dpkg --contents deb_dist/*.deb
+DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
+if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
+    echo "ERROR: diff file larger than expected"
+    exit 1
+else
+    echo "${SOURCE_PACKAGE} case 1: diff size ${DIFF_SIZE}"
+fi
 
 #cleanup case 1
 rm -rf deb_dist
@@ -64,10 +76,17 @@ cd $SOURCE_TARBALL_DIR
 python setup.py --command-packages=stdeb.command sdist_dsc
 cd deb_dist/$DEBSOURCE
 dpkg-buildpackage -rfakeroot -uc -us
-cd ..
-echo "contents of .deb from $SOURCE_TARBALL in case 2:"
-dpkg --contents *.deb
 cd ../..
+echo "contents of .deb from $SOURCE_TARBALL in case 2:"
+dpkg --contents deb_dist/*.deb
+DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
+if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
+    echo "ERROR: diff file larger than expected"
+    exit 1
+else
+    echo "${SOURCE_PACKAGE} case 2: diff size ${DIFF_SIZE}"
+fi
+cd ..
 
 #cleanup case 2
 # ==============================================================
@@ -80,6 +99,13 @@ py2dsc-deb $SOURCE_TARBALL
 
 echo "contents of .deb from $SOURCE_TARBALL in case 3:"
 dpkg --contents deb_dist/*.deb
+DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
+if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
+    echo "ERROR: diff file larger than expected"
+    exit 1
+else
+    echo "${SOURCE_PACKAGE} case 3: diff size ${DIFF_SIZE}"
+fi
 
 #cleanup case 3
 rm -rf deb_dist
