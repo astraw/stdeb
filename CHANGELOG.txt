@@ -1,3 +1,10 @@
+= Release 0.7.1 (2014-05-04) =
+
+2014-05-05 Add a install_deb distutils command. This builds and
+           installs a python package as a system package.
+
+2014-05-05 bugfixes
+
 = Release 0.7.0 (2014-05-04) =
 
 2014-05-04 Run test scripts on http://travis-ci.org/

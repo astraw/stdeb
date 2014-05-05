@@ -42,14 +42,19 @@ master branch
 This branch is recommended for all users. It is currently tested on
 Ubuntu 12.04.
 
- * 2014-05-04: **Version 0.7.0**. See the `download page
-   <https://pypi.python.org/pypi/stdeb/0.7.0>`__. Highlights for this
+ * 2014-05-05: **Version 0.7.1**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.7.1>`__. Highlights for this
    release (you may also wish to consult the full `changelog
-   <http://github.com/astraw/stdeb/blob/release-0.7.0/CHANGELOG.txt>`__):
+   <http://github.com/astraw/stdeb/blob/release-0.7.1/CHANGELOG.txt>`__). Due
+   to bugs in 0.7.0, this release is the first announced from the 0.7
+   series. Highlights since 0.6.0:
 
    - New commands: pypi-download and pypi-install to directly download
      and install packages from PyPI, respectively. py2dsc-deb directly
      creates a .deb file from a source tarball.
+
+   - New distutils command: install_deb lets you directly install a
+     python package as a standard system package.
 
    - Many bugfixes, including the new URL for PyPI.
 
