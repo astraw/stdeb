@@ -53,6 +53,8 @@ Ubuntu 12.04.
 
    - Many bugfixes, including the new URL for PyPI.
 
+   - Automated runs of test suite, thanks to Travis CI
+
    - Thanks to many, especially Piotr Ożarowski for help with stdeb.
 
  * 2010-06-18: **Version 0.6.0**. See the `download page
