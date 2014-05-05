@@ -16,7 +16,7 @@ pypi-download --help > /dev/null
 pypi-install --help > /dev/null
 
 ## Run test cases on each of the following packages
-for i in `seq 1 2`; do
+for i in `seq 1 3`; do
 if [ $i -eq "1" ]; then
 SOURCE_PACKAGE=requests
 SOURCE_RELEASE=2.2.1
@@ -29,6 +29,12 @@ SOURCE_RELEASE=0.1.1
 SOURCE_TARBALL_DIR=${SOURCE_PACKAGE}-${SOURCE_RELEASE}
 SOURCE_TARBALL=${SOURCE_TARBALL_DIR}.tar.gz
 DEBSOURCE=reindent-${SOURCE_RELEASE}
+elif [ $i -eq "3" ]; then
+SOURCE_PACKAGE=lxml
+SOURCE_RELEASE=3.3.5
+SOURCE_TARBALL_DIR=${SOURCE_PACKAGE}-${SOURCE_RELEASE}
+SOURCE_TARBALL=${SOURCE_TARBALL_DIR}.tar.gz
+DEBSOURCE=${SOURCE_TARBALL_DIR}
 else
     echo "unknown case"
     exit 1
