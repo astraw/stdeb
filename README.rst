@@ -379,7 +379,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.7.0"
+  STDEB_VERSION="0.7.1"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz

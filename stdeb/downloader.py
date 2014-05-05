@@ -10,7 +10,7 @@ def myprint(mystr,fd=None):
     else:
         print >> fd, mystr
 
-USER_AGENT = 'pypi-install/0.7.0+git ( https://github.com/astraw/stdeb )'
+USER_AGENT = 'pypi-install/0.7.1 ( https://github.com/astraw/stdeb )'
 
 def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
                 verbose=0, release=None):
