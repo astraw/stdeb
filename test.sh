@@ -6,15 +6,17 @@ rm -rf deb_dist
 for i in `seq 1 2`; do
 
 if [ $i -eq "1" ]; then
-SOURCE_URL=http://astraw.com/misc_files/simplepack-8.0.1+r23437.tar.gz
-SOURCE_TARBALL=simplepack-8.0.1+r23437.tar.gz
-SOURCE_TARBALL_DIR=simplepack-8.0.1+r23437
-DEBSOURCE=simplepack-8.0.1+r23437
+SOURCE_PACKAGE=requests
+SOURCE_RELEASE=2.2.1
+SOURCE_TARBALL_DIR=${SOURCE_PACKAGE}-${SOURCE_RELEASE}
+SOURCE_TARBALL=${SOURCE_TARBALL_DIR}.tar.gz
+DEBSOURCE=${SOURCE_TARBALL_DIR}
 elif [ $i -eq "2" ]; then
-SOURCE_URL=http://pypi.python.org/packages/source/R/Reindent/Reindent-0.1.0.tar.gz
-SOURCE_TARBALL=Reindent-0.1.0.tar.gz
-SOURCE_TARBALL_DIR=Reindent-0.1.0
-DEBSOURCE=reindent-0.1.0
+SOURCE_PACKAGE=Reindent
+SOURCE_RELEASE=0.1.1
+SOURCE_TARBALL_DIR=${SOURCE_PACKAGE}-${SOURCE_RELEASE}
+SOURCE_TARBALL=${SOURCE_TARBALL_DIR}.tar.gz
+DEBSOURCE=reindent-${SOURCE_RELEASE}
 else
     echo "unknown case"
     exit 1
@@ -22,7 +24,7 @@ fi
 
 # get a file to work with
 # ==============================================================
-wget $SOURCE_URL
+pypi-download ${SOURCE_PACKAGE} --release ${SOURCE_RELEASE}
 
 # case 1: build from pre-existing source tarball with py2dsc
 # ==============================================================
