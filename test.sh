@@ -1,10 +1,22 @@
 #!/bin/bash
 set -e
 
+# setup tests
+
+## remove old build results
 rm -rf deb_dist
 
-for i in `seq 1 2`; do
+# Run tests
 
+## Test some basic tests. Just make sure these don't fail.
+
+py2dsc --help > /dev/null
+py2dsc-deb --help > /dev/null
+pypi-download --help > /dev/null
+pypi-install --help > /dev/null
+
+## Run test cases on each of the following packages
+for i in `seq 1 2`; do
 if [ $i -eq "1" ]; then
 SOURCE_PACKAGE=requests
 SOURCE_RELEASE=2.2.1
