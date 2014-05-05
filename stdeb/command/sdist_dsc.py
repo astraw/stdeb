@@ -1,4 +1,4 @@
-import sys, os, shutil
+import sys, os, shutil, tempfile
 
 from stdeb import log
 from stdeb.util import expand_sdist_file, recursive_hardlink
@@ -55,12 +55,23 @@ class sdist_dsc(common_debian_package_command):
         else:
             source_tarball = self.use_premade_distfile
 
-        # copy source tree
+        # Copy source tree assuming that package-0.1.tar.gz contains
+        # single top-level path 'package-0.1'. The contents of this
+        # directory are then used.
+
         if os.path.exists(fullpath_repackaged_dirname):
             shutil.rmtree(fullpath_repackaged_dirname)
-        os.makedirs(fullpath_repackaged_dirname)
+
+        tmpdir = tempfile.mkdtemp()
         expand_sdist_file( os.path.abspath(source_tarball),
-                           cwd=fullpath_repackaged_dirname )
+                           cwd=tmpdir )
+        expanded_base_files = os.listdir(tmpdir)
+        assert len(expanded_base_files)==1
+        actual_package_dirname = expanded_base_files[0]
+        expected_package_dirname = debinfo.module_name + '-' + debinfo.upstream_version
+        assert actual_package_dirname==expected_package_dirname
+        shutil.move( os.path.join( tmpdir, actual_package_dirname ),
+                     fullpath_repackaged_dirname)
 
         if self.use_premade_distfile is not None:
         # ensure premade sdist can actually be used
