@@ -11,7 +11,7 @@ import stdeb.cli_runner
 import sys
 
 def main():
-    sys.exit(stdeb.cli_runner.runit(cmd='bdist_deb'))
+    sys.exit(stdeb.cli_runner.runit(cmd='bdist_deb',usage=USAGE))
 
 if __name__=='__main__':
     main()

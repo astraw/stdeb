@@ -10,7 +10,7 @@ from pkg_resources import Requirement, Distribution
 
 class OptObj: pass
 
-def runit(cmd):
+def runit(cmd,usage):
     if cmd not in ['sdist_dsc','bdist_deb']:
         raise ValueError('unknown command %r'%cmd)
     # process command-line options
@@ -27,14 +27,14 @@ def runit(cmd):
             setattr(optobj, option, strtobool(value))
 
     if hasattr(optobj,'help'):
-        print USAGE
+        print usage
         parser.set_option_table(stdeb_cmdline_opts)
         parser.print_help("Options:")
         return 0
 
     if len(args)!=1:
         log.error('not given single argument (distfile), args=%r', args)
-        print USAGE
+        print usage
         return 1
 
     sdist_file = args[0]
