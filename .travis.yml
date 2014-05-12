@@ -11,8 +11,8 @@ install:
     - python setup.py --command-packages=stdeb.command bdist_deb
     - sudo dpkg -i deb_dist/*.deb
 script:
-    - ./test.sh
-    - ./test-pypi-install.sh
+    - sudo ./test.sh
+    - sudo ./test-pypi-install.sh
 branches:
   except:
     - pristine-tar
