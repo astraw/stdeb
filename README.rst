@@ -411,12 +411,13 @@ be used.
 I wrote this initially to Debianize several Python packages of my own,
 but I have the feeling it could be generally useful. It appears
 similar, at least in theory, to easydeb_, `Logilab's Devtools`_,
-bdist_dpkg_ and bdist_deb_.
+bdist_dpkg_, bdist_deb_ and pkgme_.
 
 .. _easydeb: http://easy-deb.sourceforge.net/
 .. _Logilab's DevTools: http://www.logilab.org/projects/devtools
 .. _bdist_dpkg: http://svn.python.org/view/sandbox/trunk/Lib/bdist_dpkg.py
 .. _bdist_deb: http://bugs.python.org/issue1054967
+.. _pkgme: https://launchpad.net/pkgme
 
 Features
 --------
