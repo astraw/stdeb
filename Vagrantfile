@@ -16,8 +16,7 @@ Vagrant::Config.run do |config|
 
   # Install stdeb
   config.vm.provision :shell, :inline => "rm -rf /tmp/vagrant_copy/deb_dist"
-  config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && python setup.py --command-packages=stdeb.command bdist_deb"
-  config.vm.provision :shell, :inline => "dpkg -i /tmp/vagrant_copy/deb_dist/*.deb"
+  config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && python setup.py --command-packages=stdeb.command install_deb"
 
   # Run tests.
   config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && ./test.sh"
