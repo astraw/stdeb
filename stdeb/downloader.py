@@ -1,6 +1,6 @@
 import os
 import xmlrpclib
-import urllib2
+import requests
 import hashlib
 import warnings
 from transport import RequestsTransport
@@ -96,10 +96,10 @@ def get_source_tarball(package_name,verbose=0,allow_unsafe_download=False,
                 raise ValueError('File "%s" exists but has wrong checksum.'%fname)
     if verbose >= 1:
         myprint( 'downloading %s' % download_url )
-    request = urllib2.Request(download_url)
-    request.add_header('User-Agent', USER_AGENT )
-    opener = urllib2.build_opener()
-    package_tar_gz = opener.open(request).read()
+    headers = {'User-Agent': USER_AGENT }
+    r = requests.get(download_url, headers=headers)
+    r.raise_for_status()
+    package_tar_gz = r.content
     if verbose >= 1:
         myprint( 'done downloading %d bytes.' % ( len(package_tar_gz), ) )
     if expected_md5_digest is not None:
