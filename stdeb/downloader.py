@@ -3,6 +3,7 @@ import xmlrpclib
 import urllib2
 import hashlib
 import warnings
+from transport import RequestsTransport
 
 def myprint(mystr,fd=None):
     if fd is None:
@@ -14,7 +15,7 @@ USER_AGENT = 'pypi-install/0.7.1 ( https://github.com/astraw/stdeb )'
 
 def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
                 verbose=0, release=None):
-    transport = xmlrpclib.Transport()
+    transport = RequestsTransport()
     transport.user_agent = USER_AGENT
     pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
 
