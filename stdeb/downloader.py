@@ -1,8 +1,9 @@
 import os
 import xmlrpclib
-import urllib2
+import requests
 import hashlib
 import warnings
+from stdeb.transport import RequestsTransport
 
 def myprint(mystr,fd=None):
     if fd is None:
@@ -14,8 +15,10 @@ USER_AGENT = 'pypi-install/0.7.1 ( https://github.com/astraw/stdeb )'
 
 def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
                 verbose=0, release=None):
-    transport = xmlrpclib.Transport()
+    transport = RequestsTransport()
     transport.user_agent = USER_AGENT
+    if pypi_url.startswith('https://'):
+        transport.use_https = True
     pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
 
     download_url = None
@@ -95,10 +98,10 @@ def get_source_tarball(package_name,verbose=0,allow_unsafe_download=False,
                 raise ValueError('File "%s" exists but has wrong checksum.'%fname)
     if verbose >= 1:
         myprint( 'downloading %s' % download_url )
-    request = urllib2.Request(download_url)
-    request.add_header('User-Agent', USER_AGENT )
-    opener = urllib2.build_opener()
-    package_tar_gz = opener.open(request).read()
+    headers = {'User-Agent': USER_AGENT }
+    r = requests.get(download_url, headers=headers)
+    r.raise_for_status()
+    package_tar_gz = r.content
     if verbose >= 1:
         myprint( 'done downloading %d bytes.' % ( len(package_tar_gz), ) )
     if expected_md5_digest is not None:
