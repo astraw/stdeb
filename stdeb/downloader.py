@@ -3,7 +3,7 @@ import xmlrpclib
 import requests
 import hashlib
 import warnings
-from transport import RequestsTransport
+from stdeb.transport import RequestsTransport
 
 def myprint(mystr,fd=None):
     if fd is None:
