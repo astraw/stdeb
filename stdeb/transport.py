@@ -31,7 +31,9 @@ class RequestsTransport(xmlrpc.Transport):
         """
         Make an xmlrpc request.
         """
-        headers = {'User-Agent': self.user_agent}
+        headers = {'User-Agent': self.user_agent,
+                   'Content-Type': 'text/xml',
+                   }
         url = self._build_url(host, handler)
         try:
             resp = requests.post(url, data=request_body, headers=headers)
