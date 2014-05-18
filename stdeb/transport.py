@@ -19,6 +19,8 @@ import requests
 import requests.utils
 
 import sys
+from distutils.version import StrictVersion
+import warnings
 
 class RequestsTransport(xmlrpc.Transport):
     """
@@ -38,8 +40,16 @@ class RequestsTransport(xmlrpc.Transport):
                    'Content-Type': 'text/xml',
                    }
         url = self._build_url(host, handler)
+        kwargs = {}
+        if StrictVersion(requests.__version__) >= StrictVersion('0.8.8'):
+            kwargs['verify']=True
+        else:
+            if self.use_https:
+                warnings.warn('using https transport but no certificate '
+                              'verification. (Hint: upgrade requests package.)')
         try:
-            resp = requests.post(url, data=request_body, headers=headers)
+            resp = requests.post(url, data=request_body, headers=headers,
+                                 **kwargs)
         except ValueError:
             raise
         except Exception:
