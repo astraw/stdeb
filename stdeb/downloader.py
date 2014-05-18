@@ -17,6 +17,8 @@ def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
                 verbose=0, release=None):
     transport = RequestsTransport()
     transport.user_agent = USER_AGENT
+    if pypi_url.startswith('https://'):
+        transport.use_https = True
     pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
 
     download_url = None
