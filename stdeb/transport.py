@@ -16,6 +16,9 @@ except ImportError:
     import xmlrpclib as xmlrpc
 
 import requests
+import requests.utils
+
+import sys
 
 class RequestsTransport(xmlrpc.Transport):
     """
@@ -55,7 +58,22 @@ class RequestsTransport(xmlrpc.Transport):
         Parse the xmlrpc response.
         """
         p, u = self.getparser()
-        p.feed(resp.text)
+
+        if hasattr(resp,'text'):
+            # modern requests will do this for us
+            text = resp.text # this is unicode(py2)/str(py3)
+        else:
+
+            encoding = requests.utils.get_encoding_from_headers(resp.headers)
+            if encoding is None:
+                encoding='utf-8' # FIXME: what to do here?
+
+            if sys.version_info[0]==2:
+                text = unicode(resp.content, encoding, errors='replace')
+            else:
+                assert sys.version_info[0]==3
+                text = str(resp.content, encoding, errors='replace')
+        p.feed(text)
         p.close()
         return u.close()
 
