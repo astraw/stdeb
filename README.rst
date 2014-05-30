@@ -411,7 +411,8 @@ be used.
 I wrote this initially to Debianize several Python packages of my own,
 but I have the feeling it could be generally useful. It appears
 similar, at least in theory, to easydeb_, `Logilab's Devtools`_,
-bdist_dpkg_, bdist_deb_ and pkgme_.
+bdist_dpkg_, bdist_deb_, pkgme_ and `dh-virtualenv
+<https://github.com/spotify/dh-virtualenv>`_.
 
 .. _easydeb: http://easy-deb.sourceforge.net/
 .. _Logilab's DevTools: http://www.logilab.org/projects/devtools
