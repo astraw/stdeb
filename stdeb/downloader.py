@@ -1,6 +1,11 @@
 from __future__ import print_function
 import os
-import xmlrpclib
+try:
+    # Python 2.x
+    import xmlrpclib
+except ImportError:
+    # Python 3.x
+    import xmlrpc.client as xmlrpclib
 from functools import partial
 import requests
 import hashlib
