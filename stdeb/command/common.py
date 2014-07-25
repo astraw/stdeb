@@ -18,7 +18,6 @@ class common_debian_package_command(Command):
         self.patch_level = None
         self.ignore_install_requires = None
         self.debian_version = None
-        self.force_buildsystem = None
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
 
@@ -45,12 +44,6 @@ class common_debian_package_command(Command):
             self.dist_dir = 'deb_dist'
         if self.patch_level is not None:
             self.patch_level = int(self.patch_level)
-
-        if self.force_buildsystem is not None:
-            self.force_buildsystem = str_to_bool(self.force_buildsystem)
-
-        if self.force_buildsystem is None:
-            self.force_buildsystem = True
 
         if self.guess_conflicts_provides_replaces is None:
             # the default
@@ -161,7 +154,6 @@ class common_debian_package_command(Command):
             patch_file = self.patch_file,
             patch_level = self.patch_level,
             debian_version = self.debian_version,
-            force_buildsystem=self.force_buildsystem,
             have_script_entry_points = have_script_entry_points,
             setup_requires = (), # XXX How do we get the setup_requires?
             use_setuptools = use_setuptools,

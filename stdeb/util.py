@@ -73,8 +73,6 @@ stdeb_cmdline_opts = [
     ('workaround-548392=',None,
      'This option has no effect, is here for backwards compatibility, and may '
      'be removed someday.'),
-    ('force-buildsystem=',None,
-     "If True, pass '--buildsystem=python_distutils' to dh sequencer"),
     ('no-backwards-compatibility',None,
      'This option has no effect, is here for backwards compatibility, and may '
      'be removed someday.'),
@@ -644,7 +642,6 @@ class DebianInfo:
                  patch_level=None,
                  setup_requires=None,
                  debian_version=None,
-                 force_buildsystem=None,
                  have_script_entry_points = None,
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
@@ -913,12 +910,10 @@ class DebianInfo:
         self.dirlist = ""
 
         sequencer_options = ['--with python2']
-        if force_buildsystem:
-            sequencer_options.append('--buildsystem=python_distutils')
+        sequencer_options.append('--buildsystem=python_distutils')
         self.sequencer_options = ' '.join(sequencer_options)
 
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
-        self.force_buildsystem = force_buildsystem
         self.exports = ""
         if len(setup_env_vars):
             self.exports += '\n'
@@ -1036,21 +1031,10 @@ def build_dsc(debinfo,
     for fname in ['Makefile','makefile']:
         if os.path.exists(os.path.join(fullpath_repackaged_dirname,fname)):
             sys.stderr.write('*'*1000 + '\n')
-            if debinfo.force_buildsystem:
-                sys.stderr.write('WARNING: a Makefile exists in this package. '
-                                 'stdeb will tell debhelper 7 to use setup.py '
-                                 'to build and install the package, and the '
-                                 'Makefile will be ignored. You can disable '
-                                 'this behavior with the '
-                                 '--force-buildsystem=False argument to the '
-                                 'stdeb command.\n')
-            else:
-                sys.stderr.write('WARNING: a Makefile exists in this package. '
-                                 'debhelper 7 will attempt to use this rather '
-                                 'than setup.py to build and install the '
-                                 'package. You can disable this behavior with '
-                                 'the --force-buildsystem=True argument to the '
-                                 'stdeb command.\n')
+            sys.stderr.write('WARNING: a Makefile exists in this package. '
+                             'stdeb will tell debhelper 7 to use setup.py '
+                             'to build and install the package, and the '
+                             'Makefile will be ignored.\n')
             sys.stderr.write('*'*1000 + '\n')
 
 
