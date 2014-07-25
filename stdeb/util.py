@@ -1088,7 +1088,7 @@ def build_dsc(debinfo,
     fd = open( rules_fname, mode='w')
     fd.write(rules)
     fd.close()
-    os.chmod(rules_fname,0755)
+    os.chmod(rules_fname,int('0755',8))
 
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
