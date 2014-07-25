@@ -28,10 +28,20 @@ Several convenience utilities are also provided:
 
 .. contents::
 
-Python 3
---------
 
-No attempt had been yet made to get stdeb to work with Python 3.
+Python 3 support
+----------------
+
+As explained in more detail below, stdeb runs once to generate a
+Debian source package. This Debian source package can specify building
+packages for Python 2, Python 3, or both. Furthermore, stdeb can be
+run either by a Python 2 or a Python 3 interpreter. By default, only
+Python 2 packages are built. To build a Python 3 package, use
+``--with-python3=True`` as an argument to the sdist_dsc distutils
+command. For example, to build only a Python 3 package using the
+Python 3 interpreter::
+
+  python3 setup.py --command-packages=stdeb.command sdist_dsc --with-python2=False --with-python3=True bdist_deb
 
 News
 ----
@@ -488,6 +498,8 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
 ====================================== =========================================
         Command line option                      Effect
 ====================================== =========================================
+  --with-python2                       build Python 2 package (default=True)
+  --with-python3                       build Python 3 package (default=False)
   --dist-dir (-d)                      directory to put final built
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when
