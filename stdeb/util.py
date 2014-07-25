@@ -2,7 +2,12 @@
 # This module contains most of the code of stdeb.
 #
 import re, sys, os, shutil, select
-import ConfigParser
+try:
+    # Python 2.x
+    import ConfigParser
+except ImportError:
+    # Python 3.x
+    import configparser as ConfigParser
 import subprocess
 import tempfile
 import stdeb

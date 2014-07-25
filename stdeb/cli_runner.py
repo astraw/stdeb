@@ -1,6 +1,11 @@
 from __future__ import print_function
 import sys, os, shutil, subprocess
-from ConfigParser import SafeConfigParser
+try:
+    # python 2.x
+    from ConfigParser import SafeConfigParser
+except ImportError as err:
+    # python 3.x
+    from configparser import SafeConfigParser
 from distutils.util import strtobool
 from distutils.fancy_getopt import FancyGetopt, translate_longopt
 from stdeb.util import stdeb_cmdline_opts, stdeb_cmd_bool_opts
