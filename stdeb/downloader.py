@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import xmlrpclib
 import requests
@@ -5,11 +6,7 @@ import hashlib
 import warnings
 from stdeb.transport import RequestsTransport
 
-def myprint(mystr,fd=None):
-    if fd is None:
-        print mystr
-    else:
-        print >> fd, mystr
+myprint=print
 
 USER_AGENT = 'pypi-install/0.7.1 ( https://github.com/astraw/stdeb )'
 

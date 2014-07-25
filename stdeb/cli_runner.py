@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os, shutil, subprocess
 from ConfigParser import SafeConfigParser
 from distutils.util import strtobool
@@ -27,14 +28,14 @@ def runit(cmd,usage):
             setattr(optobj, option, strtobool(value))
 
     if hasattr(optobj,'help'):
-        print usage
+        print(usage)
         parser.set_option_table(stdeb_cmdline_opts)
         parser.print_help("Options:")
         return 0
 
     if len(args)!=1:
         log.error('not given single argument (distfile), args=%r', args)
-        print usage
+        print(usage)
         return 1
 
     sdist_file = args[0]

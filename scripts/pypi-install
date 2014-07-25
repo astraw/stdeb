@@ -7,7 +7,7 @@ import tempfile
 
 def main():
     if os.geteuid() != 0:
-        myprint('%s must be run as root'%os.path.basename(sys.argv[0]),fd=sys.stderr)
+        myprint('%s must be run as root'%os.path.basename(sys.argv[0]),file=sys.stderr)
         sys.exit(1)
 
     usage = '%prog PACKAGE_NAME [options]'
@@ -26,7 +26,7 @@ def main():
                       help='allow unsafe downloads')
     (options, args) = parser.parse_args()
     if len(args) != 1:
-        myprint('need exactly one PACKAGE_NAME',fd=sys.stderr)
+        myprint('need exactly one PACKAGE_NAME',file=sys.stderr)
         parser.print_help()
         sys.exit(1)
 
