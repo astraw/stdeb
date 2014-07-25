@@ -101,6 +101,8 @@ stdeb_cfg_options = [
      'debian/control Source: (Default: <source-debianized-setup-name>)'),
     ('package=',None,
      'debian/control Package: (Default: python-<debianized-setup-name>)'),
+    ('package3=',None,
+     'debian/control Package: (Default: python3-<debianized-setup-name>)'),
     ('suite=',None,
      'suite (e.g. stable, lucid) in changelog (Default: unstable)'),
     ('maintainer=',None,
@@ -120,6 +122,7 @@ stdeb_cfg_options = [
     ('stdeb-patch-file=',None,'file containing patches for stdeb to apply'),
     ('stdeb-patch-level=',None,'patch level provided to patch command'),
     ('depends=',None,'debian/control Depends:'),
+    ('depends3=',None,'debian/control Depends:'),
     ('suggests=',None,'debian/control Suggests:'),
     ('recommends=',None,'debian/control Recommends:'),
     ('xs-python-version=',None,'debian/control XS-Python-Version:'),
@@ -716,6 +719,7 @@ class DebianInfo:
         self.module_name = module_name
         self.source = parse_val(cfg,module_name,'Source')
         self.package = parse_val(cfg,module_name,'Package')
+        self.package3 = parse_val(cfg,module_name,'Package3')
         forced_upstream_version = parse_val(cfg,module_name,
                                             'Forced-Upstream-Version')
         if forced_upstream_version == '':
@@ -761,15 +765,24 @@ class DebianInfo:
                 get_deb_depends_from_setuptools_requires(setup_requires))
 
         depends = ['${misc:Depends}', '${python:Depends}']
+        depends3 = ['${misc:Depends}', '${python3:Depends}']
         need_custom_binary_target = False
 
         if has_ext_modules:
             self.architecture = 'any'
             build_deps.append('python-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
             depends.append('${shlibs:Depends}')
+
+            self.architecture3 = 'any'
+            build_deps.append('python3-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
+            depends3.append('${shlibs:Depends}')
+
         else:
             self.architecture = 'all'
             build_deps.append('python-all (>= %s)'%PYTHON_ALL_MIN_VERS)
+
+            self.architecture3 = 'all'
+            build_deps.append('python3-all (>= %s)'%PYTHON_ALL_MIN_VERS)
 
         self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         self.mime_file = parse_val(cfg,module_name,'MIME-File')
@@ -796,7 +809,9 @@ class DebianInfo:
                 '%s usr/share/applications'%mime_desktop_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
+        depends3.extend(parse_vals(cfg,module_name,'Depends3') )
         self.depends = ', '.join(depends)
+        self.depends3 = ', '.join(depends3)
 
         self.debian_section = parse_val(cfg,module_name,'Section')
 
@@ -914,6 +929,7 @@ class DebianInfo:
             replaces = list(set(replaces))
 
         self.package_stanza_extras = ''
+        self.package_stanza_extras3 = ''
 
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
@@ -934,7 +950,7 @@ class DebianInfo:
 
         self.dirlist = ""
 
-        sequencer_options = ['--with python2']
+        sequencer_options = ['--with python2,python3']
         sequencer_options.append('--buildsystem=python_distutils')
         self.sequencer_options = ' '.join(sequencer_options)
 
@@ -984,6 +1000,9 @@ class DebianInfo:
                 elif value == 'python-<debianized-setup-name>':
                     assert key=='package'
                     value = 'python-' + debianize_name(module_name)
+                elif value == 'python3-<debianized-setup-name>':
+                    assert key=='package3'
+                    value = 'python3-' + debianize_name(module_name)
                 elif value == '<setup-maintainer-or-author>':
                     assert key=='maintainer'
                     value = guess_maintainer
@@ -1250,6 +1269,12 @@ Architecture: %(architecture)s
 Depends: %(depends)s
 %(package_stanza_extras)sDescription: %(description)s
 %(long_description)s
+
+Package: %(package3)s
+Architecture: %(architecture3)s
+Depends: %(depends3)s
+%(package_stanza_extras3)sDescription: %(description)s
+%(long_description)s
 """
 
 RULES_MAIN = """\
@@ -1260,6 +1285,10 @@ RULES_MAIN = """\
 %(exports)s
 %(percent_symbol)s:
         dh $@ %(sequencer_options)s
+
+override_dh_auto_install:
+        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb
+        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb
 
 %(binary_target_lines)s
 """
