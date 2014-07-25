@@ -5,7 +5,7 @@ from stdeb.util import expand_sdist_file, recursive_hardlink
 from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, \
      stdeb_cmd_bool_opts, stdeb_cfg_options
 from stdeb.util import repack_tarball_with_debianized_dirname
-from common import common_debian_package_command
+from stdeb.command.common import common_debian_package_command
 
 __all__ = ['sdist_dsc']
 
