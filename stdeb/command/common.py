@@ -86,7 +86,7 @@ class common_debian_package_command(Command):
         use_setuptools = True
         try:
             ei_cmd = self.distribution.get_command_obj('egg_info')
-        except DistutilsModuleError, err:
+        except DistutilsModuleError as err:
             use_setuptools = False
 
         have_script_entry_points = None

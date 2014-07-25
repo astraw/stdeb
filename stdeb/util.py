@@ -29,9 +29,14 @@ DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
 
 PYTHON_ALL_MIN_VERS = '2.6.6-3'
 
-import exceptions
-class CalledProcessError(exceptions.Exception): pass
-class CantSatisfyRequirement(exceptions.Exception): pass
+try:
+    # Python 2.x
+    from exceptions import Exception
+except ImportError:
+    # Python 3.x
+    pass
+class CalledProcessError(Exception): pass
+class CantSatisfyRequirement(Exception): pass
 
 def check_call(*popenargs, **kwargs):
     retcode = subprocess.call(*popenargs, **kwargs)
@@ -141,7 +146,7 @@ class NotGiven: pass
 
 def process_command(args, cwd=None):
     if not isinstance(args, (list, tuple)):
-        raise RuntimeError, "args passed must be in a list"
+        raise RuntimeError("args passed must be in a list")
     check_call(args, cwd=cwd)
 
 def recursive_hardlink(src,dst):
@@ -294,7 +299,7 @@ def get_deb_depends_from_setuptools_requires(requirements, on_failure="warn"):
         cmd = subprocess.Popen(args, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                universal_newlines=True)
-    except Exception, le:
+    except Exception as le:
         # TODO: catch rc=1 and "E: The cache directory is empty. You need to
         # run 'apt-file update' first.", and tell the user to follow those
         # instructions.
@@ -326,7 +331,7 @@ def get_deb_depends_from_setuptools_requires(requirements, on_failure="warn"):
             dd.setdefault(
                 pydist.project_name.lower(), {}).setdefault(
                 pydist, set()).add(debname)
-        except ValueError, le:
+        except ValueError as le:
             log.warn("I got an error parsing a .egg-info file named \"%s\" "
                      "from Debian package \"%s\" as a pkg_resources "
                      "Distribution: %s" % (egginfo, debname, le,))
@@ -538,7 +543,7 @@ def parse_vals(cfg,section,option):
     """parse comma separated values in debian control file style from .cfg"""
     try:
         vals = cfg.get(section,option)
-    except ConfigParser.NoSectionError, err:
+    except ConfigParser.NoSectionError as err:
         if section != 'DEFAULT':
             vals = cfg.get('DEFAULT',option)
         else:
