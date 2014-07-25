@@ -56,8 +56,10 @@ py2dsc $SOURCE_TARBALL
 cd deb_dist/$DEBSOURCE
 dpkg-buildpackage -rfakeroot -uc -us
 cd ../..
-echo "contents of .deb from $SOURCE_TARBALL in case 1:"
-dpkg --contents deb_dist/*.deb
+for DEBFILE in deb_dist/*.deb; do
+  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
+  dpkg --contents $DEBFILE
+done
 DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
 if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
     echo "ERROR: diff file larger than expected"
@@ -77,8 +79,10 @@ python setup.py --command-packages=stdeb.command sdist_dsc
 cd deb_dist/$DEBSOURCE
 dpkg-buildpackage -rfakeroot -uc -us
 cd ../..
-echo "contents of .deb from $SOURCE_TARBALL in case 2:"
-dpkg --contents deb_dist/*.deb
+for DEBFILE in deb_dist/*.deb; do
+  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
+  dpkg --contents $DEBFILE
+done
 DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
 if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
     echo "ERROR: diff file larger than expected"
@@ -97,8 +101,10 @@ rm -rf $SOURCE_TARBALL_DIR
 # ==============================================================
 py2dsc-deb $SOURCE_TARBALL
 
-echo "contents of .deb from $SOURCE_TARBALL in case 3:"
-dpkg --contents deb_dist/*.deb
+for DEBFILE in deb_dist/*.deb; do
+  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
+  dpkg --contents $DEBFILE
+done
 DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
 if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
     echo "ERROR: diff file larger than expected"
