@@ -499,6 +499,16 @@ def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
 
     process_command(args, cwd=cwd)
 
+def dpkg_genchanges(cwd=None):
+    args = ['/usr/bin/dpkg-buildpackage',
+            '-rfakeroot',
+            '-uc', # unsigned changes
+            '-us', # unsigned source
+            '-S',  # source package
+            '-sa', # with original source archive
+            ]
+    process_command(args,cwd=cwd)
+
 def apply_patch(patchfile,cwd=None,posix=False,level=0):
     """call 'patch -p[level] [--posix] < arg1'
 
@@ -1215,6 +1225,8 @@ def build_dsc(debinfo,
     dpkg_source('-b',repackaged_dirname,
                 repackaged_orig_tarball,
                 cwd=dist_dir)
+
+    dpkg_genchanges(cwd=fullpath_repackaged_dirname)
 
     if 1:
         shutil.rmtree(fullpath_repackaged_dirname)
