@@ -84,6 +84,10 @@ stdeb_cmdline_opts = [
     ('guess-conflicts-provides-replaces=',None,
      'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
      'based on apt-cache output. (Default=False).'),
+    ('with-python2=',None,
+     'If True, build package for python 2. (Default=True).'),
+    ('with-python3=',None,
+     'If True, build package for python 3. (Default=False).'),
     ]
 
 # old entries from stdeb.cfg:
@@ -674,6 +678,8 @@ class DebianInfo:
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
                  sdist_dsc_command = None,
+                 with_python2 = None,
+                 with_python3 = None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -770,19 +776,23 @@ class DebianInfo:
 
         if has_ext_modules:
             self.architecture = 'any'
-            build_deps.append('python-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
+            if with_python2:
+                build_deps.append('python-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
             depends.append('${shlibs:Depends}')
 
             self.architecture3 = 'any'
-            build_deps.append('python3-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
+            if with_python3:
+                build_deps.append('python3-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
             depends3.append('${shlibs:Depends}')
 
         else:
             self.architecture = 'all'
-            build_deps.append('python-all (>= %s)'%PYTHON_ALL_MIN_VERS)
+            if with_python2:
+                build_deps.append('python-all (>= %s)'%PYTHON_ALL_MIN_VERS)
 
             self.architecture3 = 'all'
-            build_deps.append('python3-all (>= %s)'%PYTHON_ALL_MIN_VERS)
+            if with_python3:
+                build_deps.append('python3-all (>= %s)'%PYTHON_ALL_MIN_VERS)
 
         self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         self.mime_file = parse_val(cfg,module_name,'MIME-File')
@@ -950,7 +960,19 @@ class DebianInfo:
 
         self.dirlist = ""
 
-        sequencer_options = ['--with python2,python3']
+        if not (with_python2 or with_python3):
+            raise RuntimeError('nothing to do - neither Python 2 or 3.')
+        sequencer_with = []
+        if with_python2:
+            sequencer_with.append('python2')
+        if with_python3:
+            sequencer_with.append('python3')
+        num_binary_packages = len(sequencer_with)
+        if num_binary_packages >= 2:
+            self.override_dh_auto_install = RULES_OVERRIDE_TARGET%self.__dict__
+        else:
+            self.override_dh_auto_install = ''
+        sequencer_options = ['--with '+','.join(sequencer_with)]
         sequencer_options.append('--buildsystem=python_distutils')
         self.sequencer_options = ' '.join(sequencer_options)
 
@@ -975,6 +997,19 @@ class DebianInfo:
                     RULES_BINARY_ARCH_TARGET%self.__dict__ )
         else:
             self.binary_target_lines = ''
+
+        if with_python2:
+            self.control_py2_stanza = CONTROL_PY2_STANZA%self.__dict__
+        else:
+            self.control_py2_stanza = ''
+
+        if with_python3:
+            self.control_py3_stanza = CONTROL_PY3_STANZA%self.__dict__
+        else:
+            self.control_py3_stanza = ''
+
+        self.with_python2 = with_python2
+        self.with_python3 = with_python3
 
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
@@ -1264,12 +1299,21 @@ Priority: optional
 Build-Depends: %(build_depends)s
 Standards-Version: 3.9.1
 %(source_stanza_extras)s
+
+%(control_py2_stanza)s
+
+%(control_py3_stanza)s
+"""
+
+CONTROL_PY2_STANZA = """
 Package: %(package)s
 Architecture: %(architecture)s
 Depends: %(depends)s
 %(package_stanza_extras)sDescription: %(description)s
 %(long_description)s
+"""
 
+CONTROL_PY3_STANZA = """
 Package: %(package3)s
 Architecture: %(architecture3)s
 Depends: %(depends3)s
@@ -1286,11 +1330,15 @@ RULES_MAIN = """\
 %(percent_symbol)s:
         dh $@ %(sequencer_options)s
 
+%(override_dh_auto_install)s
+
+%(binary_target_lines)s
+"""
+
+RULES_OVERRIDE_TARGET = """
 override_dh_auto_install:
         python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb
         python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb
-
-%(binary_target_lines)s
 """
 
 RULES_BINARY_TARGET = """
