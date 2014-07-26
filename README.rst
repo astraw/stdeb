@@ -479,7 +479,7 @@ the ~/.pydistutils.cfg file.) In that case, put the arguments in the
 file might have this::
 
   [sdist_dsc]
-  force-buildsystem: False
+  debian-version: 1+somebody1
 
 To pass these commands to sdist_dsc when calling bdist_deb, do this::
 
@@ -511,8 +511,6 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --remove-expanded-source-dir (-r)    remove the expanded source directory
   --ignore-install-requires (-i)       ignore the requirements from
                                        requires.txt in the egg-info directory
-  --force-buildsystem                  If True (the default), set 'DH_OPTIONS=
-                                       --buildsystem=python_distutils'
   --no-backwards-compatibility         This option has no effect, is here for
                                        backwards compatibility, and may be
                                        removed someday.
