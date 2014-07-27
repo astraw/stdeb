@@ -44,6 +44,14 @@ def check_call(*popenargs, **kwargs):
         return
     raise CalledProcessError(retcode)
 
+if sys.version_info.major==2:
+    help_str_py2='If True, build package for python 2. (Default=True).'
+    help_str_py3='If True, build package for python 3. (Default=False).'
+else:
+    assert sys.version_info.major==3
+    help_str_py2='If True, build package for python 2. (Default=False).'
+    help_str_py3='If True, build package for python 3. (Default=True).'
+
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
      "directory to put final built distributions in (default='deb_dist')"),
@@ -85,9 +93,9 @@ stdeb_cmdline_opts = [
      'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
      'based on apt-cache output. (Default=False).'),
     ('with-python2=',None,
-     'If True, build package for python 2. (Default=True).'),
+     help_str_py2),
     ('with-python3=',None,
-     'If True, build package for python 3. (Default=False).'),
+     help_str_py3),
     ('no-python2-scripts=',None,
      'If True, do not install scripts for python 2. (Default=False).'),
     ('no-python3-scripts=',None,
