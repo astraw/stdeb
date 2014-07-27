@@ -44,6 +44,14 @@ def check_call(*popenargs, **kwargs):
         return
     raise CalledProcessError(retcode)
 
+if sys.version_info.major==2:
+    help_str_py2='If True, build package for python 2. (Default=True).'
+    help_str_py3='If True, build package for python 3. (Default=False).'
+else:
+    assert sys.version_info.major==3
+    help_str_py2='If True, build package for python 2. (Default=False).'
+    help_str_py3='If True, build package for python 3. (Default=True).'
+
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
      "directory to put final built distributions in (default='deb_dist')"),
@@ -84,6 +92,14 @@ stdeb_cmdline_opts = [
     ('guess-conflicts-provides-replaces=',None,
      'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
      'based on apt-cache output. (Default=False).'),
+    ('with-python2=',None,
+     help_str_py2),
+    ('with-python3=',None,
+     help_str_py3),
+    ('no-python2-scripts=',None,
+     'If True, do not install scripts for python 2. (Default=False).'),
+    ('no-python3-scripts=',None,
+     'If True, do not install scripts for python 3. (Default=False).'),
     ]
 
 # old entries from stdeb.cfg:
@@ -101,6 +117,8 @@ stdeb_cfg_options = [
      'debian/control Source: (Default: <source-debianized-setup-name>)'),
     ('package=',None,
      'debian/control Package: (Default: python-<debianized-setup-name>)'),
+    ('package3=',None,
+     'debian/control Package: (Default: python3-<debianized-setup-name>)'),
     ('suite=',None,
      'suite (e.g. stable, lucid) in changelog (Default: unstable)'),
     ('maintainer=',None,
@@ -120,6 +138,7 @@ stdeb_cfg_options = [
     ('stdeb-patch-file=',None,'file containing patches for stdeb to apply'),
     ('stdeb-patch-level=',None,'patch level provided to patch command'),
     ('depends=',None,'debian/control Depends:'),
+    ('depends3=',None,'debian/control Depends:'),
     ('suggests=',None,'debian/control Suggests:'),
     ('recommends=',None,'debian/control Recommends:'),
     ('xs-python-version=',None,'debian/control XS-Python-Version:'),
@@ -671,6 +690,10 @@ class DebianInfo:
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
                  sdist_dsc_command = None,
+                 with_python2 = None,
+                 with_python3 = None,
+                 no_python2_scripts = None,
+                 no_python3_scripts = None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -716,6 +739,7 @@ class DebianInfo:
         self.module_name = module_name
         self.source = parse_val(cfg,module_name,'Source')
         self.package = parse_val(cfg,module_name,'Package')
+        self.package3 = parse_val(cfg,module_name,'Package3')
         forced_upstream_version = parse_val(cfg,module_name,
                                             'Forced-Upstream-Version')
         if forced_upstream_version == '':
@@ -761,15 +785,28 @@ class DebianInfo:
                 get_deb_depends_from_setuptools_requires(setup_requires))
 
         depends = ['${misc:Depends}', '${python:Depends}']
+        depends3 = ['${misc:Depends}', '${python3:Depends}']
         need_custom_binary_target = False
 
         if has_ext_modules:
             self.architecture = 'any'
-            build_deps.append('python-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
+            if with_python2:
+                build_deps.append('python-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
             depends.append('${shlibs:Depends}')
+
+            self.architecture3 = 'any'
+            if with_python3:
+                build_deps.append('python3-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
+            depends3.append('${shlibs:Depends}')
+
         else:
             self.architecture = 'all'
-            build_deps.append('python-all (>= %s)'%PYTHON_ALL_MIN_VERS)
+            if with_python2:
+                build_deps.append('python-all (>= %s)'%PYTHON_ALL_MIN_VERS)
+
+            self.architecture3 = 'all'
+            if with_python3:
+                build_deps.append('python3-all (>= %s)'%PYTHON_ALL_MIN_VERS)
 
         self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         self.mime_file = parse_val(cfg,module_name,'MIME-File')
@@ -796,7 +833,9 @@ class DebianInfo:
                 '%s usr/share/applications'%mime_desktop_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
+        depends3.extend(parse_vals(cfg,module_name,'Depends3') )
         self.depends = ', '.join(depends)
+        self.depends3 = ', '.join(depends3)
 
         self.debian_section = parse_val(cfg,module_name,'Section')
 
@@ -914,6 +953,7 @@ class DebianInfo:
             replaces = list(set(replaces))
 
         self.package_stanza_extras = ''
+        self.package_stanza_extras3 = ''
 
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
@@ -934,7 +974,39 @@ class DebianInfo:
 
         self.dirlist = ""
 
-        sequencer_options = ['--with python2']
+        if not (with_python2 or with_python3):
+            raise RuntimeError('nothing to do - neither Python 2 or 3.')
+        sequencer_with = []
+        if with_python2:
+            sequencer_with.append('python2')
+        if with_python3:
+            sequencer_with.append('python3')
+        num_binary_packages = len(sequencer_with)
+
+        no_script_lines=[]
+
+        if no_python2_scripts:
+            # install to a location where debian tools do not find them
+            self.no_python2_scripts_cli_args = '--install-scripts=/trash'
+            no_script_lines.append(
+                'rm -rf debian/%s/trash'%(self.package,))
+        else:
+            self.no_python2_scripts_cli_args = ''
+        if no_python3_scripts:
+            # install to a location where debian tools do not find them
+            self.no_python3_scripts_cli_args = '--install-scripts=/trash'
+            no_script_lines.append(
+                'rm -rf debian/%s/trash'%(self.package3,))
+        else:
+            self.no_python3_scripts_cli_args = ''
+
+        self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
+
+        if num_binary_packages >= 2 or (no_python2_scripts or no_python3_scripts):
+            self.override_dh_auto_install = RULES_OVERRIDE_TARGET%self.__dict__
+        else:
+            self.override_dh_auto_install = ''
+        sequencer_options = ['--with '+','.join(sequencer_with)]
         sequencer_options.append('--buildsystem=python_distutils')
         self.sequencer_options = ' '.join(sequencer_options)
 
@@ -960,6 +1032,21 @@ class DebianInfo:
         else:
             self.binary_target_lines = ''
 
+        if with_python2:
+            self.control_py2_stanza = CONTROL_PY2_STANZA%self.__dict__
+        else:
+            self.control_py2_stanza = ''
+
+        if with_python3:
+            self.control_py3_stanza = CONTROL_PY3_STANZA%self.__dict__
+        else:
+            self.control_py3_stanza = ''
+
+        self.with_python2 = with_python2
+        self.with_python3 = with_python3
+        self.no_python2_scripts = no_python2_scripts
+        self.no_python3_scripts = no_python3_scripts
+
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
                            default_distribution=NotGiven,
@@ -984,6 +1071,9 @@ class DebianInfo:
                 elif value == 'python-<debianized-setup-name>':
                     assert key=='package'
                     value = 'python-' + debianize_name(module_name)
+                elif value == 'python3-<debianized-setup-name>':
+                    assert key=='package3'
+                    value = 'python3-' + debianize_name(module_name)
                 elif value == '<setup-maintainer-or-author>':
                     assert key=='maintainer'
                     value = guess_maintainer
@@ -1245,10 +1335,25 @@ Priority: optional
 Build-Depends: %(build_depends)s
 Standards-Version: 3.9.1
 %(source_stanza_extras)s
+
+%(control_py2_stanza)s
+
+%(control_py3_stanza)s
+"""
+
+CONTROL_PY2_STANZA = """
 Package: %(package)s
 Architecture: %(architecture)s
 Depends: %(depends)s
 %(package_stanza_extras)sDescription: %(description)s
+%(long_description)s
+"""
+
+CONTROL_PY3_STANZA = """
+Package: %(package3)s
+Architecture: %(architecture3)s
+Depends: %(depends3)s
+%(package_stanza_extras3)sDescription: %(description)s
 %(long_description)s
 """
 
@@ -1261,7 +1366,16 @@ RULES_MAIN = """\
 %(percent_symbol)s:
         dh $@ %(sequencer_options)s
 
+%(override_dh_auto_install)s
+
 %(binary_target_lines)s
+"""
+
+RULES_OVERRIDE_TARGET = """
+override_dh_auto_install:
+        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(no_python2_scripts_cli_args)s
+        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(no_python3_scripts_cli_args)s
+%(scripts_cleanup)s
 """
 
 RULES_BINARY_TARGET = """
