@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys, os, shutil
 import subprocess
-from optparse import OptionParser
+import argparse
 from stdeb.downloader import myprint, get_source_tarball
 import tempfile
 
@@ -10,18 +10,17 @@ def main():
         myprint('%s must be run as root'%os.path.basename(sys.argv[0]),file=sys.stderr)
         sys.exit(1)
 
-    usage = '%prog PACKAGE_NAME [options]'
-    parser = OptionParser(usage)
-    parser.add_option('--verbose', type='int',
+    parser = argparse.ArgumentParser(usage='%(prog)s PACKAGE_NAME [options]')
+    parser.add_argument('--verbose', type=int,
                       help='verbosity level',
                       default=0)
-    parser.add_option('--release', type='str',
+    parser.add_argument('--release', type=str,
                       help='specify a particular release',
                       default=None)
-    parser.add_option('--keep', action='store_true',
+    parser.add_argument('--keep', action='store_true',
                       default=False,
                       help='do not remove temporary files')
-    parser.add_option('--allow-unsafe-download', action='store_true',
+    parser.add_argument('--allow-unsafe-download', action='store_true',
                       default=False,
                       help='allow unsafe downloads')
     (options, args) = parser.parse_args()
