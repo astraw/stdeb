@@ -13,8 +13,3 @@ install:
 script:
     - sudo ./test.sh
     - sudo ./test-pypi-install.sh
-branches:
-  except:
-    - pristine-tar
-    - old-stable
-    - zooko
