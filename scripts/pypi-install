@@ -6,10 +6,6 @@ from stdeb.downloader import myprint, get_source_tarball
 import tempfile
 
 def main():
-    if os.geteuid() != 0:
-        myprint('%s must be run as root'%os.path.basename(sys.argv[0]),file=sys.stderr)
-        sys.exit(1)
-
     parser = argparse.ArgumentParser(usage='%(prog)s PACKAGE_NAME [options] [py2dsc-deb options]')
     parser.add_argument('--verbose', type=int,
                       help='verbosity level',
@@ -24,6 +20,11 @@ def main():
                       default=False,
                       help='allow unsafe downloads')
     (options, args) = parser.parse_known_args()
+
+    if os.geteuid() != 0:
+        myprint('%s must be run as root'%os.path.basename(sys.argv[0]),file=sys.stderr)
+        sys.exit(1)
+
     if len(args) < 1:
         myprint('need exactly one PACKAGE_NAME',file=sys.stderr)
         parser.print_help()
