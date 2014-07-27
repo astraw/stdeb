@@ -231,30 +231,20 @@ def get_cmd_stdout(args):
         raise RuntimeError('returncode %d', returncode)
     return cmd.stdout.read()
 
-def normstr(s):
-    try:
-        # Python 3.x
-        result = str(s,'utf-8')
-    except TypeError:
-        # Python 2.x
-        result = s
-    return result
-
 def get_date_822():
     """return output of 822-date command"""
     cmd = '/bin/date'
     if not os.path.exists(cmd):
         raise ValueError('%s command does not exist.'%cmd)
     args = [cmd,'-R']
-    result = get_cmd_stdout(args).strip()
-    result = normstr(result)
+    result = get_cmd_stdout(args).strip().decode('ascii')
     return result
 
 def get_version_str(pkg):
     args = ['/usr/bin/dpkg-query','--show',
            '--showformat=${Version}',pkg]
     stdout = get_cmd_stdout(args)
-    return stdout.strip()
+    return stdout.strip().decode('ascii')
 
 def load_module(name,fname):
     import imp
@@ -1208,7 +1198,7 @@ def build_dsc(debinfo,
     fd = open( rules_fname, mode='w')
     fd.write(rules)
     fd.close()
-    os.chmod(rules_fname,int('0755',8))
+    os.chmod(rules_fname,0o755)
 
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
