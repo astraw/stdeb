@@ -1002,6 +1002,17 @@ class DebianInfo:
 
         self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
 
+        rules_override_target_pythons = []
+        if with_python2:
+            rules_override_target_pythons.append(
+                RULES_OVERRIDE_TARGET_PY2%self.__dict__
+                )
+        if with_python3:
+            rules_override_target_pythons.append(
+                RULES_OVERRIDE_TARGET_PY3%self.__dict__
+                )
+        self.rules_override_target_pythons = '\n'.join(rules_override_target_pythons)
+
         if num_binary_packages >= 2 or (no_python2_scripts or no_python3_scripts):
             self.override_dh_auto_install = RULES_OVERRIDE_TARGET%self.__dict__
         else:
@@ -1371,10 +1382,13 @@ RULES_MAIN = """\
 %(binary_target_lines)s
 """
 
+RULES_OVERRIDE_TARGET_PY2 = "        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(no_python2_scripts_cli_args)s"
+
+RULES_OVERRIDE_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(no_python3_scripts_cli_args)s"
+
 RULES_OVERRIDE_TARGET = """
 override_dh_auto_install:
-        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(no_python2_scripts_cli_args)s
-        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(no_python3_scripts_cli_args)s
+%(rules_override_target_pythons)s
 %(scripts_cleanup)s
 """
 
