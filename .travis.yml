@@ -18,5 +18,5 @@ install:
     - for f in deb_dist/*.deb; do echo; echo $f; dpkg --contents $f; done
     - sudo dpkg -i deb_dist/*.deb
 script:
-    - sudo ./test.sh
-    - sudo ./test-pypi-install.sh
+    - sudo bash -x ./test.sh
+    - sudo bash -x ./test-pypi-install.sh
