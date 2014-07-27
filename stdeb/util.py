@@ -1002,6 +1002,15 @@ class DebianInfo:
 
         self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
 
+        if sys.prefix != '/usr':
+            # virtualenv will set distutils --prefix=/path/to/virtualenv, but
+            # we want to install into /usr.
+            workaround_virtualenv_distutils = True
+            self.install_prefix = '--prefix=/usr'
+        else:
+            workaround_virtualenv_distutils = False
+            self.install_prefix = ''
+
         rules_override_target_pythons = []
         if with_python2:
             rules_override_target_pythons.append(
@@ -1013,7 +1022,7 @@ class DebianInfo:
                 )
         self.rules_override_target_pythons = '\n'.join(rules_override_target_pythons)
 
-        if num_binary_packages >= 2 or (no_python2_scripts or no_python3_scripts):
+        if num_binary_packages >= 2 or (no_python2_scripts or no_python3_scripts) or workaround_virtualenv_distutils:
             self.override_dh_auto_install = RULES_OVERRIDE_TARGET%self.__dict__
         else:
             self.override_dh_auto_install = ''
@@ -1382,9 +1391,9 @@ RULES_MAIN = """\
 %(binary_target_lines)s
 """
 
-RULES_OVERRIDE_TARGET_PY2 = "        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(no_python2_scripts_cli_args)s"
+RULES_OVERRIDE_TARGET_PY2 = "        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python2_scripts_cli_args)s"
 
-RULES_OVERRIDE_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(no_python3_scripts_cli_args)s"
+RULES_OVERRIDE_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python3_scripts_cli_args)s"
 
 RULES_OVERRIDE_TARGET = """
 override_dh_auto_install:
