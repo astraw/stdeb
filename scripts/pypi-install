@@ -10,7 +10,7 @@ def main():
         myprint('%s must be run as root'%os.path.basename(sys.argv[0]),file=sys.stderr)
         sys.exit(1)
 
-    parser = argparse.ArgumentParser(usage='%(prog)s PACKAGE_NAME [options]')
+    parser = argparse.ArgumentParser(usage='%(prog)s PACKAGE_NAME [options] [py2dsc-deb options]')
     parser.add_argument('--verbose', type=int,
                       help='verbosity level',
                       default=0)
@@ -23,13 +23,18 @@ def main():
     parser.add_argument('--allow-unsafe-download', action='store_true',
                       default=False,
                       help='allow unsafe downloads')
-    (options, args) = parser.parse_args()
-    if len(args) != 1:
+    (options, args) = parser.parse_known_args()
+    if len(args) < 1:
         myprint('need exactly one PACKAGE_NAME',file=sys.stderr)
         parser.print_help()
         sys.exit(1)
 
     package_name = args[0]
+    py2dsc_args = args[1:]
+    if package_name.startswith('-'):
+        myprint('PACKAGE_NAME must be first argument',file=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
 
     orig_dir = os.path.abspath( os.curdir )
     tmpdir = os.path.abspath(tempfile.mkdtemp())
@@ -40,21 +45,8 @@ def main():
         tarball_fname = get_source_tarball(package_name,verbose=options.verbose,
                                            release=options.release,
                                            allow_unsafe_download=options.allow_unsafe_download)
-        cmd = 'tar xzf %s' % tarball_fname
-        if options.verbose >= 2:
-            myprint('executing: %s'%cmd)
-        subprocess.check_call(cmd, shell=True)
 
-        expanded_dir = None
-        for entry in os.listdir(os.curdir):
-            if os.path.isdir(entry):
-                assert expanded_dir is None, "only expected one directory"
-                expanded_dir = entry
-
-        os.chdir( expanded_dir )
-        cmd = ('%s setup.py --command-packages=stdeb.command sdist_dsc '
-               '--guess-conflicts-provides-replaces=True bdist_deb' %
-               (sys.executable, ) )
+        cmd = ' '.join(['py2dsc-deb'] + py2dsc_args + [tarball_fname])
         if options.verbose >= 2:
             myprint('executing: %s'%cmd)
         subprocess.check_call(cmd, shell=True)
