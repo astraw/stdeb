@@ -20,8 +20,8 @@ class common_debian_package_command(Command):
         self.debian_version = None
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
-        self.with_python2 = True
-        self.with_python3 = False
+        self.with_python2 = 'True'
+        self.with_python3 = 'False'
 
         # deprecated options
         self.default_distribution = None
