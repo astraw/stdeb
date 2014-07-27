@@ -32,17 +32,22 @@ Several convenience utilities are also provided:
 Python 3 support
 ----------------
 
-As explained in more detail below, the heard of stdeb is the sdist_dsc
+As explained in more detail below, the heart of stdeb is the sdist_dsc
 distutils command. This command runs once to generate a Debian source
 package. This Debian source package can specify building packages for
 Python 2, Python 3, or both. Furthermore, this generation can be done
-with the Python 2 or Python 3 interpreter. By default, only Python 2
-packages are built. To build a Python 3 package, use
-``--with-python3=True`` as an argument to the sdist_dsc distutils
-command. For example, to build only a Python 3 package using the
-Python 3 interpreter::
+with the Python 2 or Python 3 interpreter. By default, only packages
+are built for the version of Python being used. To override this, use
+``--with-python2=True`` or ``--with-python3=True`` as an argument to
+the sdist_dsc distutils command (or use both to be sure). For example,
+to build only a Python 3 package using the Python 3 interpreter::
 
-  python3 setup.py --command-packages=stdeb.command sdist_dsc --with-python2=False --with-python3=True bdist_deb
+  python3 setup.py --command-packages=stdeb.command bdist_deb
+
+To build both Python 2 and Python 3 packages using the Python 3
+interpreter (and only the Python3 package installs scripts)::
+
+  python3 setup.py --command-packages=stdeb.command sdist_dsc --with-python2=True --with-python3=True --no-python2-scripts=True bdist_deb
 
 News
 ----
