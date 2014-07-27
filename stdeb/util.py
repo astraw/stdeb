@@ -88,6 +88,10 @@ stdeb_cmdline_opts = [
      'If True, build package for python 2. (Default=True).'),
     ('with-python3=',None,
      'If True, build package for python 3. (Default=False).'),
+    ('no-python2-scripts=',None,
+     'If True, do not install scripts for python 2. (Default=False).'),
+    ('no-python3-scripts=',None,
+     'If True, do not install scripts for python 3. (Default=False).'),
     ]
 
 # old entries from stdeb.cfg:
@@ -680,6 +684,8 @@ class DebianInfo:
                  sdist_dsc_command = None,
                  with_python2 = None,
                  with_python3 = None,
+                 no_python2_scripts = None,
+                 no_python3_scripts = None,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -968,7 +974,27 @@ class DebianInfo:
         if with_python3:
             sequencer_with.append('python3')
         num_binary_packages = len(sequencer_with)
-        if num_binary_packages >= 2:
+
+        no_script_lines=[]
+
+        if no_python2_scripts:
+            # install to a location where debian tools do not find them
+            self.no_python2_scripts_cli_args = '--install-scripts=/trash'
+            no_script_lines.append(
+                'rm -rf debian/%s/trash'%(self.package,))
+        else:
+            self.no_python2_scripts_cli_args = ''
+        if no_python3_scripts:
+            # install to a location where debian tools do not find them
+            self.no_python3_scripts_cli_args = '--install-scripts=/trash'
+            no_script_lines.append(
+                'rm -rf debian/%s/trash'%(self.package3,))
+        else:
+            self.no_python3_scripts_cli_args = ''
+
+        self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
+
+        if num_binary_packages >= 2 or (no_python2_scripts or no_python3_scripts):
             self.override_dh_auto_install = RULES_OVERRIDE_TARGET%self.__dict__
         else:
             self.override_dh_auto_install = ''
@@ -1010,6 +1036,8 @@ class DebianInfo:
 
         self.with_python2 = with_python2
         self.with_python3 = with_python3
+        self.no_python2_scripts = no_python2_scripts
+        self.no_python3_scripts = no_python3_scripts
 
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
@@ -1337,8 +1365,9 @@ RULES_MAIN = """\
 
 RULES_OVERRIDE_TARGET = """
 override_dh_auto_install:
-        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb
-        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb
+        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(no_python2_scripts_cli_args)s
+        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(no_python3_scripts_cli_args)s
+%(scripts_cleanup)s
 """
 
 RULES_BINARY_TARGET = """
