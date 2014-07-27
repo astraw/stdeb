@@ -1245,7 +1245,7 @@ def build_dsc(debinfo,
     fd.close()
 
     fd = open( os.path.join(debian_dir,'source','options'), mode='w')
-    fd.write('extended-diff-ignore="\.egg-info"')
+    fd.write('extend-diff-ignore="\.egg-info$"')
     fd.close()
 
     if debian_dir_only:
