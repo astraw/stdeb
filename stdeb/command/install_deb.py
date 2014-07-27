@@ -28,15 +28,10 @@ class install_deb(Command):
         target_dirs = []
         target_debs = glob.glob( os.path.join( sdist_dsc.dist_dir, '*.deb' ) )
 
-        if len(target_debs)>1:
-            raise ValueError('More than one .deb file in deb_dist. '
-                             'Unsure which is desired. All: %r'%(
-                target_debs,))
-
         if len(target_debs)==0:
             raise ValueError('could not find .deb file')
 
-        # define system command to execute (gen .deb binary pkg)
-        syscmd = ['dpkg','--install',target_debs[0]]
-
-        util.process_command(syscmd)
+        for target_deb in target_debs:
+            # define system command to execute (install .deb binary pkg)
+            syscmd = ['dpkg','--install',target_deb]
+            util.process_command(syscmd)
