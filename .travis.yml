@@ -1,13 +1,16 @@
 # http://travis-ci.org/#!/astraw/stdeb
 language: python
 python:
-    - "2.7"
-    - "3.3"
+    - "2.7_with_system_site_packages"
+    - "3.2_with_system_site_packages"
 before_install:
     - sudo apt-get update
-    - sudo apt-get install python-all-dev debhelper python-setuptools apt-file libxml2-dev python-requests
-    - export PATH=/usr/bin:$PATH
+    - sudo apt-get install python-all-dev python3-all-dev debhelper python-setuptools python3-setuptools apt-file libxml2-dev python-requests
 install:
+    - which python
+    - which pip
+    - pip --version
+    - python -c "import sys; print(sys.version)"
     # Build a .deb file and then install it.
     - python setup.py --command-packages=stdeb.command bdist_deb
     - sudo dpkg -i deb_dist/*.deb
