@@ -499,13 +499,10 @@ def repack_tarball_with_debianized_dirname( orig_sdist_file,
     make_tarball(repacked_sdist_file,debianized_dirname,cwd=working_dir)
     shutil.rmtree(working_dir)
 
-def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
+def dpkg_source(b_or_x,arg1,cwd=None):
     "call dpkg-source -b|x arg1 [arg2]"
     assert b_or_x in ['-b','-x']
     args = ['/usr/bin/dpkg-source',b_or_x,arg1]
-    if arg2 is not None:
-        args.append(arg2)
-
     process_command(args, cwd=cwd)
 
 def dpkg_genchanges(cwd=None):
@@ -1244,7 +1241,7 @@ def build_dsc(debinfo,
     #    J. debian/source/format
     os.mkdir(os.path.join(debian_dir,'source'))
     fd = open( os.path.join(debian_dir,'source','format'), mode='w')
-    fd.write('1.0\n')
+    fd.write('3.0 (quilt)\n')
     fd.close()
 
     if debian_dir_only:
@@ -1272,12 +1269,8 @@ def build_dsc(debinfo,
             orig_dirname = orig_tarball_top_contents[0]
             fullpath_orig_dirname = os.path.join(tmp_dir,orig_dirname)
 
-            #    C. move original repackaged tree to .orig
-            target = fullpath_repackaged_dirname+'.orig'
-            if os.path.exists(target):
-                # here from previous invocation, probably
-                shutil.rmtree(target)
-            os.rename(fullpath_orig_dirname,target)
+            #    C. remove original repackaged tree
+            shutil.rmtree(fullpath_orig_dirname)
 
         finally:
             shutil.rmtree(tmp_dir)
@@ -1323,7 +1316,6 @@ def build_dsc(debinfo,
         dist_dir))
 
     dpkg_source('-b',repackaged_dirname,
-                repackaged_orig_tarball,
                 cwd=dist_dir)
 
     dpkg_genchanges(cwd=fullpath_repackaged_dirname)

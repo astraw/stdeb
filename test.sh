@@ -17,9 +17,9 @@ pypi-install --help > /dev/null
 
 ## Run test cases on each of the following packages
 
-# Set an upper bound on the size of the compressed diff. We are not
+# Set an upper bound on the size of the compressed deb_specific. We are not
 # applying any patches here so this should be pretty small.
-MAX_DIFF_SIZE=5000
+MAX_DEB_SPECIFIC_SIZE=5000
 
 for i in `seq 1 3`; do
 if [ $i -eq "1" ]; then
@@ -60,12 +60,12 @@ for DEBFILE in deb_dist/*.deb; do
   echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
   dpkg --contents $DEBFILE
 done
-DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
-if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
-    echo "ERROR: diff file larger than expected"
+DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
+if ((${DEB_SPECIFIC_SIZE}>${MAX_DEB_SPECIFIC_SIZE})); then
+    echo "ERROR: debian specific file larger than expected"
     exit 1
 else
-    echo "${SOURCE_PACKAGE} case 1: diff size ${DIFF_SIZE}"
+    echo "${SOURCE_PACKAGE} case 1: deb_specific size ${DEB_SPECIFIC_SIZE}"
 fi
 
 #cleanup case 1
@@ -85,12 +85,12 @@ for DEBFILE in deb_dist/*.deb; do
   echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
   dpkg --contents $DEBFILE
 done
-DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
-if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
-    echo "ERROR: diff file larger than expected"
+DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
+if ((${DEB_SPECIFIC_SIZE}>${MAX_DEB_SPECIFIC_SIZE})); then
+    echo "ERROR: debian specific file larger than expected"
     exit 1
 else
-    echo "${SOURCE_PACKAGE} case 2: diff size ${DIFF_SIZE}"
+    echo "${SOURCE_PACKAGE} case 2: deb_specific size ${DEB_SPECIFIC_SIZE}"
 fi
 cd ..
 
@@ -107,12 +107,12 @@ for DEBFILE in deb_dist/*.deb; do
   echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
   dpkg --contents $DEBFILE
 done
-DIFF_SIZE=$(stat -c '%s' deb_dist/*.diff.gz)
-if ((${DIFF_SIZE}>${MAX_DIFF_SIZE})); then
-    echo "ERROR: diff file larger than expected"
+DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
+if ((${DEB_SPECIFIC_SIZE}>${MAX_DEB_SPECIFIC_SIZE})); then
+    echo "ERROR: debian specific file larger than expected"
     exit 1
 else
-    echo "${SOURCE_PACKAGE} case 3: diff size ${DIFF_SIZE}"
+    echo "${SOURCE_PACKAGE} case 3: deb_specific size ${DEB_SPECIFIC_SIZE}"
 fi
 
 #cleanup case 3
