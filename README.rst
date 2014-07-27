@@ -479,7 +479,7 @@ the ~/.pydistutils.cfg file.) In that case, put the arguments in the
 file might have this::
 
   [sdist_dsc]
-  debian-version: 1+somebody1
+  debian-version: 0MyName1
 
 To pass these commands to sdist_dsc when calling bdist_deb, do this::
 
