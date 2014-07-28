@@ -58,6 +58,31 @@ master branch
 This branch is recommended for all users. It is currently tested on
 Ubuntu 12.04.
 
+ * 2014-x-y: **Version 0.8.0 (unreleased)**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.0>`__. Highlights for this
+   release (you may also wish to consult the full `changelog
+   <http://github.com/astraw/stdeb/blob/release-0.8.0/CHANGELOG.txt>`__). Highlights
+   since 0.7.1:
+
+   - Full support for Python 3. This includes being run from Python 3
+     and generating packages for Python 3. The default is to build
+     Python 3 packages when run with Python 3 and to build Python 2
+     packages when run from Python 2. Command line options can be used
+     to build packages for the other Python interpreter, too.
+
+   - Build .changes file for source package. While this still must be
+     signed for upload to a PPA, for example, it should still be
+     useful in some cases.
+
+   - Switch to Debian source format 3.0 (quilt). Practically speaking,
+     the .diff.gz file that used to come with a source package is now
+     replaced by a .debian.tar.gz file.
+
+   - Verify SSL certificates when talking to PyPI using
+     Requests. (Verification requires Requests >= 0.8.8.)
+
+   - Many bugfixes.
+
  * 2014-05-05: **Version 0.7.1**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.7.1>`__. Highlights for this
    release (you may also wish to consult the full `changelog
