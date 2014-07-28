@@ -9,7 +9,7 @@ Vagrant::Config.run do |config|
 
   # install prerequisites for stdeb and tests
   config.vm.provision :shell, :inline => "apt-get update"
-  config.vm.provision :shell, :inline => "apt-get install --yes debhelper python-all-dev python-setuptools apt-file libxml2-dev libxslt1-dev"
+  config.vm.provision :shell, :inline => "apt-get install --yes debhelper python-all-dev python-setuptools apt-file libxml2-dev libxslt1-dev python-requests"
 
   # We need to copy files to a new dir to prevent vagrant filesystem issues.
   config.vm.provision :shell, :inline => "cp -a /vagrant /tmp/vagrant_copy"
