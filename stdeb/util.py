@@ -206,8 +206,6 @@ def source_debianize_name(name):
 
 def debianize_version(name):
     "make name acceptable as a Debian package name"
-    name = name.replace('_','-')
-
     # XXX should use setuptools' version sorting and do this properly:
     name = name.replace('.dev','~dev')
 

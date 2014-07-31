@@ -157,9 +157,11 @@ class common_debian_package_command(Command):
             have_script_entry_points = self.distribution.has_scripts()
 
         upstream_version = self.distribution.get_version()
-        if ':' in upstream_version:
-            raise ValueError("Illegal character (':') detected in version. "
-                             "This will break the debian tools.")
+        bad_chars = ':_'
+        for bad_char in bad_chars:
+            if bad_char in upstream_version:
+                raise ValueError("Illegal character (%r) detected in version. "
+                                 "This will break the debian tools."%bad_char)
 
         debinfo = DebianInfo(
             cfg_files=cfg_files,
