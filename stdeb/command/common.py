@@ -156,12 +156,17 @@ class common_debian_package_command(Command):
         if have_script_entry_points is None:
             have_script_entry_points = self.distribution.has_scripts()
 
+        upstream_version = self.distribution.get_version()
+        if ':' in upstream_version:
+            raise ValueError("Illegal character (':') detected in version. "
+                             "This will break the debian tools.")
+
         debinfo = DebianInfo(
             cfg_files=cfg_files,
             module_name = module_name,
             default_distribution=self.default_distribution,
             guess_maintainer=guess_maintainer,
-            upstream_version = self.distribution.get_version(),
+            upstream_version = upstream_version,
             has_ext_modules = self.distribution.has_ext_modules(),
             description = self.distribution.get_description()[:60],
             long_description = self.distribution.get_long_description(),
