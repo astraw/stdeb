@@ -14,7 +14,7 @@ from stdeb.transport import RequestsTransport
 
 myprint=print
 
-USER_AGENT = 'pypi-install/0.7.1 ( https://github.com/astraw/stdeb )'
+USER_AGENT = 'pypi-install/0.8.0 ( https://github.com/astraw/stdeb )'
 
 def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
                 verbose=0, release=None):
