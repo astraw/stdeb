@@ -9,7 +9,7 @@ Vagrant::Config.run do |config|
 
   # install prerequisites for stdeb and tests
   config.vm.provision :shell, :inline => "apt-get update"
-  config.vm.provision :shell, :inline => "apt-get install --yes debhelper python-all-dev python-setuptools apt-file libxml2-dev libxslt1-dev python-requests python3-all-dev python3-setuptools"
+  config.vm.provision :shell, :inline => "apt-get install --yes debhelper python-all-dev python-setuptools apt-file python-requests python3-all-dev python3-setuptools libpq-dev"
 
   config.vm.provision :shell, :inline => "wget http://debs.strawlab.org/precise/python3-requests_2.3.0-0ads1_all.deb -O python3-requests_2.3.0-0ads1_all.deb"
   config.vm.provision :shell, :inline => "dpkg -i python3-requests_2.3.0-0ads1_all.deb"
