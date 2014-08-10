@@ -26,8 +26,7 @@ Vagrant::Config.run do |config|
   config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && ./test-pypi-install.sh"
 
   # Run tests on Python 3.
-  config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && mkdir bin && ln -s /usr/bin/python3 bin/python"
-  config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && PATH=/tmp/vagrant_copy/bin:${PATH} ./test.sh"
-  config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && PATH=/tmp/vagrant_copy/bin:${PATH} ./test-pypi-install.sh"
+  config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && PYEXE=/usr/bin/python3 ./test.sh"
+  config.vm.provision :shell, :inline => "cd /tmp/vagrant_copy && PYEXE=/usr/bin/python3 ./test-pypi-install.sh"
 
 end
