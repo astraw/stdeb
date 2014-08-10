@@ -1,6 +1,11 @@
 (See CHANGELOG.txt for lists of changes. This file provides
 information for those upgrading from previous versions of stdeb.)
 
+Release 0.8.0
+=============
+
+Removed "--force-buildsystem" option.
+
 Release 0.7.1
 =============
 

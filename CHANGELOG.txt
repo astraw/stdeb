@@ -1,7 +1,5 @@
-= Unreleased =
-
-2014-05-18 Verify SSL certificates when talking to PyPI. Requires
-           requests >= 0.8.8.
+Since (and including) release 0.8.0, updates to this file are no
+longer made. Please see README.rst.
 
 = Release 0.7.1 (2014-05-04) =
 
