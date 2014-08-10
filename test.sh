@@ -100,7 +100,7 @@ cd deb_dist/$DEBSOURCE
 dpkg-buildpackage -rfakeroot -uc -us
 cd ../..
 for DEBFILE in deb_dist/*.deb; do
-  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
+  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 2:"
   dpkg --contents $DEBFILE
 done
 DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
@@ -119,10 +119,10 @@ rm -rf $SOURCE_TARBALL_DIR
 
 # case 3: build from pre-existing source tarball with py2dsc
 # ==============================================================
-py2dsc-deb $SOURCE_TARBALL
+${PY2DSC_DEB} $SOURCE_TARBALL
 
 for DEBFILE in deb_dist/*.deb; do
-  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
+  echo "contents of $DEBFILE from $SOURCE_TARBALL in case 3:"
   dpkg --contents $DEBFILE
 done
 DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
