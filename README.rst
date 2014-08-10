@@ -58,11 +58,10 @@ master branch
 This branch is recommended for all users. It is currently tested on
 Ubuntu 12.04.
 
- * 2014-8-10: **Version 0.8.0**. See the `download page
-   <https://pypi.python.org/pypi/stdeb/0.8.0>`__. Highlights for this
-   release (you may also wish to consult the full `changelog
-   <http://github.com/astraw/stdeb/blob/release-0.8.0/CHANGELOG.txt>`__). Highlights
-   since 0.7.1:
+ * 2014-8-10: **Version 0.8.1**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.1>`__. Due
+   to bugs in 0.8.0, this release is the first announced from the 0.8
+   series. Highlights since 0.7.1:
 
    - Full support for Python 3. This includes being run from Python 3
      and generating packages for Python 3. The default is to build
