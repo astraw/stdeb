@@ -22,4 +22,13 @@ setup(name='stdeb',
                'scripts/pypi-download',
                'scripts/pypi-install',
                ],
+      classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+    ],
 )
