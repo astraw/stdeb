@@ -1,5 +1,10 @@
 from distutils.core import setup
-import os
+import codecs
+
+f = codecs.open('README.rst', encoding='utf-8')
+long_description = '\n'.join( [line for line in f] )
+f.close()
+del f
 
 setup(name='stdeb',
       # Keep version in sync with stdeb/__init__.py, Install section
@@ -8,7 +13,7 @@ setup(name='stdeb',
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       description='Python to Debian source package conversion utility',
-      long_description=open('README.rst').read(),
+      long_description=long_description,
       license='MIT',
       url='http://github.com/astraw/stdeb',
       packages=['stdeb','stdeb.command'],
