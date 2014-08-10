@@ -58,7 +58,7 @@ master branch
 This branch is recommended for all users. It is currently tested on
 Ubuntu 12.04.
 
- * 2014-x-y: **Version 0.8.0 (unreleased)**. See the `download page
+ * 2014-x-y: **Version 0.8.0**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.0>`__. Highlights for this
    release (you may also wish to consult the full `changelog
    <http://github.com/astraw/stdeb/blob/release-0.8.0/CHANGELOG.txt>`__). Highlights
