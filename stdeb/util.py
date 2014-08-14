@@ -784,7 +784,7 @@ class DebianInfo:
 
             self.architecture3 = 'any'
             if with_python3:
-                build_deps.append('python3-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
+                build_deps.append('python3-all-dev')
             depends3.append('${shlibs:Depends}')
 
         else:
@@ -794,7 +794,7 @@ class DebianInfo:
 
             self.architecture3 = 'all'
             if with_python3:
-                build_deps.append('python3-all (>= %s)'%PYTHON_ALL_MIN_VERS)
+                build_deps.append('python3-all')
 
         self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         self.mime_file = parse_val(cfg,module_name,'MIME-File')
