@@ -1402,6 +1402,7 @@ RULES_OVERRIDE_CLEAN_TARGET_PY3 = "        python3 setup.py clean -a"
 RULES_OVERRIDE_CLEAN_TARGET = """
 override_dh_auto_clean:
 %(rules_override_clean_target_pythons)s
+        find . -name \*.pyc -exec rm {} \;
 """
 
 RULES_OVERRIDE_BUILD_TARGET_PY2 = "        python setup.py build --force"
