@@ -1010,10 +1010,7 @@ class DebianInfo:
                 )
         self.rules_override_target_pythons = '\n'.join(rules_override_target_pythons)
 
-        if num_binary_packages >= 2 or (no_python2_scripts or no_python3_scripts) or workaround_virtualenv_distutils:
-            self.override_dh_auto_install = RULES_OVERRIDE_TARGET%self.__dict__
-        else:
-            self.override_dh_auto_install = ''
+        self.override_dh_auto_install = RULES_OVERRIDE_TARGET%self.__dict__
         sequencer_options = ['--with '+','.join(sequencer_with)]
         sequencer_options.append('--buildsystem=python_distutils')
         self.sequencer_options = ' '.join(sequencer_options)
