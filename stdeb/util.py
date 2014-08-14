@@ -764,7 +764,10 @@ class DebianInfo:
 
         build_deps = []
         if use_setuptools:
-            build_deps.append('python-setuptools (>= 0.6b3)')
+            if with_python2:
+                build_deps.append('python-setuptools (>= 0.6b3)')
+            if with_python3:
+                build_deps.append('python3-setuptools')
         if setup_requires is not None and len(setup_requires):
             build_deps.extend(
                 get_deb_depends_from_setuptools_requires(setup_requires))
