@@ -58,6 +58,12 @@ master branch
 This branch is recommended for all users. It is currently tested on
 Ubuntu 12.04.
 
+ * 2014-8-14: **Version 0.8.2**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.2>`__. This is a bugfix
+   release fixing a serious issue that would cause a Python 2 package
+   to be built if only a Python 3 package was requested in some
+   circumstances.
+
  * 2014-8-10: **Version 0.8.1**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.1>`__. Due
    to bugs in 0.8.0, this release is the first announced from the 0.8
