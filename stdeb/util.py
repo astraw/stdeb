@@ -229,13 +229,23 @@ def get_cmd_stdout(args):
         raise RuntimeError('returncode %d', returncode)
     return cmd.stdout.read()
 
+def normstr(s):
+    try:
+        # Python 3.x
+        result = str(s,'utf-8')
+    except TypeError:
+        # Python 2.x
+        result = s
+    return result
+
 def get_date_822():
     """return output of 822-date command"""
     cmd = '/bin/date'
     if not os.path.exists(cmd):
         raise ValueError('%s command does not exist.'%cmd)
     args = [cmd,'-R']
-    result = get_cmd_stdout(args).strip().decode('ascii')
+    result = get_cmd_stdout(args).strip()
+    result = normstr(result)
     return result
 
 def get_version_str(pkg):
@@ -1183,13 +1193,9 @@ def build_dsc(debinfo,
         os.mkdir(debian_dir)
 
     #    A. debian/changelog
+    changelog = CHANGELOG_FILE%debinfo.__dict__
     fd = open( os.path.join(debian_dir,'changelog'), mode='w')
-    fd.write("""\
-%(source)s (%(full_version)s) %(distname)s; urgency=low
-
-  * source package automatically created by stdeb %(stdeb_version)s
-
- -- %(maintainer)s  %(date822)s\n"""%debinfo.__dict__)
+    fd.write(changelog)
     fd.close()
 
     #    B. debian/control
@@ -1348,6 +1354,13 @@ def build_dsc(debinfo,
         dsc_name = debinfo.source + '_' + debinfo.dsc_version + '.dsc'
         dpkg_source('-x',dsc_name,
                     cwd=dist_dir)
+
+CHANGELOG_FILE = """\
+%(source)s (%(full_version)s) %(distname)s; urgency=low
+
+  * source package automatically created by stdeb %(stdeb_version)s
+
+ -- %(maintainer)s  %(date822)s\n"""
 
 CONTROL_FILE = """\
 Source: %(source)s

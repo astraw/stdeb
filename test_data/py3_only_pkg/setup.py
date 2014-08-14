@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 from distutils.core import setup
 from distutils.command.build import build
 import sys
@@ -13,4 +14,6 @@ setup(name='py3_only_pkg',
       packages=['py3_only_pkg'],
       version='0.1',
       cmdclass={'build':my_build},
+      author='Mister Unicodé',
+      author_email='mister.unicode@example.tld',
       )
