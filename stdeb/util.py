@@ -2,6 +2,7 @@
 # This module contains most of the code of stdeb.
 #
 import re, sys, os, shutil, select
+import codecs
 try:
     # Python 2.x
     import ConfigParser
@@ -1194,9 +1195,9 @@ def build_dsc(debinfo,
 
     #    A. debian/changelog
     changelog = CHANGELOG_FILE%debinfo.__dict__
-    fd = open( os.path.join(debian_dir,'changelog'), mode='w')
-    fd.write(changelog)
-    fd.close()
+    with codecs.open( os.path.join(debian_dir,'changelog'),
+                 mode='w', encoding='utf-8') as fd:
+        fd.write(changelog)
 
     #    B. debian/control
     if debinfo.uploaders:
@@ -1204,9 +1205,9 @@ def build_dsc(debinfo,
     else:
         debinfo.uploaders = ''
     control = CONTROL_FILE%debinfo.__dict__
-    fd = open( os.path.join(debian_dir,'control'), mode='w')
-    fd.write(control)
-    fd.close()
+    with codecs.open( os.path.join(debian_dir,'control'),
+                      mode='w', encoding='utf-8') as fd:
+        fd.write(control)
 
     #    C. debian/rules
     debinfo.percent_symbol = '%'
@@ -1214,9 +1215,9 @@ def build_dsc(debinfo,
 
     rules = rules.replace('        ','\t')
     rules_fname = os.path.join(debian_dir,'rules')
-    fd = open( rules_fname, mode='w')
-    fd.write(rules)
-    fd.close()
+    with codecs.open( rules_fname,
+                      mode='w', encoding='utf-8') as fd:
+        fd.write(rules)
     os.chmod(rules_fname,0o755)
 
     #    D. debian/compat

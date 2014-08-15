@@ -91,6 +91,9 @@ class common_debian_package_command(Command):
                      '--default-maintainer option. '
                      'Switch to the --maintainer option.')
             guess_maintainer = self.default_maintainer
+        if hasattr(guess_maintainer,'decode'):
+            # python 2 : convert (back to) unicode
+            guess_maintainer = guess_maintainer.decode('utf-8')
 
         #    B. find config files (if any)
         cfg_files = []
