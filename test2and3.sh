@@ -14,6 +14,10 @@ fi
 echo "using Python 2 at ${PY2EXE}"
 echo "using Python 3 at ${PY3EXE}"
 
+## Tell Python that we do not have e.g. UTF-8 file encodings and thus
+## force everything to be very explicit.
+export LC_ALL="en_US"
+
 ## Test very basic py2 and py3 packages ------
 
 cd test_data/py2_only_pkg
