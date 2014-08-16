@@ -15,8 +15,16 @@ if [ "${PY3EXE}" == "" ]; then
 fi
 
 # check that stdeb is actually installed
-${PY2EXE} -c "import stdeb" || export DO_PY2=false
-${PY3EXE} -c "import stdeb" || export DO_PY3=false
+cd test_data # do test in path without stdeb source
+if [ "$DO_PY2" = true ]; then
+    ${PY2EXE} -c "import stdeb; print stdeb.__version__,stdeb.__file__" || export DO_PY2=false
+fi
+
+if [ "$DO_PY3" = true ]; then
+    ${PY3EXE} -c "import stdeb; print(stdeb.__version__,stdeb.__file__)" || export DO_PY3=false
+fi
+cd ..
+
 
 ## Tell Python that we do not have e.g. UTF-8 file encodings and thus
 ## force everything to be very explicit.
