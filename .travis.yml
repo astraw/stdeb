@@ -8,7 +8,6 @@ before_install:
     - sudo apt-get install python-all-dev python3-all-dev debhelper python-setuptools python3-setuptools apt-file python-requests
     - wget http://debs.strawlab.org/precise/python3-requests_2.3.0-0ads1_all.deb -O python3-requests_2.3.0-0ads1_all.deb
     - sudo dpkg -i python3-requests_2.3.0-0ads1_all.deb
-    - sudo locale-gen en_US
 install:
     - which python
     - which pip

@@ -28,7 +28,7 @@ cd ..
 
 ## Tell Python that we do not have e.g. UTF-8 file encodings and thus
 ## force everything to be very explicit.
-export LC_ALL="en_US"
+export LC_ALL="C"
 
 ## Test very basic py2 and py3 packages ------
 

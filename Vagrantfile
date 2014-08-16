@@ -11,9 +11,6 @@ Vagrant::Config.run do |config|
   config.vm.provision :shell, :inline => "apt-get update"
   config.vm.provision :shell, :inline => "apt-get install --yes debhelper python-all-dev python-setuptools apt-file python-requests python3-all-dev python3-setuptools libpq-dev"
 
-  # generate locale for test2and3.sh test
-  config.vm.provision :shell, :inline => "locale-gen en_US"
-
   config.vm.provision :shell, :inline => "wget http://debs.strawlab.org/precise/python3-requests_2.3.0-0ads1_all.deb -O python3-requests_2.3.0-0ads1_all.deb"
   config.vm.provision :shell, :inline => "dpkg -i python3-requests_2.3.0-0ads1_all.deb"
 
