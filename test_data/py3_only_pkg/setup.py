@@ -16,4 +16,6 @@ setup(name='py3_only_pkg',
       cmdclass={'build':my_build},
       author='Mister Unicodé',
       author_email='mister.unicode@example.tld',
+      description='Python 3 package with Unicodé fields',
+      long_description='This is a Python 3 package with Unicodé data.',
       )

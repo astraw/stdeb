@@ -16,4 +16,6 @@ setup(name='py2_only_pkg',
       cmdclass={'build':my_build},
       author='Mister Unicodé',
       author_email='mister.unicode@example.tld',
+      description='Python 2 package with Unicodé fields',
+      long_description='This is a Python 2 package with Unicodé data.',
       )

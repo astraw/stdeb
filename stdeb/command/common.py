@@ -166,6 +166,19 @@ class common_debian_package_command(Command):
                 raise ValueError("Illegal character (%r) detected in version. "
                                  "This will break the debian tools."%bad_char)
 
+        description = self.distribution.get_description()
+        if hasattr(description,'decode'):
+            # python 2 : convert (back to) unicode
+            description = description.decode('utf-8')
+        description = description[:60]
+
+        long_description = self.distribution.get_long_description()
+        if hasattr(long_description,'decode'):
+            # python 2 : convert (back to) unicode
+            long_description = long_description.decode('utf-8')
+        long_description = long_description
+
+
         debinfo = DebianInfo(
             cfg_files=cfg_files,
             module_name = module_name,
@@ -173,8 +186,8 @@ class common_debian_package_command(Command):
             guess_maintainer=guess_maintainer,
             upstream_version = upstream_version,
             has_ext_modules = self.distribution.has_ext_modules(),
-            description = self.distribution.get_description()[:60],
-            long_description = self.distribution.get_long_description(),
+            description = description,
+            long_description = long_description,
             patch_file = self.patch_file,
             patch_level = self.patch_level,
             debian_version = self.debian_version,
