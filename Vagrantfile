@@ -4,8 +4,8 @@
 # vi: set ft=ruby :
 
 Vagrant::Config.run do |config|
-  config.vm.box = "precise64"
-  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+  config.vm.box_url = "https://dl.dropboxusercontent.com/s/3jz559mjz2aw4gs/debian-wheezy-64-vanilla.box"
+  config.vm.box = "debian-wheezy-64-vanilla"
 
   # install prerequisites for stdeb and tests
   config.vm.provision :shell, :inline => "apt-get update"
