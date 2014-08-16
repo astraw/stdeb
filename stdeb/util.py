@@ -1408,6 +1408,9 @@ RULES_MAIN = """\
 
 %(override_dh_auto_install)s
 
+override_dh_python2:
+        dh_python2 --no-guessing-versions
+
 %(binary_target_lines)s
 """
 
