@@ -26,6 +26,45 @@ fi
 cd ..
 
 
+# --------------
+
+PYTHONS=""
+if [ "$DO_PY2" = true ]; then
+    PYTHONS="${PYTHONS} ${PY2EXE}"
+fi
+
+if [ "$DO_PY3" = true ]; then
+    PYTHONS="${PYTHONS} ${PY3EXE}"
+fi
+
+## ----------------------------
+
+# Test unicode in CLI args
+
+for WITH_CLI_MAINTAINER_ARGS in true false; do
+#for WITH_CLI_MAINTAINER_ARGS in true; do
+    for PYTHON in ${PYTHONS}; do
+
+        echo ${PYTHON} WITH_CLI_MAINTAINER_ARGS ${WITH_CLI_MAINTAINER_ARGS}
+
+        if [ "$WITH_CLI_MAINTAINER_ARGS" = true ]; then
+            M1="--maintainer"
+            M2="Herr Unicöde <herr.unicoede@example.tld>"
+            M3="${M1},${M2}"
+        else
+            M3=""
+        fi
+
+        cd test_data/simple_pkg
+        IFS=,
+        ${PYTHON} setup.py --command-packages stdeb.command sdist_dsc ${M3} bdist_deb
+        unset IFS
+        cd ../..
+    done
+done
+
+## -------------------------
+
 ## Tell Python that we do not have e.g. UTF-8 file encodings and thus
 ## force everything to be very explicit.
 export LC_ALL="C"
