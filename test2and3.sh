@@ -39,20 +39,28 @@ fi
 
 ## ----------------------------
 
-# Test unicode in CLI args
+# Test unicode in CLI args and .cfg file
 
-for WITH_CLI_MAINTAINER_ARGS in true false; do
-#for WITH_CLI_MAINTAINER_ARGS in true; do
+for MAINTAINER_ARGS in cli none cfgfile; do
     for PYTHON in ${PYTHONS}; do
 
-        echo ${PYTHON} WITH_CLI_MAINTAINER_ARGS ${WITH_CLI_MAINTAINER_ARGS}
+        echo ${PYTHON} MAINTAINER_ARGS ${MAINTAINER_ARGS}
 
-        if [ "$WITH_CLI_MAINTAINER_ARGS" = true ]; then
+        if [ "$MAINTAINER_ARGS" = cli ]; then
             M1="--maintainer"
             M2="Herr Unicöde <herr.unicoede@example.tld>"
             M3="${M1},${M2}"
         else
             M3=""
+        fi
+
+        rm -f test_data/simple_pkg/stdeb.cfg
+
+        if [ "$MAINTAINER_ARGS" = cfgfile ]; then
+            cat > test_data/simple_pkg/stdeb.cfg <<EOF
+[DEFAULT]
+maintainer=Frau Unicöde <frau.unicoede@example.tld>
+EOF
         fi
 
         cd test_data/simple_pkg
