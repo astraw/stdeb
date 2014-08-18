@@ -717,7 +717,9 @@ class DebianInfo:
             check_cfg_files(cfg_files,module_name)
 
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
-        cfg.read(cfg_files)
+        for cfg_file in cfg_files:
+            with codecs.open( cfg_file, mode='r', encoding='utf-8') as fd:
+                cfg.readfp(fd)
 
         if sdist_dsc_command is not None:
             # Allow distutils commands to override config files (this lets
