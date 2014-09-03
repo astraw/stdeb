@@ -4,16 +4,21 @@
 # vi: set ft=ruby :
 
 Vagrant::Config.run do |config|
-  config.vm.box_url = "https://dl.dropboxusercontent.com/s/3jz559mjz2aw4gs/debian-wheezy-64-vanilla.box"
-  config.vm.box = "debian-wheezy-64-vanilla"
+  config.vm.box_url = "http://dl.dropbox.com/u/54390273/vagrantboxes/Squeeze64_VirtualBox4.2.4.box"
+  config.vm.box = "debian-squeeze-64-vanilla"
 
   # install prerequisites for stdeb and tests
   config.vm.provision :shell, :inline => "apt-get update"
   config.vm.provision :shell, :inline => <<-SH
     export DEBIAN_FRONTEND=noninteractive
-    apt-get install --yes debhelper python-all-dev python-setuptools apt-file python-requests python3-all-dev python3-setuptools libpq-dev
-    wget http://debs.strawlab.org/precise/python3-requests_2.3.0-0ads1_all.deb -O python3-requests_2.3.0-0ads1_all.deb
-    dpkg -i python3-requests_2.3.0-0ads1_all.deb
+    apt-get install --yes debhelper python-all-dev python-setuptools apt-file python3-all-dev libpq-dev python-argparse python3-setuptools
+    curl https://bootstrap.pypa.io/ez_setup.py | python
+    easy_install pip
+    pip install requests
+    easy_install3 pip
+    pip3 install argparse
+    pip3 install backports.ssl_match_hostname
+    pip3 install requests
 SH
 
   # We need to copy files to a new dir to prevent vagrant filesystem issues.
