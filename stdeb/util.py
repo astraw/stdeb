@@ -45,11 +45,11 @@ def check_call(*popenargs, **kwargs):
         return
     raise CalledProcessError(retcode)
 
-if sys.version_info.major==2:
+if sys.version_info[0]==2:
     help_str_py2='If True, build package for python 2. (Default=True).'
     help_str_py3='If True, build package for python 3. (Default=False).'
 else:
-    assert sys.version_info.major==3
+    assert sys.version_info[0]==3
     help_str_py2='If True, build package for python 2. (Default=False).'
     help_str_py3='If True, build package for python 3. (Default=True).'
 
