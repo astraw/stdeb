@@ -20,11 +20,11 @@ class common_debian_package_command(Command):
         self.debian_version = None
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
-        if sys.version_info.major==2:
+        if sys.version_info[0]==2:
             self.with_python2 = 'True'
             self.with_python3 = 'False'
         else:
-            assert sys.version_info.major==3
+            assert sys.version_info[0]==3
             self.with_python2 = 'False'
             self.with_python3 = 'True'
         self.no_python2_scripts = 'False'
