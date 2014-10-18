@@ -7,7 +7,10 @@ export DO_PY3=true
 # setup paths
 
 if [ "${PY2EXE}" == "" ]; then
-  PY2EXE=`which python2` || export DO_PY2=false
+  PY2EXE=`which python2` || echo
+  if [ "${PY2EXE}" == "" ]; then
+    PY2EXE=`which python` || export DO_PY2=false
+  fi
 fi
 
 if [ "${PY3EXE}" == "" ]; then
