@@ -7,7 +7,7 @@ import sys
 class my_build(build):
     """ensure (at runtime) we are running python 3"""
     def __init__(self,*args,**kwargs):
-        assert sys.version_info.major==3
+        assert sys.version_info[0]==3
         build.__init__(self,*args,**kwargs)
 
 setup(name='py3_only_pkg',

@@ -7,7 +7,7 @@ import sys
 class my_build(build):
     """ensure (at runtime) we are running python 2"""
     def __init__(self,*args,**kwargs):
-        assert sys.version_info.major==2
+        assert sys.version_info[0]==2
         build.__init__(self,*args,**kwargs)
 
 setup(name='py2_only_pkg',

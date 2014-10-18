@@ -20,11 +20,11 @@ class common_debian_package_command(Command):
         self.debian_version = None
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
-        if sys.version_info.major==2:
+        if sys.version_info[0]==2:
             self.with_python2 = 'True'
             self.with_python3 = 'False'
         else:
-            assert sys.version_info.major==3
+            assert sys.version_info[0]==3
             self.with_python2 = 'False'
             self.with_python3 = 'True'
         self.no_python2_scripts = 'False'
@@ -65,6 +65,21 @@ class common_debian_package_command(Command):
         self.with_python3 = str_to_bool(self.with_python3)
         self.no_python2_scripts = str_to_bool(self.no_python2_scripts)
         self.no_python3_scripts = str_to_bool(self.no_python3_scripts)
+        if self.maintainer is not None:
+            # Get the locale specifying the encoding in sys.argv
+            import locale, codecs
+            fs_enc = codecs.lookup(locale.getpreferredencoding()).name
+            if hasattr(os,'fsencode'): # this exists only in Python 3
+                m = os.fsencode(self.maintainer) # convert to original raw bytes
+
+                # Now, convert these raw bytes into unicode.
+                m = m.decode(fs_enc) # Set your locale if you get errors here
+
+                self.maintainer = m
+            else:
+                # Python 2
+                if hasattr(self.maintainer,'decode'):
+                    self.maintainer = self.maintainer.decode(fs_enc)
 
     def get_debinfo(self):
         ###############################################

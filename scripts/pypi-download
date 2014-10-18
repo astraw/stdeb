@@ -17,7 +17,7 @@ def main():
                       help='allow unsafe downloads')
     (options, args) = parser.parse_args()
     if len(args) != 1:
-        myprint('need exactly one PACKAGE_NAME',fd=sys.stderr)
+        myprint('need exactly one PACKAGE_NAME',file=sys.stderr)
         parser.print_help()
         sys.exit(1)
 

@@ -45,11 +45,11 @@ def check_call(*popenargs, **kwargs):
         return
     raise CalledProcessError(retcode)
 
-if sys.version_info.major==2:
+if sys.version_info[0]==2:
     help_str_py2='If True, build package for python 2. (Default=True).'
     help_str_py3='If True, build package for python 3. (Default=False).'
 else:
-    assert sys.version_info.major==3
+    assert sys.version_info[0]==3
     help_str_py2='If True, build package for python 2. (Default=False).'
     help_str_py3='If True, build package for python 3. (Default=True).'
 
@@ -717,7 +717,9 @@ class DebianInfo:
             check_cfg_files(cfg_files,module_name)
 
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
-        cfg.read(cfg_files)
+        for cfg_file in cfg_files:
+            with codecs.open( cfg_file, mode='r', encoding='utf-8') as fd:
+                cfg.readfp(fd)
 
         if sdist_dsc_command is not None:
             # Allow distutils commands to override config files (this lets

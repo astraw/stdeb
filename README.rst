@@ -425,7 +425,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.7.1"
+  STDEB_VERSION="0.8.2"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
@@ -680,7 +680,7 @@ The option names in stdeb.cfg files are not case sensitive.
 Prerequisites
 -------------
 
- * Python 2.5 or higher
+ * Python 2.7 or Python 3.x
  * Standard Debian utilities such as ``date``, ``dpkg-source`` and
    Debhelper 7 (use stdeb 0.3.x if you need to support older
    distributions without dh7)
@@ -756,6 +756,7 @@ Additional Credits
 * Barry Warsaw for suggesting the debianize command.
 * Asheesh Laroia for updating the PyPI URL.
 * Piotr Ożarowski for implementing dh_python2 support.
+* Nikita Burtsev for unicode tests and fixes
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 * TravisCI_ for continuous integration
