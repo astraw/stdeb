@@ -1,6 +1,11 @@
 (See CHANGELOG.txt for lists of changes. This file provides
 information for those upgrading from previous versions of stdeb.)
 
+Release 0.8.3
+=============
+
+Fixes various Unicode handling bugs.
+
 Release 0.8.2
 =============
 
