@@ -88,11 +88,20 @@ else
     echo "skipping Python 2 test"
 fi
 
+
 if [ "$DO_PY3" = true ]; then
-    echo "using Python 3 at ${PY3EXE}"
-    cd test_data/py3_only_pkg
-    ${PY3EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python3=true --with-python2=false bdist_deb
-    cd ../..
+    # Due to http://bugs.python.org/issue9561 (fixed in Py 3.2) we skip this test in 3.0 and 3.1.
+    ${PY3EXE} -c "import sys; ec=0 if sys.version_info[1]>=2 else 1; sys.exit(ec)"  && rc=$? || rc=$?
+
+    if [ "$rc" == 0 ]; then
+
+      echo "using Python 3 at ${PY3EXE}"
+      cd test_data/py3_only_pkg
+      ${PY3EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python3=true --with-python2=false bdist_deb
+      cd ../..
+    else
+      echo "skipping Python >= 3.2 test"
+    fi
 else
     echo "skipping Python 3 test"
 fi
