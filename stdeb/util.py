@@ -143,6 +143,7 @@ stdeb_cfg_options = [
     ('suggests=',None,'debian/control Suggests:'),
     ('recommends=',None,'debian/control Recommends:'),
     ('xs-python-version=',None,'debian/control XS-Python-Version:'),
+    ('x-python3-version=',None,'debian/control X-Python3-Version:'),
     ('dpkg-shlibdeps-params=',None,'parameters passed to dpkg-shlibdeps'),
     ('conflicts=',None,'debian/control Conflicts:'),
     ('provides=',None,'debian/control Provides:'),
@@ -899,6 +900,12 @@ class DebianInfo:
         if len(xs_python_version)!=0:
             self.source_stanza_extras += ('X-Python-Version: '+
                                           ', '.join(xs_python_version)+'\n')
+
+        x_python3_version = parse_vals(cfg,module_name,'X-Python3-Version')
+
+        if len(x_python3_version)!=0:
+            self.source_stanza_extras += ('X-Python3-Version: '+
+                                          ', '.join(x_python3_version)+'\n')
 
         dpkg_shlibdeps_params = parse_val(
             cfg,module_name,'dpkg-shlibdeps-params')
