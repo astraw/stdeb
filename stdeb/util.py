@@ -101,6 +101,9 @@ stdeb_cmdline_opts = [
      'If True, do not install scripts for python 2. (Default=False).'),
     ('no-python3-scripts=',None,
      'If True, do not install scripts for python 3. (Default=False).'),
+    ('force-x-python3-version',None,
+     'Override default minimum python3:any dependency with value from '
+     'x-python3-version'),
     ]
 
 # old entries from stdeb.cfg:
@@ -161,6 +164,7 @@ stdeb_cmd_bool_opts = [
     'patch-posix',
     'ignore-install-requires',
     'no-backwards-compatibility',
+    'force-x-python3-version',
     ]
 
 class NotGiven: pass
@@ -691,6 +695,7 @@ class DebianInfo:
                  with_python3 = None,
                  no_python2_scripts = None,
                  no_python3_scripts = None,
+                 force_x_python3_version=False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -902,6 +907,7 @@ class DebianInfo:
                                           ', '.join(xs_python_version)+'\n')
 
         x_python3_version = parse_vals(cfg,module_name,'X-Python3-Version')
+        x_python3_version = [v.strip('"') for v in x_python3_version]
 
         if len(x_python3_version)!=0:
             self.source_stanza_extras += ('X-Python3-Version: '+
@@ -1049,6 +1055,23 @@ class DebianInfo:
         self.override_dh_auto_clean = RULES_OVERRIDE_CLEAN_TARGET%self.__dict__
         self.override_dh_auto_build = RULES_OVERRIDE_BUILD_TARGET%self.__dict__
         self.override_dh_auto_install = RULES_OVERRIDE_INSTALL_TARGET%self.__dict__
+
+        if force_x_python3_version and with_python3 and x_python3_version and \
+                x_python3_version[0]:
+            # override dh_python3 target to modify the dependencies
+            # to ensure that the passed minimum X-Python3-Version is usedby
+            version = x_python3_version[0]
+            if not version.endswith('~'):
+                version += '~'
+            self.override_dh_python3 = RULES_OVERRIDE_PYTHON3%{
+                'scripts': (
+                    '        sed -i ' +
+                    '"s/\([ =]python3:any (\)>= [^)]*\()\)/\\1%s\\2/g" ' +
+                    'debian/%s.substvars') % (version, self.package3)
+            }
+        else:
+            self.override_dh_python3 = ''
+
         sequencer_options = ['--with '+','.join(sequencer_with)]
         sequencer_options.append('--buildsystem=python_distutils')
         self.sequencer_options = ' '.join(sequencer_options)
@@ -1420,6 +1443,8 @@ RULES_MAIN = """\
 override_dh_python2:
         dh_python2 --no-guessing-versions
 
+%(override_dh_python3)s
+
 %(binary_target_lines)s
 """
 
@@ -1446,6 +1471,12 @@ RULES_OVERRIDE_INSTALL_TARGET = """
 override_dh_auto_install:
 %(rules_override_install_target_pythons)s
 %(scripts_cleanup)s
+"""
+
+RULES_OVERRIDE_PYTHON3 = """
+override_dh_python3:
+        dh_python3
+%(scripts)s
 """
 
 RULES_BINARY_TARGET = """
