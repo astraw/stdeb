@@ -7,8 +7,16 @@ where distfile is a .zip or .tar.gz file built with the sdist command
 of distutils.
 """
 
-import stdeb.cli_runner
+import os
 import sys
+
+# allow to run script from source code checkout
+script_path = os.path.abspath(os.path.dirname(__file__))
+if os.path.exists(script_path + '/../setup.py'):
+    sys.path.insert(0, os.path.abspath(script_path + '/..'))
+
+
+import stdeb.cli_runner
 
 def main():
     sys.exit(stdeb.cli_runner.runit(cmd='sdist_dsc',usage=USAGE))
