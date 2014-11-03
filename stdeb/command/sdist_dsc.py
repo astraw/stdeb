@@ -69,7 +69,6 @@ class sdist_dsc(common_debian_package_command):
         assert len(expanded_base_files)==1
         actual_package_dirname = expanded_base_files[0]
         expected_package_dirname = debinfo.module_name + '-' + debinfo.upstream_version
-        assert actual_package_dirname==expected_package_dirname
         shutil.move( os.path.join( tmpdir, actual_package_dirname ),
                      fullpath_repackaged_dirname)
 
