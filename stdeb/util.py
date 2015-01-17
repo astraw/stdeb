@@ -141,13 +141,17 @@ stdeb_cfg_options = [
     ('depends=',None,'debian/control Depends:'),
     ('depends3=',None,'debian/control Depends:'),
     ('suggests=',None,'debian/control Suggests:'),
+    ('suggests3=',None,'debian/control Suggests:'),
     ('recommends=',None,'debian/control Recommends:'),
+    ('recommends3=',None,'debian/control Recommends:'),
     ('xs-python-version=',None,'debian/control XS-Python-Version:'),
     ('dpkg-shlibdeps-params=',None,'parameters passed to dpkg-shlibdeps'),
     ('conflicts=',None,'debian/control Conflicts:'),
     ('conflicts3=',None,'debian/control Conflicts:'),
     ('provides=',None,'debian/control Provides:'),
+    ('provides3=',None,'debian/control Provides3:'),
     ('replaces=',None,'debian/control Replaces:'),
+    ('replaces3=',None,'debian/control Replaces3:'),
     ('mime-desktop-files=',None,'MIME desktop files'),
     ('mime-file=',None,'MIME file'),
     ('shared-mime-file=',None,'shared MIME file'),
@@ -864,7 +868,9 @@ class DebianInfo:
         self.build_depends = ', '.join(build_deps)
 
         suggests = ', '.join( parse_vals(cfg,module_name,'Suggests') )
+        suggests3 = ', '.join( parse_vals(cfg,module_name,'Suggests3') )
         recommends = ', '.join( parse_vals(cfg,module_name,'Recommends') )
+        recommends3 = ', '.join( parse_vals(cfg,module_name,'Recommends3') )
 
         self.source_stanza_extras = ''
 
@@ -915,7 +921,9 @@ class DebianInfo:
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         conflicts3 = parse_vals(cfg,module_name,'Conflicts3')
         provides = parse_vals(cfg,module_name,'Provides')
+        provides3 = parse_vals(cfg,module_name,'Provides3')
         replaces = parse_vals(cfg,module_name,'Replaces')
+        replaces3 = parse_vals(cfg,module_name,'Replaces3')
 
         if guess_conflicts_provides_replaces:
             # Find list of binaries which we will conflict/provide/replace.
@@ -938,9 +946,11 @@ class DebianInfo:
             for orig_binary in cpr_binaries:
                 for version_info in apt_cache_info('show',orig_binary):
                     provides.extend( version_info['Provides'])
+                    provides3.extend( version_info['Provides'])
                     conflicts.extend(version_info['Conflicts'])
                     conflicts3.extend(version_info['Conflicts'])
                     replaces.extend( version_info['Replaces'])
+                    replaces3.extend( version_info['Replaces'])
 
             if self.package in cpr_binaries:
                 cpr_binaries.remove(self.package) # don't include ourself
@@ -950,13 +960,17 @@ class DebianInfo:
             conflicts.extend( cpr_binaries )
             conflicts3.extend( cpr_binaries )
             provides.extend( cpr_binaries )
+            provides3.extend( cpr_binaries )
             replaces.extend( cpr_binaries )
+            replaces3.extend( cpr_binaries )
 
             # round-trip through set to get unique entries
             conflicts = list(set(conflicts))
             conflicts3 = list(set(conflicts3))
             provides = list(set(provides))
+            provides3 = list(set(provides3))
             replaces = list(set(replaces))
+            replaces3 = list(set(replaces3))
 
         self.package_stanza_extras = ''
         self.package_stanza_extras3 = ''
@@ -972,14 +986,27 @@ class DebianInfo:
             self.package_stanza_extras += ('Provides: '+
                                              ', '.join( provides  )+'\n')
 
+        if len(provides3):
+            self.package_stanza_extras3 += ('Provides: '+
+                                             ', '.join( provides3  )+'\n')
+
         if len(replaces):
             self.package_stanza_extras += ('Replaces: ' +
                                               ', '.join( replaces  )+'\n')
+        if len(replaces3):
+            self.package_stanza_extras3 += ('Replaces: ' +
+                                              ', '.join( replaces3 )+'\n')
         if len(recommends):
             self.package_stanza_extras += ('Recommends: '+recommends+'\n')
 
+        if len(recommends3):
+            self.package_stanza_extras3 += ('Recommends: '+recommends3+'\n')
+
         if len(suggests):
             self.package_stanza_extras += ('Suggests: '+suggests+'\n')
+
+        if len(suggests3):
+            self.package_stanza_extras3 += ('Suggests: '+suggests3+'\n')
 
         self.dirlist = ""
 
