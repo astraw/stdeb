@@ -1,4 +1,4 @@
-# http://travis-ci.org/#!/astraw/stdeb
+# http://travis-ci.org/#!/jul/stdeb
 language: python
 python:
     - "2.7_with_system_site_packages"
