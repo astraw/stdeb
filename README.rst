@@ -536,6 +536,10 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
 ====================================== =========================================
   --with-python2                       build Python 2 package (default=True)
   --with-python3                       build Python 3 package (default=False)
+  --with-python-virtualenv             use the current irtualenv python
+                                       and packages the virtualenv into the 
+                                       debian packages (using
+                                       `dh-virtualenv <https://github.com/spotify/dh-virtualenv>`__)
   --no-python2-scripts                 disable installation of Python 2 scripts (default=False)
   --no-python3-scripts                 disable installation of Python 3 scripts (default=False)
   --dist-dir (-d)                      directory to put final built
