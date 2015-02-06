@@ -29,6 +29,7 @@ class common_debian_package_command(Command):
             self.with_python3 = 'True'
         self.no_python2_scripts = 'False'
         self.no_python3_scripts = 'False'
+        self.with_python_virtualenv = 'False'
 
         # deprecated options
         self.default_distribution = None
@@ -61,6 +62,7 @@ class common_debian_package_command(Command):
             self.guess_conflicts_provides_replaces = str_to_bool(
                 self.guess_conflicts_provides_replaces)
 
+        self.with_python_virtualenv = str_to_bool(self.with_python_virtualenv)
         self.with_python2 = str_to_bool(self.with_python2)
         self.with_python3 = str_to_bool(self.with_python3)
         self.no_python2_scripts = str_to_bool(self.no_python2_scripts)
@@ -211,6 +213,7 @@ class common_debian_package_command(Command):
             use_setuptools = use_setuptools,
             guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
             sdist_dsc_command = self,
+            with_python_virtualenv = self.with_python_virtualenv,
             with_python2 = self.with_python2,
             with_python3 = self.with_python3,
             no_python2_scripts = self.no_python2_scripts,

@@ -93,10 +93,9 @@ stdeb_cmdline_opts = [
     ('guess-conflicts-provides-replaces=',None,
      'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
      'based on apt-cache output. (Default=False).'),
-    ('with-python2=',None,
-     help_str_py2),
-    ('with-python3=',None,
-     help_str_py3),
+    ('with-python-virtualenv=',None, """trick for using dh_virtualenv"""),
+    ('with-python2=',None, help_str_py2),
+    ('with-python3=',None, help_str_py3),
     ('no-python2-scripts=',None,
      'If True, do not install scripts for python 2. (Default=False).'),
     ('no-python3-scripts=',None,
@@ -686,6 +685,7 @@ class DebianInfo:
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
                  sdist_dsc_command = None,
+                 with_python_virtualenv = None,
                  with_python2 = None,
                  with_python3 = None,
                  no_python2_scripts = None,
@@ -975,13 +975,16 @@ class DebianInfo:
 
         self.dirlist = ""
 
-        if not (with_python2 or with_python3):
-            raise RuntimeError('nothing to do - neither Python 2 or 3.')
-        sequencer_with = []
-        if with_python2:
-            sequencer_with.append('python2')
-        if with_python3:
-            sequencer_with.append('python3')
+        # check
+        if not (with_python2 ^ with_python3):
+            raise RuntimeError(
+                """Even with python_virtualenv we need the py2/3 options"""
+            )
+        # thus this short circuit is ok
+        sequencer_with = [
+                     with_python_virtualenv and "python-virtualenv" or \
+                                         with_python2 and "python2" or \
+                                                          "python3" ]
         num_binary_packages = len(sequencer_with)
 
         no_script_lines=[]
@@ -1043,7 +1046,8 @@ class DebianInfo:
         self.override_dh_auto_build = RULES_OVERRIDE_BUILD_TARGET%self.__dict__
         self.override_dh_auto_install = RULES_OVERRIDE_INSTALL_TARGET%self.__dict__
         sequencer_options = ['--with '+','.join(sequencer_with)]
-        sequencer_options.append('--buildsystem=python_distutils')
+        if not with_python_virtualenv:
+            sequencer_options.append('--buildsystem=python_distutils')
         self.sequencer_options = ' '.join(sequencer_options)
 
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
@@ -1080,6 +1084,7 @@ class DebianInfo:
 
         self.with_python2 = with_python2
         self.with_python3 = with_python3
+        self.with_python_virtualenv = with_python_virtualenv
         self.no_python2_scripts = no_python2_scripts
         self.no_python3_scripts = no_python3_scripts
 
