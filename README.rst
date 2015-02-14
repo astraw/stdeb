@@ -757,6 +757,7 @@ Additional Credits
 * Asheesh Laroia for updating the PyPI URL.
 * Piotr Ożarowski for implementing dh_python2 support.
 * Nikita Burtsev for unicode tests and fixes
+* Mikołaj Siedlarek for a bugfix
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 * TravisCI_ for continuous integration
