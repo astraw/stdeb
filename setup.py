@@ -1,8 +1,7 @@
 from distutils.core import setup
-import codecs
 
-with codecs.open('README.rst', encoding='utf-8') as f:
-    long_description = '\n'.join( [line for line in f] )
+with open('README.rst') as file:
+    long_description = file.read()
 
 setup(name='stdeb',
       # Keep version in sync with stdeb/__init__.py, Install section
