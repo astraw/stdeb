@@ -592,6 +592,7 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --suggests                           debian/control Suggests:
   --recommends                         debian/control Recommends:
   --xs-python-version                  debian/control XS-Python-Version:
+  --x-python3-version                  debian/control X-Python3-Version:
   --dpkg-shlibdeps-params              parameters passed to dpkg-shlibdeps
   --conflicts                          debian/control Conflicts:
   --provides                           debian/control Provides:
@@ -659,6 +660,7 @@ All available options:
   Suggests                             debian/control Suggests:
   Recommends                           debian/control Recommends:
   XS-Python-Version                    debian/control XS-Python-Version:
+  X-Python3-Version                    debian/control X-Python3-Version:
   Dpkg-Shlibdeps-Params                parameters passed to dpkg-shlibdeps
   Conflicts                            debian/control Conflicts:
   Provides                             debian/control Provides:
