@@ -110,7 +110,7 @@ if [ "$DO_PY3" = true ]; then
 
       # test the "debianize" command
       rm -rf debian
-      ${PY2EXE} setup.py --command-packages stdeb.command debianize
+      ${PY3EXE} setup.py --command-packages stdeb.command debianize
       rm -rf debian
 
       # test the "sdist_dsc" and "bdist_deb" commands
