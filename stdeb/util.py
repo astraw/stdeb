@@ -1012,42 +1012,16 @@ class DebianInfo:
             workaround_virtualenv_distutils = False
             self.install_prefix = ''
 
-        rules_override_clean_target_pythons = []
-        rules_override_build_target_pythons = []
-        rules_override_install_target_pythons = []
-        if with_python2:
-            rules_override_clean_target_pythons.append(
-                RULES_OVERRIDE_CLEAN_TARGET_PY2%self.__dict__
-                )
-            rules_override_build_target_pythons.append(
-                RULES_OVERRIDE_BUILD_TARGET_PY2%self.__dict__
-                )
-            rules_override_install_target_pythons.append(
-                RULES_OVERRIDE_INSTALL_TARGET_PY2%self.__dict__
-                )
-        if with_python3:
-            rules_override_clean_target_pythons.append(
-                RULES_OVERRIDE_CLEAN_TARGET_PY3%self.__dict__
-                )
-            rules_override_build_target_pythons.append(
-                RULES_OVERRIDE_BUILD_TARGET_PY3%self.__dict__
-                )
-            rules_override_install_target_pythons.append(
-                RULES_OVERRIDE_INSTALL_TARGET_PY3%self.__dict__
-                )
-        self.rules_override_clean_target_pythons = '\n'.join(rules_override_clean_target_pythons)
-        self.rules_override_build_target_pythons = '\n'.join(rules_override_build_target_pythons)
-        self.rules_override_install_target_pythons = '\n'.join(rules_override_install_target_pythons)
-
-        self.override_dh_auto_clean = RULES_OVERRIDE_CLEAN_TARGET%self.__dict__
-        self.override_dh_auto_build = RULES_OVERRIDE_BUILD_TARGET%self.__dict__
-        self.override_dh_auto_install = RULES_OVERRIDE_INSTALL_TARGET%self.__dict__
+        if self.scripts_cleanup:
+            self.override_dh_auto_install = RULES_OVERRIDE_INSTALL_TARGET%self.__dict__
+        else:
+            self.override_dh_auto_install = ''
         sequencer_options = ['--with '+','.join(sequencer_with)]
-        sequencer_options.append('--buildsystem=python_distutils')
+        sequencer_options.append('--buildsystem=pybuild')
         self.sequencer_options = ' '.join(sequencer_options)
 
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
-        self.exports = ""
+        self.exports = "export PYBUILD_NAME=%s" % self.source
         if len(setup_env_vars):
             self.exports += '\n'
             self.exports += '#exports specified using stdeb Setup-Env-Vars:\n'
@@ -1207,6 +1181,7 @@ def build_dsc(debinfo,
     else:
         debinfo.uploaders = ''
     control = CONTROL_FILE%debinfo.__dict__
+    control = re.sub('\n{3,}', '\n\n', control)
     with codecs.open( os.path.join(debian_dir,'control'),
                       mode='w', encoding='utf-8') as fd:
         fd.write(control)
@@ -1214,6 +1189,7 @@ def build_dsc(debinfo,
     #    C. debian/rules
     debinfo.percent_symbol = '%'
     rules = RULES_MAIN%debinfo.__dict__
+    rules = re.sub('\n{3,}', '\n\n', rules)
 
     rules = rules.replace('        ','\t')
     rules_fname = os.path.join(debian_dir,'rules')
@@ -1267,10 +1243,6 @@ def build_dsc(debinfo,
     os.mkdir(os.path.join(debian_dir,'source'))
     fd = open( os.path.join(debian_dir,'source','format'), mode='w')
     fd.write('3.0 (quilt)\n')
-    fd.close()
-
-    fd = open( os.path.join(debian_dir,'source','options'), mode='w')
-    fd.write('extend-diff-ignore="\.egg-info$"')
     fd.close()
 
     if debian_dir_only:
@@ -1404,10 +1376,6 @@ RULES_MAIN = """\
 %(percent_symbol)s:
         dh $@ %(sequencer_options)s
 
-%(override_dh_auto_clean)s
-
-%(override_dh_auto_build)s
-
 %(override_dh_auto_install)s
 
 override_dh_python2:
@@ -1416,28 +1384,9 @@ override_dh_python2:
 %(binary_target_lines)s
 """
 
-RULES_OVERRIDE_CLEAN_TARGET_PY2 = "        python setup.py clean -a"
-RULES_OVERRIDE_CLEAN_TARGET_PY3 = "        python3 setup.py clean -a"
-RULES_OVERRIDE_CLEAN_TARGET = """
-override_dh_auto_clean:
-%(rules_override_clean_target_pythons)s
-        find . -name \*.pyc -exec rm {} \;
-"""
-
-RULES_OVERRIDE_BUILD_TARGET_PY2 = "        python setup.py build --force"
-RULES_OVERRIDE_BUILD_TARGET_PY3 = "        python3 setup.py build --force"
-RULES_OVERRIDE_BUILD_TARGET = """
-override_dh_auto_build:
-%(rules_override_build_target_pythons)s
-"""
-
-RULES_OVERRIDE_INSTALL_TARGET_PY2 = "        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python2_scripts_cli_args)s"
-
-RULES_OVERRIDE_INSTALL_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python3_scripts_cli_args)s"
-
 RULES_OVERRIDE_INSTALL_TARGET = """
 override_dh_auto_install:
-%(rules_override_install_target_pythons)s
+	dh_auto_install
 %(scripts_cleanup)s
 """
 
