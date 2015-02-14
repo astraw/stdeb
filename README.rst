@@ -52,11 +52,11 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
-master branch
-`````````````
-
-This branch is recommended for all users. It is currently tested on
-Ubuntu 12.04.
+ * 2015-02-14: **Version 0.8.3**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.3>`__. This is a bugfix
+   release which fixes several aspects of Unicode support. Tests pass
+   on Debian Squeeze (6), Debian Wheezy (7), Ubuntu Precise (12.04)
+   and Ubuntu Trusty (14.04).
 
  * 2014-8-14: **Version 0.8.2**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.2>`__. This is a bugfix
@@ -164,11 +164,7 @@ __ http://github.com/astraw/stdeb/blob/release-0.4.1/RELEASE_NOTES.txt
 __ http://pypi.python.org/pypi/stdeb/0.4
 __ http://github.com/astraw/stdeb/blob/release-0.4/CHANGELOG.txt
 
-old-stable branch (0.3 and earlier)
-```````````````````````````````````
-
-This branch is recommended if you are operating on older Debian/Ubuntu
-distributions. It is compatible with Ubuntu Hardy.
+Releases up to and including 0.3.2 are compatible with Ubuntu Hardy.
 
  * 2009-10-04: Version 0.3.2 Released. See the `download page`__. See the `Changelog for 0.3.2`__
  * 2009-09-27: Version 0.3.1 Released. See the `download page`__. See the `Changelog for 0.3.1`__
@@ -425,7 +421,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.8.2"
+  STDEB_VERSION="0.8.3"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
@@ -757,6 +753,7 @@ Additional Credits
 * Asheesh Laroia for updating the PyPI URL.
 * Piotr Ożarowski for implementing dh_python2 support.
 * Nikita Burtsev for unicode tests and fixes
+* Mikołaj Siedlarek for a bugfix
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 * TravisCI_ for continuous integration

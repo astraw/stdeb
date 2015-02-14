@@ -1,13 +1,12 @@
 from distutils.core import setup
-import codecs
 
-with codecs.open('README.rst', encoding='utf-8') as f:
-    long_description = '\n'.join( [line for line in f] )
+with open('README.rst') as file:
+    long_description = file.read()
 
 setup(name='stdeb',
-      # Keep version in sync with stdeb/__init__.py, Install section
-      # of README.rst, and USER_AGENT in scripts/pypi-install.
-      version='0.8.2',
+      # Keep version in sync with stdeb/__init__.py and install section
+      # of README.rst.
+      version='0.8.3',
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       description='Python to Debian source package conversion utility',

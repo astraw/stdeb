@@ -10,11 +10,12 @@ from functools import partial
 import requests
 import hashlib
 import warnings
+import stdeb
 from stdeb.transport import RequestsTransport
 
 myprint=print
 
-USER_AGENT = 'pypi-install/0.8.2 ( https://github.com/astraw/stdeb )'
+USER_AGENT = 'pypi-install/%s ( https://github.com/astraw/stdeb )'%stdeb.__version__
 
 def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
                 verbose=0, release=None):

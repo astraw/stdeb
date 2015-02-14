@@ -85,6 +85,13 @@ export LC_ALL="C"
 if [ "$DO_PY2" = true ]; then
     echo "using Python 2 at ${PY2EXE}"
     cd test_data/py2_only_pkg
+
+    # test the "debianize" command
+    rm -rf debian
+    ${PY2EXE} setup.py --command-packages stdeb.command debianize
+    rm -rf debian
+
+    # test the "sdist_dsc" and "bdist_deb" commands
     ${PY2EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python2=true --with-python3=false bdist_deb
     cd ../..
 else
@@ -100,6 +107,13 @@ if [ "$DO_PY3" = true ]; then
 
       echo "using Python 3 at ${PY3EXE}"
       cd test_data/py3_only_pkg
+
+      # test the "debianize" command
+      rm -rf debian
+      ${PY3EXE} setup.py --command-packages stdeb.command debianize
+      rm -rf debian
+
+      # test the "sdist_dsc" and "bdist_deb" commands
       ${PY3EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python3=true --with-python2=false bdist_deb
       cd ../..
     else

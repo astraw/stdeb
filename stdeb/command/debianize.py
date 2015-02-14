@@ -1,5 +1,5 @@
 from distutils.core import Command
-from .common import common_debian_package_command
+from stdeb.command.common import common_debian_package_command
 
 from stdeb.util import build_dsc, stdeb_cmdline_opts, \
      stdeb_cmd_bool_opts, stdeb_cfg_options
