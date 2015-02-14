@@ -149,6 +149,7 @@ stdeb_cfg_options = [
     ('x-python3-version=',None,'debian/control X-Python3-Version:'),
     ('dpkg-shlibdeps-params=',None,'parameters passed to dpkg-shlibdeps'),
     ('conflicts=',None,'debian/control Conflicts:'),
+    ('conflicts3=',None,'debian/control Conflicts:'),
     ('provides=',None,'debian/control Provides:'),
     ('replaces=',None,'debian/control Replaces:'),
     ('mime-desktop-files=',None,'MIME desktop files'),
@@ -925,6 +926,7 @@ class DebianInfo:
         self.dh_binary_indep_lines = '\tdh binary-indep'
 
         conflicts = parse_vals(cfg,module_name,'Conflicts')
+        conflicts3 = parse_vals(cfg,module_name,'Conflicts3')
         provides = parse_vals(cfg,module_name,'Provides')
         replaces = parse_vals(cfg,module_name,'Replaces')
 
@@ -950,6 +952,7 @@ class DebianInfo:
                 for version_info in apt_cache_info('show',orig_binary):
                     provides.extend( version_info['Provides'])
                     conflicts.extend(version_info['Conflicts'])
+                    conflicts3.extend(version_info['Conflicts'])
                     replaces.extend( version_info['Replaces'])
 
             if self.package in cpr_binaries:
@@ -958,11 +961,13 @@ class DebianInfo:
             cpr_binaries = list(cpr_binaries) # convert to list
 
             conflicts.extend( cpr_binaries )
+            conflicts3.extend( cpr_binaries )
             provides.extend( cpr_binaries )
             replaces.extend( cpr_binaries )
 
             # round-trip through set to get unique entries
             conflicts = list(set(conflicts))
+            conflicts3 = list(set(conflicts3))
             provides = list(set(provides))
             replaces = list(set(replaces))
 
@@ -972,6 +977,9 @@ class DebianInfo:
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
                                               ', '.join( conflicts )+'\n')
+        if len(conflicts3):
+            self.package_stanza_extras3 += ('Conflicts: '+
+                                              ', '.join( conflicts3 )+'\n')
 
         if len(provides):
             self.package_stanza_extras += ('Provides: '+
