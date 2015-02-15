@@ -13,12 +13,12 @@ Vagrant::Config.run do |config|
     export DEBIAN_FRONTEND=noninteractive
     apt-get install --yes debhelper python-all-dev python-setuptools apt-file python3-all-dev libpq-dev python-argparse python3-setuptools
     curl https://bootstrap.pypa.io/ez_setup.py | python
-    easy_install pip
-    pip install requests
-    easy_install3 pip
-    pip3 install argparse
+    easy_install pip==1.5.6
+    pip2 install requests==2.4.3
+    easy_install3 pip==1.5.6
+    pip3 install argparse==1.3.0
     pip3 install backports.ssl_match_hostname
-    pip3 install requests
+    pip3 install requests==2.4.3
 SH
 
   # We need to copy files to a new dir to prevent vagrant filesystem issues.
