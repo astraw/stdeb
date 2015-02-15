@@ -592,6 +592,7 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --suggests                           debian/control Suggests:
   --recommends                         debian/control Recommends:
   --xs-python-version                  debian/control XS-Python-Version:
+  --x-python3-version                  debian/control X-Python3-Version:
   --dpkg-shlibdeps-params              parameters passed to dpkg-shlibdeps
   --conflicts                          debian/control Conflicts:
   --provides                           debian/control Provides:
@@ -656,13 +657,20 @@ All available options:
                                        apply
   Stdeb-Patch-Level                    patch level provided to patch command
   Depends                              debian/control Depends:
+  Depends3                             debian/control Depends: for python3
   Suggests                             debian/control Suggests:
+  Suggests3                            debian/control Suggests: for python3
   Recommends                           debian/control Recommends:
+  Recommends3                          debian/control Recommends: for python3
   XS-Python-Version                    debian/control XS-Python-Version:
+  X-Python3-Version                    debian/control X-Python3-Version:
   Dpkg-Shlibdeps-Params                parameters passed to dpkg-shlibdeps
   Conflicts                            debian/control Conflicts:
+  Conflicts3                           debian/control Conflicts: for python3
   Provides                             debian/control Provides:
+  Provides3                            debian/control Provides: for python3
   Replaces                             debian/control Replaces:
+  Replaces3                            debian/control Replaces: for python3
   MIME-Desktop-Files                   MIME desktop files
   MIME-File                            MIME file
   Shared-MIME-File                     shared MIME file
