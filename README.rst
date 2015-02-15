@@ -55,8 +55,9 @@ News
  * 2015-02-14: **Version 0.8.3**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.3>`__. This is a bugfix
    release which fixes several aspects of Unicode support. Tests pass
-   on Debian Squeeze (6), Debian Wheezy (7), Ubuntu Precise (12.04)
-   and Ubuntu Trusty (14.04).
+   on Debian Wheezy (7), Ubuntu Precise (12.04) and Ubuntu Trusty
+   (14.04). Support for Debian Squeeze (6) was mistakenly broken and
+   will be fixed in the next 0.8.x release.
 
  * 2014-8-14: **Version 0.8.2**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.2>`__. This is a bugfix
