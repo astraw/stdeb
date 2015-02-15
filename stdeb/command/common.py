@@ -29,7 +29,6 @@ class common_debian_package_command(Command):
             self.with_python3 = 'True'
         self.no_python2_scripts = 'False'
         self.no_python3_scripts = 'False'
-        self.force_x_python3_version = False
 
         # deprecated options
         self.default_distribution = None
@@ -216,6 +215,5 @@ class common_debian_package_command(Command):
             with_python3 = self.with_python3,
             no_python2_scripts = self.no_python2_scripts,
             no_python3_scripts = self.no_python3_scripts,
-            force_x_python3_version=self.force_x_python3_version,
         )
         return debinfo
