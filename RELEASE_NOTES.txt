@@ -1,5 +1,7 @@
-(See CHANGELOG.txt for lists of changes. This file provides
-information for those upgrading from previous versions of stdeb.)
+Release 0.8.4
+=============
+
+No backwards-incompatible changes from 0.8.3.
 
 Release 0.8.3
 =============

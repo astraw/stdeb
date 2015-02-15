@@ -52,12 +52,21 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2015-02-16: **Version 0.8.4**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.4>`__. Bugfixes: works on
+   Python 3.4 (e.g. Ubuntu Trusty) again. Improvements: Improved
+   customization for Python 3 (Dirk Thomas added
+   `--force-x-python3-version` and `X-Python3-Version` and Louis for
+   `Recommends3`, `Suggests3`, `Provides3` and `Replaces3`
+   support. Supports Debian Squeeze (6), Debian Wheezy (7), Ubuntu
+   Precise (12.04), Ubuntu Trusty (14.04) and later releases.
+
  * 2015-02-14: **Version 0.8.3**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.3>`__. This is a bugfix
    release which fixes several aspects of Unicode support. Tests pass
-   on Debian Wheezy (7), Ubuntu Precise (12.04) and Ubuntu Trusty
-   (14.04). Support for Debian Squeeze (6) was mistakenly broken and
-   will be fixed in the next 0.8.x release.
+   on Debian Squeeze (6), Debian Wheezy (7), and Ubuntu Precise
+   (12.04). Support for Python 3.4 (e.g. Ubuntu Trusty 14.04) was
+   mistakenly broken and was fixed in the 0.8.3 release.
 
  * 2014-8-14: **Version 0.8.2**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.2>`__. This is a bugfix
@@ -422,7 +431,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.8.3"
+  STDEB_VERSION="0.8.4"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
@@ -763,6 +772,9 @@ Additional Credits
 * Piotr Ożarowski for implementing dh_python2 support.
 * Nikita Burtsev for unicode tests and fixes
 * Mikołaj Siedlarek for a bugfix
+* Dirk Thomas for --force-x-python3-version and X-Python3-Version
+* Louis for Recommends3, Suggests3, Provides3 and Replaces3 support
+* kzwin for interop with virtualenv
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
 * TravisCI_ for continuous integration
