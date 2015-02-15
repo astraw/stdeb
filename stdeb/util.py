@@ -25,8 +25,8 @@ __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'apply_patch','repack_tarball_with_debianized_dirname',
            'expand_sdist_file','stdeb_cfg_options']
 
-DH_MIN_VERS = '9'       # Fundamental to stdeb >= 0.4
-DH_IDEAL_VERS = '9'	    # required by debian/compat = 9
+DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
+DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
 
 PYTHON_ALL_MIN_VERS = '2.6.6-3'
 
@@ -1289,7 +1289,7 @@ def build_dsc(debinfo,
 
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
-    fd.write('9\n')
+    fd.write('7\n')
     fd.close()
 
     #    E. debian/package.mime
