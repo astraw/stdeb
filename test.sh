@@ -78,7 +78,7 @@ for DEBFILE in deb_dist/*.deb; do
   echo "contents of $DEBFILE from $SOURCE_TARBALL in case 1:"
   dpkg --contents $DEBFILE
 done
-DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
+DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.?z)
 if ((${DEB_SPECIFIC_SIZE}>${MAX_DEB_SPECIFIC_SIZE})); then
     echo "ERROR: debian specific file larger than expected"
     exit 1
@@ -103,7 +103,7 @@ for DEBFILE in deb_dist/*.deb; do
   echo "contents of $DEBFILE from $SOURCE_TARBALL in case 2:"
   dpkg --contents $DEBFILE
 done
-DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
+DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.?z)
 if ((${DEB_SPECIFIC_SIZE}>${MAX_DEB_SPECIFIC_SIZE})); then
     echo "ERROR: debian specific file larger than expected"
     exit 1
@@ -125,7 +125,7 @@ for DEBFILE in deb_dist/*.deb; do
   echo "contents of $DEBFILE from $SOURCE_TARBALL in case 3:"
   dpkg --contents $DEBFILE
 done
-DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.gz)
+DEB_SPECIFIC_SIZE=$(stat -c '%s' deb_dist/*.debian.tar.?z)
 if ((${DEB_SPECIFIC_SIZE}>${MAX_DEB_SPECIFIC_SIZE})); then
     echo "ERROR: debian specific file larger than expected"
     exit 1
