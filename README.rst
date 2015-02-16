@@ -745,7 +745,7 @@ Please address all questions to the distutils-SIG_
 License
 -------
 
-MIT-style license. Copyright (c) 2006-2014 stdeb authors.
+MIT-style license. Copyright (c) 2006-2015 stdeb authors.
 
 See the LICENSE.txt file provided with the source distribution for
 full details.
