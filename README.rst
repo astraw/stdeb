@@ -56,7 +56,7 @@ News
    <https://pypi.python.org/pypi/stdeb/0.8.4>`__. Bugfixes: works on
    Python 3.4 (e.g. Ubuntu Trusty) again. Improvements: Improved
    customization for Python 3 (Dirk Thomas added
-   `--force-x-python3-version` and `X-Python3-Version` and Louis for
+   `force-x-python3-version` and `X-Python3-Version` and Louis for
    `Recommends3`, `Suggests3`, `Provides3` and `Replaces3`
    support. Supports Debian Squeeze (6), Debian Wheezy (7), Ubuntu
    Precise (12.04), Ubuntu Trusty (14.04) and later releases.
