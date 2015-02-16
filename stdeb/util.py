@@ -1017,6 +1017,15 @@ class DebianInfo:
 
         self.dirlist = ""
 
+        self.exports = "export PYBUILD_NAME=%s" % self.source
+        self.exports += '\n'
+
+        setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
+        if len(setup_env_vars):
+            self.exports += '#exports specified using stdeb Setup-Env-Vars:\n'
+            self.exports += '\n'.join(['export %s'%v for v in setup_env_vars])
+            self.exports += '\n'
+
         if not (with_python2 or with_python3):
             raise RuntimeError('nothing to do - neither Python 2 or 3.')
         sequencer_with = []
@@ -1030,18 +1039,16 @@ class DebianInfo:
 
         if no_python2_scripts:
             # install to a location where debian tools do not find them
-            self.no_python2_scripts_cli_args = '--install-scripts=/trash'
+            self.exports += 'export PYBUILD_INSTALL_ARGS_python2=--install-scripts=/trash'
+            self.exports += '\n'
             no_script_lines.append(
                 'rm -rf debian/%s/trash'%(self.package,))
-        else:
-            self.no_python2_scripts_cli_args = ''
         if no_python3_scripts:
             # install to a location where debian tools do not find them
-            self.no_python3_scripts_cli_args = '--install-scripts=/trash'
+            self.exports += 'export PYBUILD_INSTALL_ARGS_python3=--install-scripts=/trash'
+            self.exports += '\n'
             no_script_lines.append(
                 'rm -rf debian/%s/trash'%(self.package3,))
-        else:
-            self.no_python3_scripts_cli_args = ''
 
         self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
 
@@ -1062,13 +1069,6 @@ class DebianInfo:
         sequencer_options.append('--buildsystem=pybuild')
         self.sequencer_options = ' '.join(sequencer_options)
 
-        setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
-        self.exports = "export PYBUILD_NAME=%s" % self.source
-        if len(setup_env_vars):
-            self.exports += '\n'
-            self.exports += '#exports specified using stdeb Setup-Env-Vars:\n'
-            self.exports += '\n'.join(['export %s'%v for v in setup_env_vars])
-            self.exports += '\n'
         self.udev_rules = parse_val(cfg,module_name,'Udev-Rules')
 
         if need_custom_binary_target:
