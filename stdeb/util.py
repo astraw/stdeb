@@ -104,6 +104,8 @@ stdeb_cmdline_opts = [
     ('force-x-python3-version',None,
      'Override default minimum python3:any dependency with value from '
      'x-python3-version'),
+    ('allow-virtualenv-install-location',None,
+     'Allow installing into /some/random/virtualenv-path'),
     ]
 
 # old entries from stdeb.cfg:
@@ -170,6 +172,7 @@ stdeb_cmd_bool_opts = [
     'ignore-install-requires',
     'no-backwards-compatibility',
     'force-x-python3-version',
+    'allow-virtualenv-install-location',
     ]
 
 class NotGiven: pass
@@ -701,6 +704,7 @@ class DebianInfo:
                  no_python2_scripts = None,
                  no_python3_scripts = None,
                  force_x_python3_version=False,
+                 allow_virtualenv_install_location=False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -1055,7 +1059,10 @@ class DebianInfo:
             # virtualenv will set distutils --prefix=/path/to/virtualenv, but
             # we want to install into /usr.
             workaround_virtualenv_distutils = True
-            self.install_prefix = '--prefix=/usr'
+            if not allow_virtualenv_install_location:
+                self.install_prefix = '--prefix=/usr'
+            else:
+                self.install_prefix = '--prefix=%s' % sys.prefix
         else:
             workaround_virtualenv_distutils = False
             self.install_prefix = ''

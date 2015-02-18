@@ -544,6 +544,8 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --with-python3                       build Python 3 package (default=False)
   --no-python2-scripts                 disable installation of Python 2 scripts (default=False)
   --no-python3-scripts                 disable installation of Python 3 scripts (default=False)
+  --allow-virtualenv-install-location  Allow installing into
+                                       /some/random/virtualenv-path
   --dist-dir (-d)                      directory to put final built
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when

@@ -30,6 +30,7 @@ class common_debian_package_command(Command):
         self.no_python2_scripts = 'False'
         self.no_python3_scripts = 'False'
         self.force_x_python3_version = False
+        self.allow_virtualenv_install_location = False
 
         # deprecated options
         self.default_distribution = None
@@ -217,5 +218,6 @@ class common_debian_package_command(Command):
             no_python2_scripts = self.no_python2_scripts,
             no_python3_scripts = self.no_python3_scripts,
             force_x_python3_version=self.force_x_python3_version,
+            allow_virtualenv_install_location=self.allow_virtualenv_install_location,
         )
         return debinfo
