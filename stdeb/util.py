@@ -1056,15 +1056,14 @@ class DebianInfo:
         self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
 
         if sys.prefix != '/usr':
-            # virtualenv will set distutils --prefix=/path/to/virtualenv, but
-            # we want to install into /usr.
-            workaround_virtualenv_distutils = True
             if not allow_virtualenv_install_location:
+                # virtualenv will set distutils
+                # --prefix=/path/to/virtualenv, but unless explicitly
+                # requested, we want to install into /usr.
                 self.install_prefix = '--prefix=/usr'
             else:
                 self.install_prefix = '--prefix=%s' % sys.prefix
         else:
-            workaround_virtualenv_distutils = False
             self.install_prefix = ''
 
         rules_override_clean_target_pythons = []
