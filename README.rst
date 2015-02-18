@@ -52,6 +52,15 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2015-02-18: **Version 0.8.5**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.5>`__. Bugfixes: reverted
+   change that installed into virtualenv when built in
+   virtualenv. Improvements: Added
+   `--allow-virtualenv-install-location` to allow installing into
+   virtualenv location. Supports Debian Squeeze (6), Debian Wheezy
+   (7), Ubuntu Precise (12.04), Ubuntu Trusty (14.04) and later
+   releases.
+
  * 2015-02-16: **Version 0.8.4**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.4>`__. Bugfixes: works on
    Python 3.4 (e.g. Ubuntu Trusty) again. Improvements: Improved
@@ -431,7 +440,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.8.4"
+  STDEB_VERSION="0.8.5"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
