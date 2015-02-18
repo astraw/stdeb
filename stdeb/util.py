@@ -1055,7 +1055,7 @@ class DebianInfo:
             # virtualenv will set distutils --prefix=/path/to/virtualenv, but
             # we want to install into /usr.
             workaround_virtualenv_distutils = True
-            self.install_prefix = '--prefix=%s' % sys.prefix
+            self.install_prefix = '--prefix=/usr'
         else:
             workaround_virtualenv_distutils = False
             self.install_prefix = ''
