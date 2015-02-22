@@ -558,6 +558,8 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        version
   --allow-virtualenv-install-location  Allow installing into
                                        /some/random/virtualenv-path
+  --sign-results                       Use gpg to sign the resulting .dsc and
+                                       .changes file
   --dist-dir (-d)                      directory to put final built
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when
