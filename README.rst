@@ -799,3 +799,8 @@ Additional Credits
 .. _WebFaction: http://webfaction.com/
 .. _python-hosting: http://python-hosting.com/
 ..  _TravisCI: http://travis-ci.org/
+
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/astraw/stdeb
+   :target: https://gitter.im/astraw/stdeb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
