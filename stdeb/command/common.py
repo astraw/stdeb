@@ -30,6 +30,7 @@ class common_debian_package_command(Command):
         self.with_pypy = 'False'
         self.no_python2_scripts = 'False'
         self.no_python3_scripts = 'False'
+        self.no_pypy_scripts = 'False'
         self.allow_virtualenv_install_location = False
         self.sign_results = False
 
@@ -69,6 +70,7 @@ class common_debian_package_command(Command):
         self.with_pypy = str_to_bool(self.with_pypy)
         self.no_python2_scripts = str_to_bool(self.no_python2_scripts)
         self.no_python3_scripts = str_to_bool(self.no_python3_scripts)
+        self.no_pypy_scripts = str_to_bool(self.no_pypy_scripts)
         if self.maintainer is not None:
             # Get the locale specifying the encoding in sys.argv
             import locale, codecs
@@ -220,6 +222,7 @@ class common_debian_package_command(Command):
             with_pypy = self.with_pypy,
             no_python2_scripts = self.no_python2_scripts,
             no_python3_scripts = self.no_python3_scripts,
+            no_pypy_scripts = self.no_pypy_scripts,
             allow_virtualenv_install_location=self.allow_virtualenv_install_location,
         )
         return debinfo

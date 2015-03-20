@@ -105,6 +105,8 @@ stdeb_cmdline_opts = [
      'If True, do not install scripts for python 2. (Default=False).'),
     ('no-python3-scripts=',None,
      'If True, do not install scripts for python 3. (Default=False).'),
+    ('no-pypy-scripts=',None,
+     'If True, do not install scripts for pypy. (Default=False).'),
     ('allow-virtualenv-install-location',None,
      'Allow installing into /some/random/virtualenv-path'),
     ('sign-results',None,
@@ -713,6 +715,7 @@ class DebianInfo:
                  with_pypy = None,
                  no_python2_scripts = None,
                  no_python3_scripts = None,
+                 no_pypy_scripts = None,
                  allow_virtualenv_install_location=False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
@@ -1114,6 +1117,12 @@ class DebianInfo:
             self.exports += '\n'
             no_script_lines.append(
                 'rm -rf debian/%s/trash'%(self.package3,))
+        if no_pypy_scripts:
+            # install to a location where debian tools do not find them
+            self.exports += 'export PYBUILD_INSTALL_ARGS_pypy=--install-scripts=/trash'
+            self.exports += '\n'
+            no_script_lines.append(
+                'rm -rf debian/%s/trash'%(self.package_pypy,))
 
         self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
 
@@ -1171,6 +1180,7 @@ class DebianInfo:
         self.with_pypy = with_pypy
         self.no_python2_scripts = no_python2_scripts
         self.no_python3_scripts = no_python3_scripts
+        self.no_pypy_scripts = no_pypy_scripts
 
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
