@@ -52,6 +52,15 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2015-02-18: **Version 0.8.5**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.5>`__. Bugfixes: reverted
+   change that installed into virtualenv when built in
+   virtualenv. Improvements: Added
+   `--allow-virtualenv-install-location` to allow installing into
+   virtualenv location. Supports Debian Squeeze (6), Debian Wheezy
+   (7), Ubuntu Precise (12.04), Ubuntu Trusty (14.04) and later
+   releases.
+
  * 2015-02-16: **Version 0.8.4**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.4>`__. Bugfixes: works on
    Python 3.4 (e.g. Ubuntu Trusty) again. Improvements: Improved
@@ -431,7 +440,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.8.4"
+  STDEB_VERSION="0.8.5"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
@@ -544,6 +553,13 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --with-python3                       build Python 3 package (default=False)
   --no-python2-scripts                 disable installation of Python 2 scripts (default=False)
   --no-python3-scripts                 disable installation of Python 3 scripts (default=False)
+  --force-x-python3-version            Override default minimum python3:any
+                                       dependency with value from x-python3-
+                                       version
+  --allow-virtualenv-install-location  Allow installing into
+                                       /some/random/virtualenv-path
+  --sign-results                       Use gpg to sign the resulting .dsc and
+                                       .changes file
   --dist-dir (-d)                      directory to put final built
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when
@@ -783,3 +799,8 @@ Additional Credits
 .. _WebFaction: http://webfaction.com/
 .. _python-hosting: http://python-hosting.com/
 ..  _TravisCI: http://travis-ci.org/
+
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/astraw/stdeb
+   :target: https://gitter.im/astraw/stdeb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge

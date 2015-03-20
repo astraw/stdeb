@@ -101,6 +101,10 @@ stdeb_cmdline_opts = [
      'If True, do not install scripts for python 2. (Default=False).'),
     ('no-python3-scripts=',None,
      'If True, do not install scripts for python 3. (Default=False).'),
+    ('allow-virtualenv-install-location',None,
+     'Allow installing into /some/random/virtualenv-path'),
+    ('sign-results',None,
+     'Use gpg to sign the resulting .dsc and .changes file'),
     ]
 
 # old entries from stdeb.cfg:
@@ -166,6 +170,8 @@ stdeb_cmd_bool_opts = [
     'patch-posix',
     'ignore-install-requires',
     'no-backwards-compatibility',
+    'allow-virtualenv-install-location',
+    'sign-results',
     ]
 
 class NotGiven: pass
@@ -514,21 +520,19 @@ def repack_tarball_with_debianized_dirname( orig_sdist_file,
     make_tarball(repacked_sdist_file,debianized_dirname,cwd=working_dir)
     shutil.rmtree(working_dir)
 
+def dpkg_buildpackage(*args,**kwargs):
+    cwd=kwargs.pop('cwd',None)
+    if len(kwargs)!=0:
+        raise ValueError('only kwarg can be "cwd"')
+    "call dpkg-buildpackage [arg1] [...] [argN]"
+    args = ['/usr/bin/dpkg-buildpackage']+list(args)
+    process_command(args, cwd=cwd)
+
 def dpkg_source(b_or_x,arg1,cwd=None):
     "call dpkg-source -b|x arg1 [arg2]"
     assert b_or_x in ['-b','-x']
     args = ['/usr/bin/dpkg-source',b_or_x,arg1]
     process_command(args, cwd=cwd)
-
-def dpkg_genchanges(cwd=None):
-    args = ['/usr/bin/dpkg-buildpackage',
-            '-rfakeroot',
-            '-uc', # unsigned changes
-            '-us', # unsigned source
-            '-S',  # source package
-            '-sa', # with original source archive
-            ]
-    process_command(args,cwd=cwd)
 
 def apply_patch(patchfile,cwd=None,posix=False,level=0):
     """call 'patch -p[level] [--posix] < arg1'
@@ -696,6 +700,7 @@ class DebianInfo:
                  with_python3 = None,
                  no_python2_scripts = None,
                  no_python3_scripts = None,
+                 allow_virtualenv_install_location=False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -1053,12 +1058,14 @@ class DebianInfo:
         self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
 
         if sys.prefix != '/usr':
-            # virtualenv will set distutils --prefix=/path/to/virtualenv, but
-            # we want to install into /usr.
-            workaround_virtualenv_distutils = True
-            self.install_prefix = '--prefix=%s' % sys.prefix
+            if not allow_virtualenv_install_location:
+                # virtualenv will set distutils
+                # --prefix=/path/to/virtualenv, but unless explicitly
+                # requested, we want to install into /usr.
+                self.install_prefix = '--prefix=/usr'
+            else:
+                self.install_prefix = '--prefix=%s' % sys.prefix
         else:
-            workaround_virtualenv_distutils = False
             self.install_prefix = ''
 
         if self.scripts_cleanup:
@@ -1148,6 +1155,7 @@ def build_dsc(debinfo,
               patch_posix=0,
               remove_expanded_source_dir=0,
               debian_dir_only=False,
+              sign_dsc=False,
               ):
     """make debian source package"""
     #    A. Find new dirname and delete any pre-existing contents
@@ -1352,16 +1360,13 @@ def build_dsc(debinfo,
 
     #    Re-generate tarball using best practices see
     #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
-    #    call "dpkg-source -b new_dirname orig_dirname"
-    log.info('CALLING dpkg-source -b %s %s (in dir %s)'%(
-        repackaged_dirname,
-        repackaged_orig_tarball,
-        dist_dir))
 
-    dpkg_source('-b',repackaged_dirname,
-                cwd=dist_dir)
+    if sign_dsc:
+        args = ()
+    else:
+        args = ('-uc','-us')
 
-    dpkg_genchanges(cwd=fullpath_repackaged_dirname)
+    dpkg_buildpackage('-S','-sa',*args,cwd=fullpath_repackaged_dirname)
 
     if 1:
         shutil.rmtree(fullpath_repackaged_dirname)

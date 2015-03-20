@@ -1,7 +1,14 @@
+Release 0.8.5
+=============
+
+Building package in a virtual environment does not install in a
+virtual environment (restores 0.8.3 behavior).
+
 Release 0.8.4
 =============
 
-No backwards-incompatible changes from 0.8.3.
+Building package in a virtual environment installs in a virtual
+environment.
 
 Release 0.8.3
 =============

@@ -8,14 +8,19 @@ __all__ = ['bdist_deb']
 class bdist_deb(Command):
     description = 'distutils command to create debian binary package'
 
-    user_options = []
-    boolean_options = []
+    user_options = [
+        ('sign-results',None,
+         'Use gpg to sign the resulting .dsc and .changes file'),
+        ]
+    boolean_options = [
+        'sign-results',
+        ]
 
     def initialize_options (self):
-        pass
+        self.sign_results = False
 
     def finalize_options (self):
-        pass
+        self.sign_results = bool(self.sign_results)
 
     def run(self):
         # generate .dsc source pkg
@@ -43,7 +48,10 @@ class bdist_deb(Command):
             raise ValueError('could not find debian source directory')
 
         # define system command to execute (gen .deb binary pkg)
-        syscmd = ['dpkg-buildpackage','-rfakeroot','-uc','-b']
+        syscmd = ['dpkg-buildpackage','-rfakeroot','-b']
+
+        if not self.sign_results:
+            syscmd.append('-uc')
 
         util.process_command(syscmd,cwd=target_dirs[0])
 
