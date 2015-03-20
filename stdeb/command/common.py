@@ -27,6 +27,7 @@ class common_debian_package_command(Command):
             assert sys.version_info[0]==3
             self.with_python2 = 'False'
             self.with_python3 = 'True'
+        self.with_pypy = 'False'
         self.no_python2_scripts = 'False'
         self.no_python3_scripts = 'False'
         self.allow_virtualenv_install_location = False
@@ -65,6 +66,7 @@ class common_debian_package_command(Command):
 
         self.with_python2 = str_to_bool(self.with_python2)
         self.with_python3 = str_to_bool(self.with_python3)
+        self.with_pypy = str_to_bool(self.with_pypy)
         self.no_python2_scripts = str_to_bool(self.no_python2_scripts)
         self.no_python3_scripts = str_to_bool(self.no_python3_scripts)
         if self.maintainer is not None:
@@ -215,6 +217,7 @@ class common_debian_package_command(Command):
             sdist_dsc_command = self,
             with_python2 = self.with_python2,
             with_python3 = self.with_python3,
+            with_pypy = self.with_pypy,
             no_python2_scripts = self.no_python2_scripts,
             no_python3_scripts = self.no_python3_scripts,
             allow_virtualenv_install_location=self.allow_virtualenv_install_location,

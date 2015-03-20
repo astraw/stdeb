@@ -53,6 +53,8 @@ else:
     help_str_py2='If True, build package for python 2. (Default=False).'
     help_str_py3='If True, build package for python 3. (Default=True).'
 
+help_str_pypy='If True, build package for pypy.'
+
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
      "directory to put final built distributions in (default='deb_dist')"),
@@ -97,6 +99,8 @@ stdeb_cmdline_opts = [
      help_str_py2),
     ('with-python3=',None,
      help_str_py3),
+    ('with-pypy=',None,
+     help_str_pypy),
     ('no-python2-scripts=',None,
      'If True, do not install scripts for python 2. (Default=False).'),
     ('no-python3-scripts=',None,
@@ -124,6 +128,8 @@ stdeb_cfg_options = [
      'debian/control Package: (Default: python-<debianized-setup-name>)'),
     ('package3=',None,
      'debian/control Package: (Default: python3-<debianized-setup-name>)'),
+    ('package-pypy=',None,
+     'debian/control Package: (Default: pypy-<debianized-setup-name>)'),
     ('suite=',None,
      'suite (e.g. stable, lucid) in changelog (Default: unstable)'),
     ('maintainer=',None,
@@ -144,19 +150,25 @@ stdeb_cfg_options = [
     ('stdeb-patch-level=',None,'patch level provided to patch command'),
     ('depends=',None,'debian/control Depends:'),
     ('depends3=',None,'debian/control Depends:'),
+    ('depends-pypy=',None,'debian/control Depends:'),
     ('suggests=',None,'debian/control Suggests:'),
     ('suggests3=',None,'debian/control Suggests:'),
+    ('suggests-pypy=',None,'debian/control Suggests:'),
     ('recommends=',None,'debian/control Recommends:'),
     ('recommends3=',None,'debian/control Recommends:'),
+    ('recommends-pypy=',None,'debian/control Recommends:'),
     ('xs-python-version=',None,'debian/control XS-Python-Version:'),
     ('x-python3-version=',None,'debian/control X-Python3-Version:'),
     ('dpkg-shlibdeps-params=',None,'parameters passed to dpkg-shlibdeps'),
     ('conflicts=',None,'debian/control Conflicts:'),
     ('conflicts3=',None,'debian/control Conflicts:'),
+    ('conflicts-pypy=',None,'debian/control Conflicts:'),
     ('provides=',None,'debian/control Provides:'),
     ('provides3=',None,'debian/control Provides3:'),
+    ('provides-pypy=',None,'debian/control Provides3:'),
     ('replaces=',None,'debian/control Replaces:'),
     ('replaces3=',None,'debian/control Replaces3:'),
+    ('replaces-pypy=',None,'debian/control Replaces3:'),
     ('mime-desktop-files=',None,'MIME desktop files'),
     ('mime-file=',None,'MIME file'),
     ('shared-mime-file=',None,'shared MIME file'),
@@ -698,6 +710,7 @@ class DebianInfo:
                  sdist_dsc_command = None,
                  with_python2 = None,
                  with_python3 = None,
+                 with_pypy = None,
                  no_python2_scripts = None,
                  no_python3_scripts = None,
                  allow_virtualenv_install_location=False,
@@ -749,6 +762,7 @@ class DebianInfo:
         self.source = parse_val(cfg,module_name,'Source')
         self.package = parse_val(cfg,module_name,'Package')
         self.package3 = parse_val(cfg,module_name,'Package3')
+        self.package_pypy = parse_val(cfg,module_name,'Package-pypy')
         forced_upstream_version = parse_val(cfg,module_name,
                                             'Forced-Upstream-Version')
         if forced_upstream_version == '':
@@ -792,12 +806,15 @@ class DebianInfo:
                 build_deps.append('python-setuptools (>= 0.6b3)')
             if with_python3:
                 build_deps.append('python3-setuptools')
+            if with_pypy:
+                raise NotImplementedError
         if setup_requires is not None and len(setup_requires):
             build_deps.extend(
                 get_deb_depends_from_setuptools_requires(setup_requires))
 
         depends = ['${misc:Depends}', '${python:Depends}']
         depends3 = ['${misc:Depends}', '${python3:Depends}']
+        depends_pypy = ['${misc:Depends}', '${pypy:Depends}']
         need_custom_binary_target = False
 
         if has_ext_modules:
@@ -811,6 +828,11 @@ class DebianInfo:
                 build_deps.append('python3-all-dev')
             depends3.append('${shlibs:Depends}')
 
+            self.architecture_pypy = 'any'
+            if with_pypy:
+                raise NotImplementedError
+            depends_pypy.append('${shlibs:Depends}')
+
         else:
             self.architecture = 'all'
             if with_python2:
@@ -819,6 +841,10 @@ class DebianInfo:
             self.architecture3 = 'all'
             if with_python3:
                 build_deps.append('python3-all')
+
+            self.architecture_pypy = 'all'
+            if with_pypy:
+                build_deps.append('pypy')
 
         self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         self.mime_file = parse_val(cfg,module_name,'MIME-File')
@@ -846,8 +872,11 @@ class DebianInfo:
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
         depends3.extend(parse_vals(cfg,module_name,'Depends3') )
+        depends_pypy.extend(parse_vals(cfg,module_name,'Depends-pypy') )
+
         self.depends = ', '.join(depends)
         self.depends3 = ', '.join(depends3)
+        self.depends_pypy = ', '.join(depends_pypy)
 
         self.debian_section = parse_val(cfg,module_name,'Section')
 
@@ -876,8 +905,10 @@ class DebianInfo:
 
         suggests = ', '.join( parse_vals(cfg,module_name,'Suggests') )
         suggests3 = ', '.join( parse_vals(cfg,module_name,'Suggests3') )
+        suggests_pypy = ', '.join( parse_vals(cfg,module_name,'Suggests-pypy') )
         recommends = ', '.join( parse_vals(cfg,module_name,'Recommends') )
         recommends3 = ', '.join( parse_vals(cfg,module_name,'Recommends3') )
+        recommends_pypy = ', '.join( parse_vals(cfg,module_name,'Recommends-pypy') )
 
         self.source_stanza_extras = ''
 
@@ -933,10 +964,13 @@ class DebianInfo:
 
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         conflicts3 = parse_vals(cfg,module_name,'Conflicts3')
+        conflicts_pypy = parse_vals(cfg,module_name,'Conflicts-pypy')
         provides = parse_vals(cfg,module_name,'Provides')
         provides3 = parse_vals(cfg,module_name,'Provides3')
+        provides_pypy = parse_vals(cfg,module_name,'Provides-pypy')
         replaces = parse_vals(cfg,module_name,'Replaces')
         replaces3 = parse_vals(cfg,module_name,'Replaces3')
+        replaces_pypy = parse_vals(cfg,module_name,'Replaces-pypy')
 
         if guess_conflicts_provides_replaces:
             # Find list of binaries which we will conflict/provide/replace.
@@ -960,10 +994,13 @@ class DebianInfo:
                 for version_info in apt_cache_info('show',orig_binary):
                     provides.extend( version_info['Provides'])
                     provides3.extend( version_info['Provides'])
+                    provides_pypy.extend( version_info['Provides'])
                     conflicts.extend(version_info['Conflicts'])
                     conflicts3.extend(version_info['Conflicts'])
+                    conflicts_pypy.extend(version_info['Conflicts'])
                     replaces.extend( version_info['Replaces'])
                     replaces3.extend( version_info['Replaces'])
+                    replaces_pypy.extend( version_info['Replaces'])
 
             if self.package in cpr_binaries:
                 cpr_binaries.remove(self.package) # don't include ourself
@@ -972,21 +1009,28 @@ class DebianInfo:
 
             conflicts.extend( cpr_binaries )
             conflicts3.extend( cpr_binaries )
+            conflicts_pypy.extend( cpr_binaries )
             provides.extend( cpr_binaries )
             provides3.extend( cpr_binaries )
+            provides_pypy.extend( cpr_binaries )
             replaces.extend( cpr_binaries )
             replaces3.extend( cpr_binaries )
+            replaces_pypy.extend( cpr_binaries )
 
             # round-trip through set to get unique entries
             conflicts = list(set(conflicts))
             conflicts3 = list(set(conflicts3))
+            conflicts_pypy = list(set(conflicts_pypy))
             provides = list(set(provides))
             provides3 = list(set(provides3))
+            provides_pypy = list(set(provides_pypy))
             replaces = list(set(replaces))
             replaces3 = list(set(replaces3))
+            replaces_pypy = list(set(replaces_pypy))
 
         self.package_stanza_extras = ''
         self.package_stanza_extras3 = ''
+        self.package_stanza_extras_pypy = ''
 
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
@@ -994,6 +1038,9 @@ class DebianInfo:
         if len(conflicts3):
             self.package_stanza_extras3 += ('Conflicts: '+
                                               ', '.join( conflicts3 )+'\n')
+        if len(conflicts_pypy):
+            self.package_stanza_extras_pypy += ('Conflicts: '+
+                                              ', '.join( conflicts_pypy )+'\n')
 
         if len(provides):
             self.package_stanza_extras += ('Provides: '+
@@ -1002,6 +1049,9 @@ class DebianInfo:
         if len(provides3):
             self.package_stanza_extras3 += ('Provides: '+
                                              ', '.join( provides3  )+'\n')
+        if len(provides_pypy):
+            self.package_stanza_extras_pypy += ('Provides: '+
+                                             ', '.join( provides_pypy  )+'\n')
 
         if len(replaces):
             self.package_stanza_extras += ('Replaces: ' +
@@ -1009,17 +1059,24 @@ class DebianInfo:
         if len(replaces3):
             self.package_stanza_extras3 += ('Replaces: ' +
                                               ', '.join( replaces3 )+'\n')
+        if len(replaces_pypy):
+            self.package_stanza_extras_pypy += ('Replaces: ' +
+                                              ', '.join( replaces_pypy )+'\n')
         if len(recommends):
             self.package_stanza_extras += ('Recommends: '+recommends+'\n')
 
         if len(recommends3):
             self.package_stanza_extras3 += ('Recommends: '+recommends3+'\n')
+        if len(recommends_pypy):
+            self.package_stanza_extras_pypy += ('Recommends: '+recommends_pypy+'\n')
 
         if len(suggests):
             self.package_stanza_extras += ('Suggests: '+suggests+'\n')
 
         if len(suggests3):
             self.package_stanza_extras3 += ('Suggests: '+suggests3+'\n')
+        if len(suggests_pypy):
+            self.package_stanza_extras_pypy += ('Suggests: '+suggests_pypy+'\n')
 
         self.dirlist = ""
 
@@ -1032,13 +1089,15 @@ class DebianInfo:
             self.exports += '\n'.join(['export %s'%v for v in setup_env_vars])
             self.exports += '\n'
 
-        if not (with_python2 or with_python3):
-            raise RuntimeError('nothing to do - neither Python 2 or 3.')
+        if not (with_python2 or with_python3 or with_pypy):
+            raise RuntimeError('nothing to do - neither Python 2 or 3 or PyPy.')
         sequencer_with = []
         if with_python2:
             sequencer_with.append('python2')
         if with_python3:
             sequencer_with.append('python3')
+        if with_pypy:
+            sequencer_with.append('pypy')
         num_binary_packages = len(sequencer_with)
 
         no_script_lines=[]
@@ -1102,8 +1161,14 @@ class DebianInfo:
         else:
             self.control_py3_stanza = ''
 
+        if with_pypy:
+            self.control_pypy_stanza = CONTROL_PYPY_STANZA%self.__dict__
+        else:
+            self.control_pypy_stanza = ''
+
         self.with_python2 = with_python2
         self.with_python3 = with_python3
+        self.with_pypy = with_pypy
         self.no_python2_scripts = no_python2_scripts
         self.no_python3_scripts = no_python3_scripts
 
@@ -1134,6 +1199,9 @@ class DebianInfo:
                 elif value == 'python3-<debianized-setup-name>':
                     assert key=='package3'
                     value = 'python3-' + debianize_name(module_name)
+                elif value == 'pypy-<debianized-setup-name>':
+                    assert key=='package-pypy'
+                    value = 'pypy-' + debianize_name(module_name)
                 elif value == '<setup-maintainer-or-author>':
                     assert key=='maintainer'
                     value = guess_maintainer
@@ -1397,6 +1465,8 @@ Standards-Version: 3.9.1
 %(control_py2_stanza)s
 
 %(control_py3_stanza)s
+
+%(control_pypy_stanza)s
 """
 
 CONTROL_PY2_STANZA = """
@@ -1412,6 +1482,14 @@ Package: %(package3)s
 Architecture: %(architecture3)s
 Depends: %(depends3)s
 %(package_stanza_extras3)sDescription: %(description)s
+%(long_description)s
+"""
+
+CONTROL_PYPY_STANZA = """
+Package: %(package_pypy)s
+Architecture: %(architecture_pypy)s
+Depends: %(depends_pypy)s
+%(package_stanza_extras_pypy)sDescription: %(description)s
 %(long_description)s
 """
 

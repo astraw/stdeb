@@ -3,6 +3,7 @@ set -e
 
 export DO_PY2=true
 export DO_PY3=true
+export DO_PYPY=true
 
 # setup paths
 
@@ -17,6 +18,10 @@ if [ "${PY3EXE}" == "" ]; then
   PY3EXE=`which python3` || export DO_PY3=false
 fi
 
+if [ "${PYPYEXE}" == "" ]; then
+  PYPYEXE=`which pypy` || export DO_PYPY=false
+fi
+
 # check that stdeb is actually installed
 cd test_data # do test in path without stdeb source
 if [ "$DO_PY2" = true ]; then
@@ -25,6 +30,10 @@ fi
 
 if [ "$DO_PY3" = true ]; then
     ${PY3EXE} -c "import stdeb; print(stdeb.__version__,stdeb.__file__)" || export DO_PY3=false
+fi
+
+if [ "$DO_PYPY" = true ]; then
+    ${PYPYEXE} -c "import stdeb; print(stdeb.__version__,stdeb.__file__)" || export DO_PYPY=false
 fi
 cd ..
 
@@ -38,6 +47,10 @@ fi
 
 if [ "$DO_PY3" = true ]; then
     PYTHONS="${PYTHONS} ${PY3EXE}"
+fi
+
+if [ "$DO_PYPY" = true ]; then
+    PYTHONS="${PYTHONS} ${PYPYEXE}"
 fi
 
 ## ----------------------------
@@ -121,4 +134,21 @@ if [ "$DO_PY3" = true ]; then
     fi
 else
     echo "skipping Python 3 test"
+fi
+
+
+if [ "$DO_PYPY" = true ]; then
+    echo "using PyPy at ${PYPYEXE}"
+    cd test_data/py2_only_pkg
+
+    # test the "debianize" command
+    rm -rf debian
+    ${PYPYEXE} setup.py --command-packages stdeb.command debianize
+    rm -rf debian
+
+    # test the "sdist_dsc" and "bdist_deb" commands
+    ${PYPYEXE} setup.py --command-packages stdeb.command sdist_dsc --with-pypy=true --with-python2=false --with-python3=false bdist_deb
+    cd ../..
+else
+    echo "skipping PyPy test"
 fi
