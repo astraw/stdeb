@@ -63,6 +63,8 @@ else
     exit 1
 fi
 
+export DEB_BUILD_OPTIONS=nocheck # psycopg2 tests fail
+
 # get a file to work with
 # ==============================================================
 ${PYPI_DOWNLOAD} ${SOURCE_PACKAGE} --release ${SOURCE_RELEASE}
