@@ -870,6 +870,7 @@ class DebianInfo:
         else:
             build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS )
 
+        build_deps.append('dh-python')
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
         self.build_depends = ', '.join(build_deps)
 
