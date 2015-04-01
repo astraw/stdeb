@@ -701,6 +701,7 @@ class DebianInfo:
                  has_ext_modules=NotGiven,
                  description=NotGiven,
                  long_description=NotGiven,
+                 homepage=NotGiven,
                  patch_file=None,
                  patch_level=None,
                  setup_requires=None,
@@ -732,6 +733,8 @@ class DebianInfo:
             "description must be supplied")
         if long_description is NotGiven: raise ValueError(
             "long_description must be supplied")
+        if homepage is NotGiven: raise ValueError(
+            "homepage must be supplied")
 
         cfg_defaults = self._make_cfg_defaults(
             module_name=module_name,
@@ -889,6 +892,9 @@ class DebianInfo:
         recommends3 = ', '.join( parse_vals(cfg,module_name,'Recommends3') )
 
         self.source_stanza_extras = ''
+
+        if homepage != 'UNKNOWN':
+            self.source_stanza_extras += 'Homepage: %s\n' % homepage
 
         build_conflicts = parse_vals(cfg,module_name,'Build-Conflicts')
         if len(build_conflicts):
