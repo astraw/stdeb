@@ -692,6 +692,7 @@ class DebianInfo:
                  has_ext_modules=NotGiven,
                  description=NotGiven,
                  long_description=NotGiven,
+                 homepage=NotGiven,
                  patch_file=None,
                  patch_level=None,
                  setup_requires=None,
@@ -722,6 +723,8 @@ class DebianInfo:
             "description must be supplied")
         if long_description is NotGiven: raise ValueError(
             "long_description must be supplied")
+        if homepage is NotGiven: raise ValueError(
+            "homepage must be supplied")
 
         cfg_defaults = self._make_cfg_defaults(
             module_name=module_name,
@@ -869,6 +872,11 @@ class DebianInfo:
             self.long_description = '\n'.join(ld2)
         else:
             self.long_description = ''
+
+        if homepage != 'UNKNOWN':
+            self.homepage = '\nHomepage: %s' % homepage
+        else:
+            self.homepage = ''
 
         if have_script_entry_points:
             build_deps.append( 'debhelper (>= %s)'%DH_IDEAL_VERS )
@@ -1441,7 +1449,7 @@ Maintainer: %(maintainer)s
 %(uploaders)sSection: %(debian_section)s
 Priority: optional
 Build-Depends: %(build_depends)s
-Standards-Version: 3.9.1
+Standards-Version: 3.9.1%(homepage)s
 %(source_stanza_extras)s
 
 %(control_py2_stanza)s
