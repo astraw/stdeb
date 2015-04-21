@@ -95,7 +95,13 @@ class common_debian_package_command(Command):
 
         if 1:
             # set default maintainer
-            if (self.distribution.get_maintainer() != 'UNKNOWN' and
+            if os.environ.get('DEBEMAIL'):
+                if os.environ.get('DEBFULLNAME'):
+                    guess_maintainer = "%s <%s>" % (os.environ['DEBFULLNAME'],
+                                                    os.environ['DEBEMAIL'])
+                else:
+                    guess_maintainer = os.environ['DEBEMAIL']
+            elif (self.distribution.get_maintainer() != 'UNKNOWN' and
                 self.distribution.get_maintainer_email() != 'UNKNOWN'):
                 guess_maintainer = "%s <%s>"%(
                     self.distribution.get_maintainer(),
