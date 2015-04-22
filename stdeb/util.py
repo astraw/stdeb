@@ -839,9 +839,6 @@ class DebianInfo:
         mime_desktop_files = parse_vals(cfg,module_name,'MIME-Desktop-Files')
         if len(mime_desktop_files):
             need_custom_binary_target = True
-            self.dh_desktop_indep_line = '\tdh_desktop'
-        else:
-            self.dh_desktop_indep_line = ''
 
         #    E. any mime .desktop files
         self.install_file_lines = []
@@ -1536,5 +1533,4 @@ RULES_BINARY_INDEP_TARGET = """
 binary-indep: build
 %(dh_binary_indep_lines)s
 %(dh_installmime_indep_line)s
-%(dh_desktop_indep_line)s
 """
