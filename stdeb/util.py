@@ -1146,6 +1146,10 @@ class DebianInfo:
             self.control_py2_stanza = ''
 
         if with_python3:
+            if with_python2:
+                # build both packages: annotate description to make lintian happy (https://lintian.debian.org/tags/duplicate-short-description.html)
+                self.description += ' (Python3)'
+                self.long_description += '\n This package contains the Python 3 version.'
             self.control_py3_stanza = CONTROL_PY3_STANZA%self.__dict__
         else:
             self.control_py3_stanza = ''
