@@ -13,6 +13,7 @@ import subprocess
 import tempfile
 import stdeb
 from stdeb import log, __version__ as __stdeb_version__
+from email.utils import formatdate
 
 if hasattr(os,'link'):
     link_func = os.link
@@ -256,12 +257,8 @@ def normstr(s):
     return result
 
 def get_date_822():
-    """return output of 822-date command"""
-    cmd = '/bin/date'
-    if not os.path.exists(cmd):
-        raise ValueError('%s command does not exist.'%cmd)
-    args = [cmd,'-R']
-    result = get_cmd_stdout(args).strip()
+    """return date string in rfc 822 format"""
+    result = formatdate()
     result = normstr(result)
     return result
 
