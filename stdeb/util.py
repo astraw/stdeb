@@ -13,12 +13,15 @@ import subprocess
 import tempfile
 import stdeb
 from stdeb import log, __version__ as __stdeb_version__
+from functools import partial
+import distutils.file_util
 
 if hasattr(os,'link'):
-    link_func = os.link
+    link_func = partial(distutils.file_util.copy_file, link='hard',
+                        verbose=False)
 else:
     # matplotlib deletes link from os namespace, expected distutils workaround
-    link_func = shutil.copyfile
+    link_func = partial(distutils.file_util.copy_file, verbose=False)
 
 __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'stdeb_cmdline_opts','stdeb_cmd_bool_opts','recursive_hardlink',
