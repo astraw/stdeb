@@ -1,9 +1,8 @@
-from distutils.core import setup
+from setuptools import setup
 import codecs
 
 with codecs.open('README.rst', encoding='utf-8') as file:
     long_description = file.read()
-
 
 setup(
     name='stdeb',
@@ -17,6 +16,8 @@ setup(
     license='MIT',
     url='http://github.com/astraw/stdeb',
     packages=['stdeb', 'stdeb.command'],
+    entry_points={'distutils.commands': ["%(cmd)s = stdeb.command.%(cmd)s:%(cmd)s" % {'cmd': x}
+                                         for x in ('bdist_deb', 'debianize', 'install_deb', 'sdist_dsc', )], },
     scripts=[
         'scripts/py2dsc',
         'scripts/py2dsc-deb',
