@@ -563,6 +563,7 @@ def apply_patch(patchfile,cwd=None,posix=False,level=0):
         stdin=fd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        universal_newlines=True
         )
     returncode=None
     while returncode is None:
