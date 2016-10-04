@@ -1,9 +1,38 @@
+Since (and including) release 0.8.0, updates to this file are no
+longer made. Please see README.rst.
+
+= Release 0.7.1 (2014-05-04) =
+
+2014-05-05 Add a install_deb distutils command. This builds and
+           installs a python package as a system package.
+
+2014-05-05 bugfixes
+
+= Release 0.7.0 (2014-05-04) =
+
+2014-05-04 Run test scripts on http://travis-ci.org/
+
+2014-05-04 Add py2dsc-deb command. This command builds a .deb file
+           from source package.
+
+2014-04-10 Update PyPI URL to current location. (Thanks to Asheesh
+           Laroia.)
+
+2013-11-17 Use HTTPS URLS instead of HTTP. (Note: urllib2 does not
+           validate certificates.)
+
+2013-11-17 Add pypi-download command. This command provides a quick
+           way to download a source package from PyPI.
+
+2010-11-27 Use dh_python2 instead of dh_pysupport. (Thanks to Piotr
+           Ożarowski.)
+
 2010-06-19 Do not workaround Debian Bug #548392 by default.
 
 2010-06-19 By default, do not attempt to migrate old stdeb based
            packages that used pycentral.
 
-= Release 0.6 (2010-06-18) =
+= Release 0.6.0 (2010-06-18) =
 
 2010-06-18 Do not die if sources.list does not contain deb-src
            lines. (Debian Bug#580376)

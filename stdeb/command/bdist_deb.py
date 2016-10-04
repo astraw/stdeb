@@ -1,6 +1,5 @@
 import os
 import stdeb.util as util
-from stdeb.command.sdist_dsc import sdist_dsc
 
 from distutils.core import Command
 
@@ -9,35 +8,50 @@ __all__ = ['bdist_deb']
 class bdist_deb(Command):
     description = 'distutils command to create debian binary package'
 
-    user_options = []
-    boolean_options = []
+    user_options = [
+        ('sign-results',None,
+         'Use gpg to sign the resulting .dsc and .changes file'),
+        ]
+    boolean_options = [
+        'sign-results',
+        ]
 
     def initialize_options (self):
-        pass
+        self.sign_results = False
 
     def finalize_options (self):
-        pass
+        self.sign_results = bool(self.sign_results)
 
     def run(self):
         # generate .dsc source pkg
         self.run_command('sdist_dsc')
 
+        # get relevant options passed to sdist_dsc
+        sdist_dsc = self.get_finalized_command('sdist_dsc')
+        dsc_tree = sdist_dsc.dist_dir
+
         # execute system command and read output (execute and read output of find cmd)
-        dsc_tree = 'deb_dist'
-        target_dir = None
+        target_dirs = []
         for entry in os.listdir(dsc_tree):
             fulldir = os.path.join(dsc_tree,entry)
             if os.path.isdir(fulldir):
-                if target_dir is not None:
-                    raise ValueError('more than one directory in deb_dist. '
-                                     'Unsure which is source directory')
-                else:
-                    target_dir = fulldir
-        if target_dir is None:
+                if entry == 'tmp_py2dsc':
+                    continue
+                target_dirs.append( fulldir )
+
+        if len(target_dirs)>1:
+            raise ValueError('More than one directory in deb_dist. '
+                             'Unsure which is source directory. All: %r'%(
+                target_dirs,))
+
+        if len(target_dirs)==0:
             raise ValueError('could not find debian source directory')
 
         # define system command to execute (gen .deb binary pkg)
-        syscmd = ['dpkg-buildpackage','-rfakeroot','-uc','-b']
+        syscmd = ['dpkg-buildpackage','-rfakeroot','-b']
 
-        util.process_command(syscmd,cwd=target_dir)
+        if not self.sign_results:
+            syscmd.append('-uc')
+
+        util.process_command(syscmd,cwd=target_dirs[0])
 

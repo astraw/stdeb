@@ -1,19 +1,48 @@
-(See CHANGELOG.txt for lists of changes. This file provides
-information for those upgrading from previous versions of stdeb.)
+Release 0.8.5
+=============
 
-Next release
-============
+Building package in a virtual environment does not install in a
+virtual environment (restores 0.8.3 behavior).
 
-The default behavior of stdeb has changed with respect to Debian bug
-#548392. Previously, the default was to workaround this bug by placing
-"XS-Python-Version: current" into debian/control. The new default
-makes no effort to workaround this bug, and thus "XS-Python-Version:
-all". If you are using stdeb on an older version of Debian/Ubuntu with
-a buggy version of debhelper, use "--workaround-548392=True".
+Release 0.8.4
+=============
 
-Remove the default attempt to migrate old stdeb based packages that
-used pycentral. (If you still have old stdeb based packages, use
-"--pycentral-backwards-compatibility=True".
+Building package in a virtual environment installs in a virtual
+environment.
+
+Release 0.8.3
+=============
+
+Fixes various Unicode handling bugs.
+
+Release 0.8.2
+=============
+
+Fixes a bug.
+
+Release 0.8.1
+=============
+
+Fixes documentation bugs.
+
+Release 0.8.0
+=============
+
+Removed "--force-buildsystem" option.
+
+Release 0.7.1
+=============
+
+Fixes several bugs.
+
+Release 0.7.0
+=============
+
+stdeb uses dh_python2 instead of dh_pysupport (thanks to Piotr
+Ożarowski).
+
+A long time passed between releases, so there are probably backwards
+incompatible changes that have crept in.
 
 Release 0.6.0
 =============

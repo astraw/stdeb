@@ -18,9 +18,20 @@ class common_debian_package_command(Command):
         self.patch_level = None
         self.ignore_install_requires = None
         self.debian_version = None
-        self.force_buildsystem = None
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
+        if sys.version_info[0]==2:
+            self.with_python2 = 'True'
+            self.with_python3 = 'False'
+        else:
+            assert sys.version_info[0]==3
+            self.with_python2 = 'False'
+            self.with_python3 = 'True'
+        self.no_python2_scripts = 'False'
+        self.no_python3_scripts = 'False'
+        self.force_x_python3_version = False
+        self.allow_virtualenv_install_location = False
+        self.sign_results = False
 
         # deprecated options
         self.default_distribution = None
@@ -46,18 +57,32 @@ class common_debian_package_command(Command):
         if self.patch_level is not None:
             self.patch_level = int(self.patch_level)
 
-        if self.force_buildsystem is not None:
-            self.force_buildsystem = str_to_bool(self.force_buildsystem)
-
-        if self.force_buildsystem is None:
-            self.force_buildsystem = True
-
         if self.guess_conflicts_provides_replaces is None:
             # the default
             self.guess_conflicts_provides_replaces = False
         else:
             self.guess_conflicts_provides_replaces = str_to_bool(
                 self.guess_conflicts_provides_replaces)
+
+        self.with_python2 = str_to_bool(self.with_python2)
+        self.with_python3 = str_to_bool(self.with_python3)
+        self.no_python2_scripts = str_to_bool(self.no_python2_scripts)
+        self.no_python3_scripts = str_to_bool(self.no_python3_scripts)
+        if self.maintainer is not None:
+            # Get the locale specifying the encoding in sys.argv
+            import locale, codecs
+            fs_enc = codecs.lookup(locale.getpreferredencoding()).name
+            if hasattr(os,'fsencode'): # this exists only in Python 3
+                m = os.fsencode(self.maintainer) # convert to original raw bytes
+
+                # Now, convert these raw bytes into unicode.
+                m = m.decode(fs_enc) # Set your locale if you get errors here
+
+                self.maintainer = m
+            else:
+                # Python 2
+                if hasattr(self.maintainer,'decode'):
+                    self.maintainer = self.maintainer.decode(fs_enc)
 
     def get_debinfo(self):
         ###############################################
@@ -84,6 +109,9 @@ class common_debian_package_command(Command):
                      '--default-maintainer option. '
                      'Switch to the --maintainer option.')
             guess_maintainer = self.default_maintainer
+        if hasattr(guess_maintainer,'decode'):
+            # python 2 : convert (back to) unicode
+            guess_maintainer = guess_maintainer.decode('utf-8')
 
         #    B. find config files (if any)
         cfg_files = []
@@ -93,7 +121,7 @@ class common_debian_package_command(Command):
         use_setuptools = True
         try:
             ei_cmd = self.distribution.get_command_obj('egg_info')
-        except DistutilsModuleError, err:
+        except DistutilsModuleError as err:
             use_setuptools = False
 
         have_script_entry_points = None
@@ -149,23 +177,48 @@ class common_debian_package_command(Command):
         if have_script_entry_points is None:
             have_script_entry_points = self.distribution.has_scripts()
 
+        upstream_version = self.distribution.get_version()
+        bad_chars = ':_'
+        for bad_char in bad_chars:
+            if bad_char in upstream_version:
+                raise ValueError("Illegal character (%r) detected in version. "
+                                 "This will break the debian tools."%bad_char)
+
+        description = self.distribution.get_description()
+        if hasattr(description,'decode'):
+            # python 2 : convert (back to) unicode
+            description = description.decode('utf-8')
+        description = description[:60]
+
+        long_description = self.distribution.get_long_description()
+        if hasattr(long_description,'decode'):
+            # python 2 : convert (back to) unicode
+            long_description = long_description.decode('utf-8')
+        long_description = long_description
+
+
         debinfo = DebianInfo(
             cfg_files=cfg_files,
             module_name = module_name,
             default_distribution=self.default_distribution,
             guess_maintainer=guess_maintainer,
-            upstream_version = self.distribution.get_version(),
+            upstream_version = upstream_version,
             has_ext_modules = self.distribution.has_ext_modules(),
-            description = self.distribution.get_description()[:60],
-            long_description = self.distribution.get_long_description(),
+            description = description,
+            long_description = long_description,
             patch_file = self.patch_file,
             patch_level = self.patch_level,
             debian_version = self.debian_version,
-            force_buildsystem=self.force_buildsystem,
             have_script_entry_points = have_script_entry_points,
             setup_requires = (), # XXX How do we get the setup_requires?
             use_setuptools = use_setuptools,
             guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
             sdist_dsc_command = self,
+            with_python2 = self.with_python2,
+            with_python3 = self.with_python3,
+            no_python2_scripts = self.no_python2_scripts,
+            no_python3_scripts = self.no_python3_scripts,
+            force_x_python3_version=self.force_x_python3_version,
+            allow_virtualenv_install_location=self.allow_virtualenv_install_location,
         )
         return debinfo

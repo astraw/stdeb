@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/astraw/stdeb.png?branch=master
+        :target: https://travis-ci.org/astraw/stdeb
+
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
@@ -6,26 +9,123 @@ packages from Python packages via a new distutils command,
 ``sdist_dsc``. Automatic defaults are provided for the Debian package,
 but many aspects of the resulting package can be customized (see the
 customizing section, below). An additional command, ``bdist_deb``,
-creates a Debian binary package, a .deb file. The ``debianize``
-command builds a ``debian/`` directory directly alongside your
-setup.py.
+creates a Debian binary package, a .deb file. The ``install_deb``
+command installs this .deb file. The ``debianize`` command builds a
+``debian/`` directory directly alongside your setup.py.
 
-Two convenience utilities are also provided. ``pypi-install`` will
-query the `Python Package Index (PyPI) <http://pypi.python.org/>`_ for
-a package, download it, create a .deb from it, and then install the
-.deb. ``py2dsc`` will convert a distutils-built source tarball into a
-Debian source package.
+Several convenience utilities are also provided:
+
+* ``pypi-download`` will query the `Python Package Index (PyPI)
+  <http://pypi.python.org/>`_ for a package and download it.
+* ``pypi-install`` will query the `Python Package Index (PyPI)
+  <http://pypi.python.org/>`_ for a package, download it, create a
+  .deb from it, and then install the .deb.
+* ``py2dsc`` will convert a distutils-built source tarball into a
+  Debian source package.
+* ``py2dsc-deb`` will convert a distutils-built source tarball into a
+  Debian source package and then use the Debian machinery to build a
+  .deb file from this.
 
 .. contents::
+
+
+Python 3 support
+----------------
+
+As explained in more detail below, the heart of stdeb is the sdist_dsc
+distutils command. This command runs once to generate a Debian source
+package. This Debian source package can specify building packages for
+Python 2, Python 3, or both. Furthermore, this generation can be done
+with the Python 2 or Python 3 interpreter. By default, only packages
+are built for the version of Python being used. To override this, use
+``--with-python2=True`` or ``--with-python3=True`` as an argument to
+the sdist_dsc distutils command (or use both to be sure). For example,
+to build only a Python 3 package using the Python 3 interpreter::
+
+  python3 setup.py --command-packages=stdeb.command bdist_deb
+
+To build both Python 2 and Python 3 packages using the Python 3
+interpreter (and only the Python3 package installs scripts)::
+
+  python3 setup.py --command-packages=stdeb.command sdist_dsc --with-python2=True --with-python3=True --no-python2-scripts=True bdist_deb
 
 News
 ----
 
-master branch
-`````````````
+ * 2015-02-18: **Version 0.8.5**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.5>`__. Bugfixes: reverted
+   change that installed into virtualenv when built in
+   virtualenv. Improvements: Added
+   `--allow-virtualenv-install-location` to allow installing into
+   virtualenv location. Supports Debian Squeeze (6), Debian Wheezy
+   (7), Ubuntu Precise (12.04), Ubuntu Trusty (14.04) and later
+   releases.
 
-This branch is recommended for all users. It requires Debhelper 7, and
-thus *requires Ubuntu 8.10 (or newer) or Debian Lenny (or newer)*.
+ * 2015-02-16: **Version 0.8.4**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.4>`__. Bugfixes: works on
+   Python 3.4 (e.g. Ubuntu Trusty) again. Improvements: Improved
+   customization for Python 3 (Dirk Thomas added
+   `force-x-python3-version` and `X-Python3-Version` and Louis for
+   `Recommends3`, `Suggests3`, `Provides3` and `Replaces3`
+   support. Supports Debian Squeeze (6), Debian Wheezy (7), Ubuntu
+   Precise (12.04), Ubuntu Trusty (14.04) and later releases.
+
+ * 2015-02-14: **Version 0.8.3**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.3>`__. This is a bugfix
+   release which fixes several aspects of Unicode support. Tests pass
+   on Debian Squeeze (6), Debian Wheezy (7), and Ubuntu Precise
+   (12.04). Support for Python 3.4 (e.g. Ubuntu Trusty 14.04) was
+   mistakenly broken and was fixed in the 0.8.3 release.
+
+ * 2014-8-14: **Version 0.8.2**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.2>`__. This is a bugfix
+   release fixing a serious issue that would cause a Python 2 package
+   to be built if only a Python 3 package was requested in some
+   circumstances.
+
+ * 2014-8-10: **Version 0.8.1**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.1>`__. Due
+   to bugs in 0.8.0, this release is the first announced from the 0.8
+   series. Highlights since 0.7.1:
+
+   - Full support for Python 3. This includes being run from Python 3
+     and generating packages for Python 3. The default is to build
+     Python 3 packages when run with Python 3 and to build Python 2
+     packages when run from Python 2. Command line options can be used
+     to build packages for the other Python interpreter, too.
+
+   - Build .changes file for source package. While this still must be
+     signed for upload to a PPA, for example, it should still be
+     useful in some cases.
+
+   - Switch to Debian source format 3.0 (quilt). Practically speaking,
+     the .diff.gz file that used to come with a source package is now
+     replaced by a .debian.tar.gz file.
+
+   - Verify SSL certificates when talking to PyPI using
+     Requests. (Verification requires Requests >= 0.8.8.)
+
+   - Many bugfixes.
+
+ * 2014-05-05: **Version 0.7.1**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.7.1>`__. Highlights for this
+   release (you may also wish to consult the full `changelog
+   <http://github.com/astraw/stdeb/blob/release-0.7.1/CHANGELOG.txt>`__). Due
+   to bugs in 0.7.0, this release is the first announced from the 0.7
+   series. Highlights since 0.6.0:
+
+   - New commands: pypi-download and pypi-install to directly download
+     and install packages from PyPI, respectively. py2dsc-deb directly
+     creates a .deb file from a source tarball.
+
+   - New distutils command: install_deb lets you directly install a
+     python package as a standard system package.
+
+   - Many bugfixes, including the new URL for PyPI.
+
+   - Automated runs of test suite, thanks to Travis CI
+
+   - Thanks to many, especially Piotr Ożarowski for help with stdeb.
 
  * 2010-06-18: **Version 0.6.0**. See the `download page
    <http://pypi.python.org/pypi/stdeb/0.6.0>`__. Highlights for this
@@ -83,11 +183,7 @@ __ http://github.com/astraw/stdeb/blob/release-0.4.1/RELEASE_NOTES.txt
 __ http://pypi.python.org/pypi/stdeb/0.4
 __ http://github.com/astraw/stdeb/blob/release-0.4/CHANGELOG.txt
 
-old-stable branch (0.3 and earlier)
-```````````````````````````````````
-
-This branch is recommended if you are operating on older Debian/Ubuntu
-distributions. It is compatible with Ubuntu Hardy.
+Releases up to and including 0.3.2 are compatible with Ubuntu Hardy.
 
  * 2009-10-04: Version 0.3.2 Released. See the `download page`__. See the `Changelog for 0.3.2`__
  * 2009-09-27: Version 0.3.1 Released. See the `download page`__. See the `Changelog for 0.3.1`__
@@ -117,6 +213,14 @@ __ http://github.com/astraw/stdeb/blob/release-0.2/CHANGELOG.txt
 The commands
 ------------
 
+pypi-download, command-line command
+```````````````````````````````````
+
+``pypi-download`` takes a package name, queries PyPI for it and downloads
+it::
+
+  pypi-download [options] mypackage
+
 pypi-install, command-line command
 ``````````````````````````````````
 
@@ -134,10 +238,16 @@ package from it::
 
   py2dsc [options] mypackage-0.1.tar.gz # uses pre-built Python source package
 
+py2dsc-deb, command-line command
+````````````````````````````````
+
+``py2dsc-deb`` takes a .tar.gz source package and build a Debian source
+package and then a .deb file from it::
+
+  py2dsc-deb [options] mypackage-0.1.tar.gz # uses pre-built Python source package
 
 sdist_dsc, distutils command
 ````````````````````````````
-
 All methods eventually result in a call to the ``sdist_dsc`` distutils
 command. You may prefer to do so directly::
 
@@ -156,16 +266,21 @@ Debian machinery (e.g. dpkg-buildpackage).
 
 bdist_deb, distutils command
 ````````````````````````````
-
-Also, a ``bdist_deb`` distutils command is installed. This calls the
+A ``bdist_deb`` distutils command is installed. This calls the
 sdist_dsc command and then runs dpkg-buildpackage on the result::
 
   python setup.py --command-packages=stdeb.command bdist_deb
 
+install_deb, distutils command
+``````````````````````````````
+
+The ``install_deb`` distutils command calls the bdist_deb command and
+then installs the result. You need to run this with superuser privilege::
+
+  sudo python setup.py --command-packages=stdeb.command install_deb
 
 debianize, distutils command
 ````````````````````````````
-
 The ``debianize`` distutils command builds the same ``debian/``
 directory as used in the previous command, but the output is placed
 directly in the project's root folder (alongside setup.py). This is
@@ -183,8 +298,8 @@ Distutils command packages can also be specified in distutils
 configuration files (rather than using the ``--command-packages``
 command line argument to ``setup.py``), as specified in the `distutils
 documentation
-<http://docs.python.org/distutils/extending.html>`_. Specifically, you
-could include this in your ``~/.pydistutils.cfg`` file::
+<https://docs.python.org/2/distutils/extending.html>`_. Specifically,
+you could include this in your ``~/.pydistutils.cfg`` file::
 
   [global]
   command-packages: stdeb.command
@@ -254,6 +369,20 @@ This installs it::
   cd ..
   sudo dpkg -i python-reindent_0.1.0-1_all.deb
 
+Quickstart 4: Install from a Python package direct to a debian system package
+`````````````````````````````````````````````````````````````````````````````
+
+(First, install stdeb as you normally install Python packages.)
+
+Do this from the directory with your `setup.py` file::
+
+  python setup.py --command-packages=stdeb.command install_deb
+
+This will make a Debian source package (.dsc, .orig.tar.gz and
+.diff.gz files), compile it to a Debian binary package (.deb) for your
+current system and then install it using ``dpkg``.
+
+
 Another example, with more explanation
 ``````````````````````````````````````
 
@@ -297,7 +426,7 @@ Download
 Files are available at the `download page`_ (for ancient releases, see
 the `old download page`_).
 
-.. _download page: http://pypi.python.org/pypi/stdeb
+.. _download page: https://pypi.python.org/pypi/stdeb
 .. _old download page: http://stdeb.python-hosting.com/wiki/Download
 
 The git repository is available at
@@ -312,7 +441,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.6.0"
+  STDEB_VERSION="0.8.5"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
@@ -344,12 +473,14 @@ be used.
 I wrote this initially to Debianize several Python packages of my own,
 but I have the feeling it could be generally useful. It appears
 similar, at least in theory, to easydeb_, `Logilab's Devtools`_,
-bdist_dpkg_ and bdist_deb_.
+bdist_dpkg_, bdist_deb_, pkgme_ and `dh-virtualenv
+<https://github.com/spotify/dh-virtualenv>`__.
 
 .. _easydeb: http://easy-deb.sourceforge.net/
 .. _Logilab's DevTools: http://www.logilab.org/projects/devtools
 .. _bdist_dpkg: http://svn.python.org/view/sandbox/trunk/Lib/bdist_dpkg.py
 .. _bdist_deb: http://bugs.python.org/issue1054967
+.. _pkgme: https://launchpad.net/pkgme
 
 Features
 --------
@@ -410,7 +541,7 @@ the ~/.pydistutils.cfg file.) In that case, put the arguments in the
 file might have this::
 
   [sdist_dsc]
-  force-buildsystem: False
+  debian-version: 0MyName1
 
 To pass these commands to sdist_dsc when calling bdist_deb, do this::
 
@@ -419,6 +550,17 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
 ====================================== =========================================
         Command line option                      Effect
 ====================================== =========================================
+  --with-python2                       build Python 2 package (default=True)
+  --with-python3                       build Python 3 package (default=False)
+  --no-python2-scripts                 disable installation of Python 2 scripts (default=False)
+  --no-python3-scripts                 disable installation of Python 3 scripts (default=False)
+  --force-x-python3-version            Override default minimum python3:any
+                                       dependency with value from x-python3-
+                                       version
+  --allow-virtualenv-install-location  Allow installing into
+                                       /some/random/virtualenv-path
+  --sign-results                       Use gpg to sign the resulting .dsc and
+                                       .changes file
   --dist-dir (-d)                      directory to put final built
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when
@@ -442,15 +584,6 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --remove-expanded-source-dir (-r)    remove the expanded source directory
   --ignore-install-requires (-i)       ignore the requirements from
                                        requires.txt in the egg-info directory
-  --pycentral-backwards-compatibility  If True, enable migration from old
-                                       stdeb that used pycentral.
-                                       (Default=False).
-  --workaround-548392                  If True, limit binary package to single
-                                       Python version, working around Debian
-                                       bug 548392 of debhelper.
-                                       (Default=False).
-  --force-buildsystem                  If True (the default), set 'DH_OPTIONS=
-                                       --buildsystem=python_distutils'
   --no-backwards-compatibility         This option has no effect, is here for
                                        backwards compatibility, and may be
                                        removed someday.
@@ -486,6 +619,7 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --suggests                           debian/control Suggests:
   --recommends                         debian/control Recommends:
   --xs-python-version                  debian/control XS-Python-Version:
+  --x-python3-version                  debian/control X-Python3-Version:
   --dpkg-shlibdeps-params              parameters passed to dpkg-shlibdeps
   --conflicts                          debian/control Conflicts:
   --provides                           debian/control Provides:
@@ -550,13 +684,20 @@ All available options:
                                        apply
   Stdeb-Patch-Level                    patch level provided to patch command
   Depends                              debian/control Depends:
+  Depends3                             debian/control Depends: for python3
   Suggests                             debian/control Suggests:
+  Suggests3                            debian/control Suggests: for python3
   Recommends                           debian/control Recommends:
+  Recommends3                          debian/control Recommends: for python3
   XS-Python-Version                    debian/control XS-Python-Version:
+  X-Python3-Version                    debian/control X-Python3-Version:
   Dpkg-Shlibdeps-Params                parameters passed to dpkg-shlibdeps
   Conflicts                            debian/control Conflicts:
+  Conflicts3                           debian/control Conflicts: for python3
   Provides                             debian/control Provides:
+  Provides3                            debian/control Provides: for python3
   Replaces                             debian/control Replaces:
+  Replaces3                            debian/control Replaces: for python3
   MIME-Desktop-Files                   MIME desktop files
   MIME-File                            MIME file
   Shared-MIME-File                     shared MIME file
@@ -570,7 +711,7 @@ The option names in stdeb.cfg files are not case sensitive.
 Prerequisites
 -------------
 
- * Python 2.5 or higher
+ * Python 2.7 or Python 3.x
  * Standard Debian utilities such as ``date``, ``dpkg-source`` and
    Debhelper 7 (use stdeb 0.3.x if you need to support older
    distributions without dh7)
@@ -621,7 +762,7 @@ Please address all questions to the distutils-SIG_
 License
 -------
 
-MIT-style license. Copyright (c) 2006-2009 stdeb authors.
+MIT-style license. Copyright (c) 2006-2015 stdeb authors.
 
 See the LICENSE.txt file provided with the source distribution for
 full details.
@@ -644,9 +785,23 @@ Additional Credits
 * Alexander V. Nikolaev for the debhelper buildsystem specification.
 * Roland Sommer for the description field bugfix.
 * Barry Warsaw for suggesting the debianize command.
+* Asheesh Laroia for updating the PyPI URL.
+* Piotr Ożarowski for implementing dh_python2 support.
+* Nikita Burtsev for unicode tests and fixes
+* Mikołaj Siedlarek for a bugfix
+* Dirk Thomas for --force-x-python3-version and X-Python3-Version
+* Louis for Recommends3, Suggests3, Provides3 and Replaces3 support
+* kzwin for interop with virtualenv
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
+* TravisCI_ for continuous integration
 
 .. _GitHub: http://github.com/
 .. _WebFaction: http://webfaction.com/
 .. _python-hosting: http://python-hosting.com/
+..  _TravisCI: http://travis-ci.org/
+
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/astraw/stdeb
+   :target: https://gitter.im/astraw/stdeb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge

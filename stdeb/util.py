@@ -2,7 +2,13 @@
 # This module contains most of the code of stdeb.
 #
 import re, sys, os, shutil, select
-import ConfigParser
+import codecs
+try:
+    # Python 2.x
+    import ConfigParser
+except ImportError:
+    # Python 3.x
+    import configparser as ConfigParser
 import subprocess
 import tempfile
 import stdeb
@@ -24,15 +30,28 @@ DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
 
 PYTHON_ALL_MIN_VERS = '2.6.6-3'
 
-import exceptions
-class CalledProcessError(exceptions.Exception): pass
-class CantSatisfyRequirement(exceptions.Exception): pass
+try:
+    # Python 2.x
+    from exceptions import Exception
+except ImportError:
+    # Python 3.x
+    pass
+class CalledProcessError(Exception): pass
+class CantSatisfyRequirement(Exception): pass
 
 def check_call(*popenargs, **kwargs):
     retcode = subprocess.call(*popenargs, **kwargs)
     if retcode == 0:
         return
     raise CalledProcessError(retcode)
+
+if sys.version_info[0]==2:
+    help_str_py2='If True, build package for python 2. (Default=True).'
+    help_str_py3='If True, build package for python 3. (Default=False).'
+else:
+    assert sys.version_info[0]==3
+    help_str_py2='If True, build package for python 2. (Default=False).'
+    help_str_py3='If True, build package for python 3. (Default=True).'
 
 stdeb_cmdline_opts = [
     ('dist-dir=', 'd',
@@ -68,14 +87,27 @@ stdeb_cmdline_opts = [
     ('workaround-548392=',None,
      'This option has no effect, is here for backwards compatibility, and may '
      'be removed someday.'),
-    ('force-buildsystem=',None,
-     "If True, pass '--buildsystem=python_distutils' to dh sequencer"),
     ('no-backwards-compatibility',None,
      'This option has no effect, is here for backwards compatibility, and may '
      'be removed someday.'),
     ('guess-conflicts-provides-replaces=',None,
      'If True, attempt to guess Conflicts/Provides/Replaces in debian/control '
      'based on apt-cache output. (Default=False).'),
+    ('with-python2=',None,
+     help_str_py2),
+    ('with-python3=',None,
+     help_str_py3),
+    ('no-python2-scripts=',None,
+     'If True, do not install scripts for python 2. (Default=False).'),
+    ('no-python3-scripts=',None,
+     'If True, do not install scripts for python 3. (Default=False).'),
+    ('force-x-python3-version',None,
+     'Override default minimum python3:any dependency with value from '
+     'x-python3-version'),
+    ('allow-virtualenv-install-location',None,
+     'Allow installing into /some/random/virtualenv-path'),
+    ('sign-results',None,
+     'Use gpg to sign the resulting .dsc and .changes file'),
     ]
 
 # old entries from stdeb.cfg:
@@ -93,6 +125,8 @@ stdeb_cfg_options = [
      'debian/control Source: (Default: <source-debianized-setup-name>)'),
     ('package=',None,
      'debian/control Package: (Default: python-<debianized-setup-name>)'),
+    ('package3=',None,
+     'debian/control Package: (Default: python3-<debianized-setup-name>)'),
     ('suite=',None,
      'suite (e.g. stable, lucid) in changelog (Default: unstable)'),
     ('maintainer=',None,
@@ -112,13 +146,20 @@ stdeb_cfg_options = [
     ('stdeb-patch-file=',None,'file containing patches for stdeb to apply'),
     ('stdeb-patch-level=',None,'patch level provided to patch command'),
     ('depends=',None,'debian/control Depends:'),
+    ('depends3=',None,'debian/control Depends:'),
     ('suggests=',None,'debian/control Suggests:'),
+    ('suggests3=',None,'debian/control Suggests:'),
     ('recommends=',None,'debian/control Recommends:'),
+    ('recommends3=',None,'debian/control Recommends:'),
     ('xs-python-version=',None,'debian/control XS-Python-Version:'),
+    ('x-python3-version=',None,'debian/control X-Python3-Version:'),
     ('dpkg-shlibdeps-params=',None,'parameters passed to dpkg-shlibdeps'),
     ('conflicts=',None,'debian/control Conflicts:'),
+    ('conflicts3=',None,'debian/control Conflicts:'),
     ('provides=',None,'debian/control Provides:'),
+    ('provides3=',None,'debian/control Provides3:'),
     ('replaces=',None,'debian/control Replaces:'),
+    ('replaces3=',None,'debian/control Replaces3:'),
     ('mime-desktop-files=',None,'MIME desktop files'),
     ('mime-file=',None,'MIME file'),
     ('shared-mime-file=',None,'shared MIME file'),
@@ -132,13 +173,16 @@ stdeb_cmd_bool_opts = [
     'patch-posix',
     'ignore-install-requires',
     'no-backwards-compatibility',
+    'force-x-python3-version',
+    'allow-virtualenv-install-location',
+    'sign-results',
     ]
 
 class NotGiven: pass
 
 def process_command(args, cwd=None):
     if not isinstance(args, (list, tuple)):
-        raise RuntimeError, "args passed must be in a list"
+        raise RuntimeError("args passed must be in a list")
     check_call(args, cwd=cwd)
 
 def recursive_hardlink(src,dst):
@@ -179,8 +223,6 @@ def source_debianize_name(name):
 
 def debianize_version(name):
     "make name acceptable as a Debian package name"
-    name = name.replace('_','-')
-
     # XXX should use setuptools' version sorting and do this properly:
     name = name.replace('.dev','~dev')
 
@@ -204,6 +246,15 @@ def get_cmd_stdout(args):
         raise RuntimeError('returncode %d', returncode)
     return cmd.stdout.read()
 
+def normstr(s):
+    try:
+        # Python 3.x
+        result = str(s,'utf-8')
+    except TypeError:
+        # Python 2.x
+        result = s
+    return result
+
 def get_date_822():
     """return output of 822-date command"""
     cmd = '/bin/date'
@@ -211,13 +262,14 @@ def get_date_822():
         raise ValueError('%s command does not exist.'%cmd)
     args = [cmd,'-R']
     result = get_cmd_stdout(args).strip()
+    result = normstr(result)
     return result
 
 def get_version_str(pkg):
     args = ['/usr/bin/dpkg-query','--show',
            '--showformat=${Version}',pkg]
     stdout = get_cmd_stdout(args)
-    return stdout.strip()
+    return stdout.strip().decode('ascii')
 
 def load_module(name,fname):
     import imp
@@ -291,7 +343,7 @@ def get_deb_depends_from_setuptools_requires(requirements, on_failure="warn"):
         cmd = subprocess.Popen(args, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                universal_newlines=True)
-    except Exception, le:
+    except Exception as le:
         # TODO: catch rc=1 and "E: The cache directory is empty. You need to
         # run 'apt-file update' first.", and tell the user to follow those
         # instructions.
@@ -323,7 +375,7 @@ def get_deb_depends_from_setuptools_requires(requirements, on_failure="warn"):
             dd.setdefault(
                 pydist.project_name.lower(), {}).setdefault(
                 pydist, set()).add(debname)
-        except ValueError, le:
+        except ValueError as le:
             log.warn("I got an error parsing a .egg-info file named \"%s\" "
                      "from Debian package \"%s\" as a pkg_resources "
                      "Distribution: %s" % (egginfo, debname, le,))
@@ -419,7 +471,11 @@ def expand_tarball(tarball_fname,cwd=None):
 
 def expand_zip(zip_fname,cwd=None):
     "expand a zip"
-    args = ['/usr/bin/unzip',zip_fname]
+    unzip_path = '/usr/bin/unzip'
+    if not os.path.exists(unzip_path):
+        log.error('ERROR: {} does not exist'.format(unzip_path))
+        sys.exit(1)
+    args = [unzip_path, zip_fname]
     # Does it have a top dir
     res = subprocess.Popen(
         [args[0], '-l', args[1]], cwd=cwd,
@@ -468,13 +524,18 @@ def repack_tarball_with_debianized_dirname( orig_sdist_file,
     make_tarball(repacked_sdist_file,debianized_dirname,cwd=working_dir)
     shutil.rmtree(working_dir)
 
-def dpkg_source(b_or_x,arg1,arg2=None,cwd=None):
+def dpkg_buildpackage(*args,**kwargs):
+    cwd=kwargs.pop('cwd',None)
+    if len(kwargs)!=0:
+        raise ValueError('only kwarg can be "cwd"')
+    "call dpkg-buildpackage [arg1] [...] [argN]"
+    args = ['/usr/bin/dpkg-buildpackage']+list(args)
+    process_command(args, cwd=cwd)
+
+def dpkg_source(b_or_x,arg1,cwd=None):
     "call dpkg-source -b|x arg1 [arg2]"
     assert b_or_x in ['-b','-x']
     args = ['/usr/bin/dpkg-source',b_or_x,arg1]
-    if arg2 is not None:
-        args.append(arg2)
-
     process_command(args, cwd=cwd)
 
 def apply_patch(patchfile,cwd=None,posix=False,level=0):
@@ -502,6 +563,7 @@ def apply_patch(patchfile,cwd=None,posix=False,level=0):
         stdin=fd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        universal_newlines=True
         )
     returncode=None
     while returncode is None:
@@ -531,7 +593,7 @@ def parse_vals(cfg,section,option):
     """parse comma separated values in debian control file style from .cfg"""
     try:
         vals = cfg.get(section,option)
-    except ConfigParser.NoSectionError, err:
+    except ConfigParser.NoSectionError as err:
         if section != 'DEFAULT':
             vals = cfg.get('DEFAULT',option)
         else:
@@ -635,11 +697,16 @@ class DebianInfo:
                  patch_level=None,
                  setup_requires=None,
                  debian_version=None,
-                 force_buildsystem=None,
                  have_script_entry_points = None,
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
                  sdist_dsc_command = None,
+                 with_python2 = None,
+                 with_python3 = None,
+                 no_python2_scripts = None,
+                 no_python3_scripts = None,
+                 force_x_python3_version=False,
+                 allow_virtualenv_install_location=False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -667,7 +734,9 @@ class DebianInfo:
             check_cfg_files(cfg_files,module_name)
 
         cfg = ConfigParser.SafeConfigParser(cfg_defaults)
-        cfg.read(cfg_files)
+        for cfg_file in cfg_files:
+            with codecs.open( cfg_file, mode='r', encoding='utf-8') as fd:
+                cfg.readfp(fd)
 
         if sdist_dsc_command is not None:
             # Allow distutils commands to override config files (this lets
@@ -685,6 +754,7 @@ class DebianInfo:
         self.module_name = module_name
         self.source = parse_val(cfg,module_name,'Source')
         self.package = parse_val(cfg,module_name,'Package')
+        self.package3 = parse_val(cfg,module_name,'Package3')
         forced_upstream_version = parse_val(cfg,module_name,
                                             'Forced-Upstream-Version')
         if forced_upstream_version == '':
@@ -724,21 +794,37 @@ class DebianInfo:
 
         build_deps = []
         if use_setuptools:
-            build_deps.append('python-setuptools (>= 0.6b3)')
+            if with_python2:
+                build_deps.append('python-setuptools (>= 0.6b3)')
+            if with_python3:
+                build_deps.append('python3-setuptools')
         if setup_requires is not None and len(setup_requires):
             build_deps.extend(
                 get_deb_depends_from_setuptools_requires(setup_requires))
 
         depends = ['${misc:Depends}', '${python:Depends}']
+        depends3 = ['${misc:Depends}', '${python3:Depends}']
         need_custom_binary_target = False
 
         if has_ext_modules:
             self.architecture = 'any'
-            build_deps.append('python-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
+            if with_python2:
+                build_deps.append('python-all-dev (>= %s)'%PYTHON_ALL_MIN_VERS)
             depends.append('${shlibs:Depends}')
+
+            self.architecture3 = 'any'
+            if with_python3:
+                build_deps.append('python3-all-dev')
+            depends3.append('${shlibs:Depends}')
+
         else:
             self.architecture = 'all'
-            build_deps.append('python-all (>= %s)'%PYTHON_ALL_MIN_VERS)
+            if with_python2:
+                build_deps.append('python-all (>= %s)'%PYTHON_ALL_MIN_VERS)
+
+            self.architecture3 = 'all'
+            if with_python3:
+                build_deps.append('python3-all')
 
         self.copyright_file = parse_val(cfg,module_name,'Copyright-File')
         self.mime_file = parse_val(cfg,module_name,'MIME-File')
@@ -765,11 +851,13 @@ class DebianInfo:
                 '%s usr/share/applications'%mime_desktop_file)
 
         depends.extend(parse_vals(cfg,module_name,'Depends') )
+        depends3.extend(parse_vals(cfg,module_name,'Depends3') )
         self.depends = ', '.join(depends)
+        self.depends3 = ', '.join(depends3)
 
         self.debian_section = parse_val(cfg,module_name,'Section')
 
-        self.description = description
+        self.description = re.sub('\s+', ' ', description).strip()
         if long_description != 'UNKNOWN':
             ld2=[]
             for line in long_description.split('\n'):
@@ -792,7 +880,9 @@ class DebianInfo:
         self.build_depends = ', '.join(build_deps)
 
         suggests = ', '.join( parse_vals(cfg,module_name,'Suggests') )
+        suggests3 = ', '.join( parse_vals(cfg,module_name,'Suggests3') )
         recommends = ', '.join( parse_vals(cfg,module_name,'Recommends') )
+        recommends3 = ', '.join( parse_vals(cfg,module_name,'Recommends3') )
 
         self.source_stanza_extras = ''
 
@@ -829,6 +919,13 @@ class DebianInfo:
             self.source_stanza_extras += ('X-Python-Version: '+
                                           ', '.join(xs_python_version)+'\n')
 
+        x_python3_version = parse_vals(cfg,module_name,'X-Python3-Version')
+        x_python3_version = [v.strip('"') for v in x_python3_version]
+
+        if len(x_python3_version)!=0:
+            self.source_stanza_extras += ('X-Python3-Version: '+
+                                          ', '.join(x_python3_version)+'\n')
+
         dpkg_shlibdeps_params = parse_val(
             cfg,module_name,'dpkg-shlibdeps-params')
         if dpkg_shlibdeps_params:
@@ -841,8 +938,11 @@ class DebianInfo:
         self.dh_binary_indep_lines = '\tdh binary-indep'
 
         conflicts = parse_vals(cfg,module_name,'Conflicts')
+        conflicts3 = parse_vals(cfg,module_name,'Conflicts3')
         provides = parse_vals(cfg,module_name,'Provides')
+        provides3 = parse_vals(cfg,module_name,'Provides3')
         replaces = parse_vals(cfg,module_name,'Replaces')
+        replaces3 = parse_vals(cfg,module_name,'Replaces3')
 
         if guess_conflicts_provides_replaces:
             # Find list of binaries which we will conflict/provide/replace.
@@ -865,8 +965,11 @@ class DebianInfo:
             for orig_binary in cpr_binaries:
                 for version_info in apt_cache_info('show',orig_binary):
                     provides.extend( version_info['Provides'])
+                    provides3.extend( version_info['Provides'])
                     conflicts.extend(version_info['Conflicts'])
+                    conflicts3.extend(version_info['Conflicts'])
                     replaces.extend( version_info['Replaces'])
+                    replaces3.extend( version_info['Replaces'])
 
             if self.package in cpr_binaries:
                 cpr_binaries.remove(self.package) # don't include ourself
@@ -874,42 +977,149 @@ class DebianInfo:
             cpr_binaries = list(cpr_binaries) # convert to list
 
             conflicts.extend( cpr_binaries )
+            conflicts3.extend( cpr_binaries )
             provides.extend( cpr_binaries )
+            provides3.extend( cpr_binaries )
             replaces.extend( cpr_binaries )
+            replaces3.extend( cpr_binaries )
 
             # round-trip through set to get unique entries
             conflicts = list(set(conflicts))
+            conflicts3 = list(set(conflicts3))
             provides = list(set(provides))
+            provides3 = list(set(provides3))
             replaces = list(set(replaces))
+            replaces3 = list(set(replaces3))
 
         self.package_stanza_extras = ''
+        self.package_stanza_extras3 = ''
 
         if len(conflicts):
             self.package_stanza_extras += ('Conflicts: '+
                                               ', '.join( conflicts )+'\n')
+        if len(conflicts3):
+            self.package_stanza_extras3 += ('Conflicts: '+
+                                              ', '.join( conflicts3 )+'\n')
 
         if len(provides):
             self.package_stanza_extras += ('Provides: '+
                                              ', '.join( provides  )+'\n')
 
+        if len(provides3):
+            self.package_stanza_extras3 += ('Provides: '+
+                                             ', '.join( provides3  )+'\n')
+
         if len(replaces):
             self.package_stanza_extras += ('Replaces: ' +
                                               ', '.join( replaces  )+'\n')
+        if len(replaces3):
+            self.package_stanza_extras3 += ('Replaces: ' +
+                                              ', '.join( replaces3 )+'\n')
         if len(recommends):
             self.package_stanza_extras += ('Recommends: '+recommends+'\n')
+
+        if len(recommends3):
+            self.package_stanza_extras3 += ('Recommends: '+recommends3+'\n')
 
         if len(suggests):
             self.package_stanza_extras += ('Suggests: '+suggests+'\n')
 
+        if len(suggests3):
+            self.package_stanza_extras3 += ('Suggests: '+suggests3+'\n')
+
         self.dirlist = ""
 
-        sequencer_options = ['--with python2']
-        if force_buildsystem:
-            sequencer_options.append('--buildsystem=python_distutils')
+        if not (with_python2 or with_python3):
+            raise RuntimeError('nothing to do - neither Python 2 or 3.')
+        sequencer_with = []
+        if with_python2:
+            sequencer_with.append('python2')
+        if with_python3:
+            sequencer_with.append('python3')
+        num_binary_packages = len(sequencer_with)
+
+        no_script_lines=[]
+
+        if no_python2_scripts:
+            # install to a location where debian tools do not find them
+            self.no_python2_scripts_cli_args = '--install-scripts=/trash'
+            no_script_lines.append(
+                'rm -rf debian/%s/trash'%(self.package,))
+        else:
+            self.no_python2_scripts_cli_args = ''
+        if no_python3_scripts:
+            # install to a location where debian tools do not find them
+            self.no_python3_scripts_cli_args = '--install-scripts=/trash'
+            no_script_lines.append(
+                'rm -rf debian/%s/trash'%(self.package3,))
+        else:
+            self.no_python3_scripts_cli_args = ''
+
+        self.scripts_cleanup = '\n'.join(['        '+s for s in no_script_lines])
+
+        if sys.prefix != '/usr':
+            if not allow_virtualenv_install_location:
+                # virtualenv will set distutils
+                # --prefix=/path/to/virtualenv, but unless explicitly
+                # requested, we want to install into /usr.
+                self.install_prefix = '--prefix=/usr'
+            else:
+                self.install_prefix = '--prefix=%s' % sys.prefix
+        else:
+            self.install_prefix = ''
+
+        rules_override_clean_target_pythons = []
+        rules_override_build_target_pythons = []
+        rules_override_install_target_pythons = []
+        if with_python2:
+            rules_override_clean_target_pythons.append(
+                RULES_OVERRIDE_CLEAN_TARGET_PY2%self.__dict__
+                )
+            rules_override_build_target_pythons.append(
+                RULES_OVERRIDE_BUILD_TARGET_PY2%self.__dict__
+                )
+            rules_override_install_target_pythons.append(
+                RULES_OVERRIDE_INSTALL_TARGET_PY2%self.__dict__
+                )
+        if with_python3:
+            rules_override_clean_target_pythons.append(
+                RULES_OVERRIDE_CLEAN_TARGET_PY3%self.__dict__
+                )
+            rules_override_build_target_pythons.append(
+                RULES_OVERRIDE_BUILD_TARGET_PY3%self.__dict__
+                )
+            rules_override_install_target_pythons.append(
+                RULES_OVERRIDE_INSTALL_TARGET_PY3%self.__dict__
+                )
+        self.rules_override_clean_target_pythons = '\n'.join(rules_override_clean_target_pythons)
+        self.rules_override_build_target_pythons = '\n'.join(rules_override_build_target_pythons)
+        self.rules_override_install_target_pythons = '\n'.join(rules_override_install_target_pythons)
+
+        self.override_dh_auto_clean = RULES_OVERRIDE_CLEAN_TARGET%self.__dict__
+        self.override_dh_auto_build = RULES_OVERRIDE_BUILD_TARGET%self.__dict__
+        self.override_dh_auto_install = RULES_OVERRIDE_INSTALL_TARGET%self.__dict__
+
+        if force_x_python3_version and with_python3 and x_python3_version and \
+                x_python3_version[0]:
+            # override dh_python3 target to modify the dependencies
+            # to ensure that the passed minimum X-Python3-Version is usedby
+            version = x_python3_version[0]
+            if not version.endswith('~'):
+                version += '~'
+            self.override_dh_python3 = RULES_OVERRIDE_PYTHON3%{
+                'scripts': (
+                    '        sed -i ' +
+                    '"s/\([ =]python3:any (\)>= [^)]*\()\)/\\1%s\\2/g" ' +
+                    'debian/%s.substvars') % (version, self.package3)
+            }
+        else:
+            self.override_dh_python3 = ''
+
+        sequencer_options = ['--with '+','.join(sequencer_with)]
+        sequencer_options.append('--buildsystem=python_distutils')
         self.sequencer_options = ' '.join(sequencer_options)
 
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')
-        self.force_buildsystem = force_buildsystem
         self.exports = ""
         if len(setup_env_vars):
             self.exports += '\n'
@@ -930,6 +1140,21 @@ class DebianInfo:
                     RULES_BINARY_ARCH_TARGET%self.__dict__ )
         else:
             self.binary_target_lines = ''
+
+        if with_python2:
+            self.control_py2_stanza = CONTROL_PY2_STANZA%self.__dict__
+        else:
+            self.control_py2_stanza = ''
+
+        if with_python3:
+            self.control_py3_stanza = CONTROL_PY3_STANZA%self.__dict__
+        else:
+            self.control_py3_stanza = ''
+
+        self.with_python2 = with_python2
+        self.with_python3 = with_python3
+        self.no_python2_scripts = no_python2_scripts
+        self.no_python3_scripts = no_python3_scripts
 
     def _make_cfg_defaults(self,
                            module_name=NotGiven,
@@ -955,6 +1180,9 @@ class DebianInfo:
                 elif value == 'python-<debianized-setup-name>':
                     assert key=='package'
                     value = 'python-' + debianize_name(module_name)
+                elif value == 'python3-<debianized-setup-name>':
+                    assert key=='package3'
+                    value = 'python3-' + debianize_name(module_name)
                 elif value == '<setup-maintainer-or-author>':
                     assert key=='maintainer'
                     value = guess_maintainer
@@ -977,6 +1205,7 @@ def build_dsc(debinfo,
               patch_posix=0,
               remove_expanded_source_dir=0,
               debian_dir_only=False,
+              sign_dsc=False,
               ):
     """make debian source package"""
     #    A. Find new dirname and delete any pre-existing contents
@@ -1027,21 +1256,10 @@ def build_dsc(debinfo,
     for fname in ['Makefile','makefile']:
         if os.path.exists(os.path.join(fullpath_repackaged_dirname,fname)):
             sys.stderr.write('*'*1000 + '\n')
-            if debinfo.force_buildsystem:
-                sys.stderr.write('WARNING: a Makefile exists in this package. '
-                                 'stdeb will tell debhelper 7 to use setup.py '
-                                 'to build and install the package, and the '
-                                 'Makefile will be ignored. You can disable '
-                                 'this behavior with the '
-                                 '--force-buildsystem=False argument to the '
-                                 'stdeb command.\n')
-            else:
-                sys.stderr.write('WARNING: a Makefile exists in this package. '
-                                 'debhelper 7 will attempt to use this rather '
-                                 'than setup.py to build and install the '
-                                 'package. You can disable this behavior with '
-                                 'the --force-buildsystem=True argument to the '
-                                 'stdeb command.\n')
+            sys.stderr.write('WARNING: a Makefile exists in this package. '
+                             'stdeb will tell debhelper 7 to use setup.py '
+                             'to build and install the package, and the '
+                             'Makefile will be ignored.\n')
             sys.stderr.write('*'*1000 + '\n')
 
 
@@ -1052,14 +1270,10 @@ def build_dsc(debinfo,
         os.mkdir(debian_dir)
 
     #    A. debian/changelog
-    fd = open( os.path.join(debian_dir,'changelog'), mode='w')
-    fd.write("""\
-%(source)s (%(full_version)s) %(distname)s; urgency=low
-
-  * source package automatically created by stdeb %(stdeb_version)s
-
- -- %(maintainer)s  %(date822)s\n"""%debinfo.__dict__)
-    fd.close()
+    changelog = CHANGELOG_FILE%debinfo.__dict__
+    with codecs.open( os.path.join(debian_dir,'changelog'),
+                 mode='w', encoding='utf-8') as fd:
+        fd.write(changelog)
 
     #    B. debian/control
     if debinfo.uploaders:
@@ -1067,9 +1281,9 @@ def build_dsc(debinfo,
     else:
         debinfo.uploaders = ''
     control = CONTROL_FILE%debinfo.__dict__
-    fd = open( os.path.join(debian_dir,'control'), mode='w')
-    fd.write(control)
-    fd.close()
+    with codecs.open( os.path.join(debian_dir,'control'),
+                      mode='w', encoding='utf-8') as fd:
+        fd.write(control)
 
     #    C. debian/rules
     debinfo.percent_symbol = '%'
@@ -1077,10 +1291,10 @@ def build_dsc(debinfo,
 
     rules = rules.replace('        ','\t')
     rules_fname = os.path.join(debian_dir,'rules')
-    fd = open( rules_fname, mode='w')
-    fd.write(rules)
-    fd.close()
-    os.chmod(rules_fname,0755)
+    with codecs.open( rules_fname,
+                      mode='w', encoding='utf-8') as fd:
+        fd.write(rules)
+    os.chmod(rules_fname,0o755)
 
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
@@ -1126,7 +1340,11 @@ def build_dsc(debinfo,
     #    J. debian/source/format
     os.mkdir(os.path.join(debian_dir,'source'))
     fd = open( os.path.join(debian_dir,'source','format'), mode='w')
-    fd.write('1.0\n')
+    fd.write('3.0 (quilt)\n')
+    fd.close()
+
+    fd = open( os.path.join(debian_dir,'source','options'), mode='w')
+    fd.write('extend-diff-ignore="\.egg-info$"')
     fd.close()
 
     if debian_dir_only:
@@ -1154,12 +1372,8 @@ def build_dsc(debinfo,
             orig_dirname = orig_tarball_top_contents[0]
             fullpath_orig_dirname = os.path.join(tmp_dir,orig_dirname)
 
-            #    C. move original repackaged tree to .orig
-            target = fullpath_repackaged_dirname+'.orig'
-            if os.path.exists(target):
-                # here from previous invocation, probably
-                shutil.rmtree(target)
-            os.rename(fullpath_orig_dirname,target)
+            #    C. remove original repackaged tree
+            shutil.rmtree(fullpath_orig_dirname)
 
         finally:
             shutil.rmtree(tmp_dir)
@@ -1198,15 +1412,13 @@ def build_dsc(debinfo,
 
     #    Re-generate tarball using best practices see
     #    http://www.debian.org/doc/developers-reference/ch-best-pkging-practices.en.html
-    #    call "dpkg-source -b new_dirname orig_dirname"
-    log.info('CALLING dpkg-source -b %s %s (in dir %s)'%(
-        repackaged_dirname,
-        repackaged_orig_tarball,
-        dist_dir))
 
-    dpkg_source('-b',repackaged_dirname,
-                repackaged_orig_tarball,
-                cwd=dist_dir)
+    if sign_dsc:
+        args = ()
+    else:
+        args = ('-uc','-us')
+
+    dpkg_buildpackage('-S','-sa',*args,cwd=fullpath_repackaged_dirname)
 
     if 1:
         shutil.rmtree(fullpath_repackaged_dirname)
@@ -1217,6 +1429,13 @@ def build_dsc(debinfo,
         dpkg_source('-x',dsc_name,
                     cwd=dist_dir)
 
+CHANGELOG_FILE = """\
+%(source)s (%(full_version)s) %(distname)s; urgency=low
+
+  * source package automatically created by stdeb %(stdeb_version)s
+
+ -- %(maintainer)s  %(date822)s\n"""
+
 CONTROL_FILE = """\
 Source: %(source)s
 Maintainer: %(maintainer)s
@@ -1225,10 +1444,25 @@ Priority: optional
 Build-Depends: %(build_depends)s
 Standards-Version: 3.9.1
 %(source_stanza_extras)s
+
+%(control_py2_stanza)s
+
+%(control_py3_stanza)s
+"""
+
+CONTROL_PY2_STANZA = """
 Package: %(package)s
 Architecture: %(architecture)s
 Depends: %(depends)s
 %(package_stanza_extras)sDescription: %(description)s
+%(long_description)s
+"""
+
+CONTROL_PY3_STANZA = """
+Package: %(package3)s
+Architecture: %(architecture3)s
+Depends: %(depends3)s
+%(package_stanza_extras3)sDescription: %(description)s
 %(long_description)s
 """
 
@@ -1241,7 +1475,49 @@ RULES_MAIN = """\
 %(percent_symbol)s:
         dh $@ %(sequencer_options)s
 
+%(override_dh_auto_clean)s
+
+%(override_dh_auto_build)s
+
+%(override_dh_auto_install)s
+
+override_dh_python2:
+        dh_python2 --no-guessing-versions
+
+%(override_dh_python3)s
+
 %(binary_target_lines)s
+"""
+
+RULES_OVERRIDE_CLEAN_TARGET_PY2 = "        python setup.py clean -a"
+RULES_OVERRIDE_CLEAN_TARGET_PY3 = "        python3 setup.py clean -a"
+RULES_OVERRIDE_CLEAN_TARGET = """
+override_dh_auto_clean:
+%(rules_override_clean_target_pythons)s
+        find . -name \*.pyc -exec rm {} \;
+"""
+
+RULES_OVERRIDE_BUILD_TARGET_PY2 = "        python setup.py build --force"
+RULES_OVERRIDE_BUILD_TARGET_PY3 = "        python3 setup.py build --force"
+RULES_OVERRIDE_BUILD_TARGET = """
+override_dh_auto_build:
+%(rules_override_build_target_pythons)s
+"""
+
+RULES_OVERRIDE_INSTALL_TARGET_PY2 = "        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python2_scripts_cli_args)s"
+
+RULES_OVERRIDE_INSTALL_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python3_scripts_cli_args)s"
+
+RULES_OVERRIDE_INSTALL_TARGET = """
+override_dh_auto_install:
+%(rules_override_install_target_pythons)s
+%(scripts_cleanup)s
+"""
+
+RULES_OVERRIDE_PYTHON3 = """
+override_dh_python3:
+        dh_python3
+%(scripts)s
 """
 
 RULES_BINARY_TARGET = """

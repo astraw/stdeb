@@ -1,11 +1,11 @@
-import sys, os, shutil
+import sys, os, shutil, tempfile
 
 from stdeb import log
 from stdeb.util import expand_sdist_file, recursive_hardlink
-from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, \
+from stdeb.util import build_dsc, stdeb_cmdline_opts, \
      stdeb_cmd_bool_opts, stdeb_cfg_options
 from stdeb.util import repack_tarball_with_debianized_dirname
-from common import common_debian_package_command
+from stdeb.command.common import common_debian_package_command
 
 __all__ = ['sdist_dsc']
 
@@ -55,64 +55,73 @@ class sdist_dsc(common_debian_package_command):
         else:
             source_tarball = self.use_premade_distfile
 
-        # copy source tree
+        # Copy source tree assuming that package-0.1.tar.gz contains
+        # single top-level path 'package-0.1'. The contents of this
+        # directory are then used.
+
         if os.path.exists(fullpath_repackaged_dirname):
             shutil.rmtree(fullpath_repackaged_dirname)
-        os.makedirs(fullpath_repackaged_dirname)
+
+        tmpdir = tempfile.mkdtemp()
         expand_sdist_file( os.path.abspath(source_tarball),
-                           cwd=fullpath_repackaged_dirname )
+                           cwd=tmpdir )
+        expanded_base_files = os.listdir(tmpdir)
+        assert len(expanded_base_files)==1
+        actual_package_dirname = expanded_base_files[0]
+        expected_package_dirname = debinfo.module_name + '-' + debinfo.upstream_version
+        shutil.move( os.path.join( tmpdir, actual_package_dirname ),
+                     fullpath_repackaged_dirname)
 
-        if self.use_premade_distfile is not None:
         # ensure premade sdist can actually be used
-            self.use_premade_distfile = os.path.abspath(self.use_premade_distfile)
-            expand_dir = os.path.join(self.dist_dir,'tmp_sdist_dsc')
-            cleanup_dirs.append(expand_dir)
-            if os.path.exists(expand_dir):
-                shutil.rmtree(expand_dir)
-            if not os.path.exists(self.dist_dir):
-                os.mkdir(self.dist_dir)
-            os.mkdir(expand_dir)
+        self.use_premade_distfile = os.path.abspath(self.use_premade_distfile)
+        expand_dir = os.path.join(self.dist_dir,'tmp_sdist_dsc')
+        cleanup_dirs.append(expand_dir)
+        if os.path.exists(expand_dir):
+            shutil.rmtree(expand_dir)
+        if not os.path.exists(self.dist_dir):
+            os.mkdir(self.dist_dir)
+        os.mkdir(expand_dir)
 
-            expand_sdist_file(self.use_premade_distfile,cwd=expand_dir)
+        expand_sdist_file(self.use_premade_distfile,cwd=expand_dir)
 
-            is_tgz=False
-            if self.use_premade_distfile.lower().endswith('.tar.gz'):
-                is_tgz=True
+        is_tgz=False
+        if self.use_premade_distfile.lower().endswith('.tar.gz'):
+            is_tgz=True
 
-            # now the sdist package is expanded in expand_dir
-            expanded_root_files = os.listdir(expand_dir)
-            assert len(expanded_root_files)==1
-            distname_in_premade_distfile = expanded_root_files[0]
-            debianized_dirname = repackaged_dirname
-            original_dirname = os.path.split(distname_in_premade_distfile)[-1]
-            do_repack=False
-            if is_tgz:
-                source_tarball = self.use_premade_distfile
-            else:
-                log.warn('WARNING: .orig.tar.gz will be generated from sdist '
-                         'archive ("%s") because it is not a .tar.gz file',
-                         self.use_premade_distfile)
-                do_repack=True
+        # now the sdist package is expanded in expand_dir
+        expanded_root_files = os.listdir(expand_dir)
+        assert len(expanded_root_files)==1
+        distname_in_premade_distfile = expanded_root_files[0]
+        debianized_dirname = repackaged_dirname
+        original_dirname = os.path.split(distname_in_premade_distfile)[-1]
+        do_repack=False
+        if is_tgz:
+            source_tarball = self.use_premade_distfile
+        else:
+            log.warn('WARNING: .orig.tar.gz will be generated from sdist '
+                     'archive ("%s") because it is not a .tar.gz file',
+                     self.use_premade_distfile)
+            do_repack=True
 
-            if do_repack:
-                tmp_dir = os.path.join(self.dist_dir, 'tmp_repacking_dir' )
-                os.makedirs( tmp_dir )
-                cleanup_dirs.append(tmp_dir)
-                source_tarball = os.path.join(tmp_dir,'repacked_sdist.tar.gz')
-                repack_tarball_with_debianized_dirname(self.use_premade_distfile,
-                                                       source_tarball,
-                                                       debianized_dirname,
-                                                       original_dirname )
-            if source_tarball is not None:
-                # Because we deleted all .pyc files above, if the
-                # original source dist has them, we will have
-                # (wrongly) deleted them. So, quit loudly rather
-                # than fail silently.
-                for root, dirs, files in os.walk(fullpath_repackaged_dirname):
-                    for name in files:
-                        if name.endswith('.pyc'):
-                            raise RuntimeError('original source dist cannot '
-                                               'contain .pyc files')
+        if do_repack:
+            tmp_dir = os.path.join(self.dist_dir, 'tmp_repacking_dir' )
+            os.makedirs( tmp_dir )
+            cleanup_dirs.append(tmp_dir)
+            source_tarball = os.path.join(tmp_dir,'repacked_sdist.tar.gz')
+            repack_tarball_with_debianized_dirname(self.use_premade_distfile,
+                                                   source_tarball,
+                                                   debianized_dirname,
+                                                   original_dirname )
+        if source_tarball is not None:
+            # Because we deleted all .pyc files above, if the
+            # original source dist has them, we will have
+            # (wrongly) deleted them. So, quit loudly rather
+            # than fail silently.
+            for root, dirs, files in os.walk(fullpath_repackaged_dirname):
+                for name in files:
+                    if name.endswith('.pyc'):
+                        raise RuntimeError('original source dist cannot '
+                                           'contain .pyc files')
 
         ###############################################
         # 3. Find all directories
@@ -129,6 +138,7 @@ class sdist_dsc(common_debian_package_command):
                   orig_sdist=source_tarball,
                   patch_posix = self.patch_posix,
                   remove_expanded_source_dir=self.remove_expanded_source_dir,
+                  sign_dsc=self.sign_results,
                   )
 
         for rmdir in cleanup_dirs:

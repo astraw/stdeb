@@ -109,10 +109,21 @@ def main():
                       default=0)
     parser.add_option('--build-here', action='store_true',
                       help='build the pieces in this dir, skip install')
+    parser.add_option('--release', type=str,
+                      help='specify a particular release',
+                      default=None)
     parser.add_option('--keep', action='store_true',
                       default=False,
                       help='do not remove temporary files')
+    parser.add_option('--allow-unsafe-download', action='store_true',
+                      default=False,
+                      help='allow unsafe downloads')
     (options, args) = parser.parse_args()
+
+    if os.geteuid() != 0:
+        myprint('%s must be run as root'%os.path.basename(sys.argv[0]),fd=sys.stderr)
+        sys.exit(1)
+
     if len(args) != 1:
         myprint('need exactly one PACKAGE_NAME',fd=sys.stderr)
         parser.print_help()
@@ -122,6 +133,11 @@ def main():
         options.keep = True
 
     package_name = args[0]
+    py2dsc_args = args[1:]
+    if package_name.startswith('-'):
+        myprint('PACKAGE_NAME must be first argument',fd=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
 
     orig_dir = os.path.abspath( os.curdir )
     if options.build_here:
