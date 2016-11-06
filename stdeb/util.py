@@ -67,6 +67,7 @@ stdeb_cmdline_opts = [
     ('maintainer=', 'm',
      'maintainer name and email to use if not specified in .cfg '
      '(default from setup.py)'),
+    ('debian-version=',None,'debian version (Default: 1)'),
     ('extra-cfg-file=','x',
      'additional .cfg file (in addition to stdeb.cfg if present)'),
     ('patch-file=','p',
