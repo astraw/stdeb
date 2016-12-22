@@ -28,7 +28,7 @@ class sdist_dsc(common_debian_package_command):
         if self.extend_diff_ignore is None:
             self.extend_diff_ignore = '\\.egg-info$'
         else:
-            self.extend_diff_ignore = '\\.egg-info$|%s' % self.extend_diff_ignore
+            self.extend_diff_ignore = '(\\.egg-info$)|(%s)' % self.extend_diff_ignore
         common_debian_package_command.finalize_options(self)
 
     def run(self):
