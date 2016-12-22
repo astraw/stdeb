@@ -80,6 +80,9 @@ stdeb_cmdline_opts = [
      'apply the patch with --posix mode'),
     ('remove-expanded-source-dir','r',
      'remove the expanded source directory'),
+    ('extend-diff-ignore=', None,
+     'Perl regex matching files which should be ignored in source diff (see '
+     'argument of the same name in dpkg-source(1) manual).'),
     ('ignore-install-requires', 'i',
      'ignore the requirements from requires.txt in the egg-info directory'),
     ('pycentral-backwards-compatibility=',None,
@@ -1207,6 +1210,7 @@ def build_dsc(debinfo,
               remove_expanded_source_dir=0,
               debian_dir_only=False,
               sign_dsc=False,
+              extend_diff_ignore=None,
               ):
     """make debian source package"""
     #    A. Find new dirname and delete any pre-existing contents
@@ -1340,13 +1344,13 @@ def build_dsc(debinfo,
 
     #    J. debian/source/format
     os.mkdir(os.path.join(debian_dir,'source'))
-    fd = open( os.path.join(debian_dir,'source','format'), mode='w')
-    fd.write('3.0 (quilt)\n')
-    fd.close()
+    with open(os.path.join(debian_dir,'source','format'), mode='w') as fd:
+        fd.write('3.0 (quilt)\n')
 
-    fd = open( os.path.join(debian_dir,'source','options'), mode='w')
-    fd.write('extend-diff-ignore="\.egg-info$"')
-    fd.close()
+    #    K. debian/source/options
+    if extend_diff_ignore is not None:
+        with open(os.path.join(debian_dir,'source','options'), mode='w') as fd:
+            fd.write('extend-diff-ignore="%s"\n' % extend_diff_ignore)
 
     if debian_dir_only:
         return

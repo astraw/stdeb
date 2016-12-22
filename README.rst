@@ -52,6 +52,12 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2016-12-21: **Version 0.8.6**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.8.6>`__. Bugfixes: fix for
+   applying Python 3 patch files, some tests. Improvements: Added
+   `--debian-version`, `--sign-results`, and `--extend-diff-ignore`
+   CLI flags.
+
  * 2015-02-18: **Version 0.8.5**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.5>`__. Bugfixes: reverted
    change that installed into virtualenv when built in
@@ -440,7 +446,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.8.5"
+  STDEB_VERSION="0.8.6"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
@@ -583,6 +589,10 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --remove-expanded-source-dir (-r)    remove the expanded source directory
   --ignore-install-requires (-i)       ignore the requirements from
                                        requires.txt in the egg-info directory
+  --extend-diff-ignore                 passthrough argument to the option of the
+                                       same name in dpkg-source(1) - a regex
+                                       specifying files which should be ignored
+                                       in the diff
   --no-backwards-compatibility         This option has no effect, is here for
                                        backwards compatibility, and may be
                                        removed someday.

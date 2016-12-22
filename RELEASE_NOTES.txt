@@ -1,3 +1,15 @@
+Release 0.8.6
+=============
+
+Adds passthrough option for dpkg-source argument '--extend-diff-ignore' to
+sdist_dsc command.
+
+Adds '--sign-results' boolean flag to sdist_dsc and bdist_deb commands.
+
+Adds '--debian-version' flag to sdist_dsc command.
+
+Includes other bugfixes.
+
 Release 0.8.5
 =============
 

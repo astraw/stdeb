@@ -21,7 +21,15 @@ class sdist_dsc(common_debian_package_command):
 
     def initialize_options(self):
         self.use_premade_distfile = None
+        self.extend_diff_ignore = None
         common_debian_package_command.initialize_options(self)
+
+    def finalize_options(self):
+        if self.extend_diff_ignore is None:
+            self.extend_diff_ignore = '\\.egg-info$'
+        else:
+            self.extend_diff_ignore = '\\.egg-info$|%s' % self.extend_diff_ignore
+        common_debian_package_command.finalize_options(self)
 
     def run(self):
         debinfo = self.get_debinfo()
@@ -139,6 +147,7 @@ class sdist_dsc(common_debian_package_command):
                   patch_posix = self.patch_posix,
                   remove_expanded_source_dir=self.remove_expanded_source_dir,
                   sign_dsc=self.sign_results,
+                  extend_diff_ignore=self.extend_diff_ignore,
                   )
 
         for rmdir in cleanup_dirs:
