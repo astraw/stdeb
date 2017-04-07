@@ -222,13 +222,26 @@ def source_debianize_name(name):
     name = name.lower()
     return name
 
-def debianize_version(name):
-    "make name acceptable as a Debian package name"
-    # XXX should use setuptools' version sorting and do this properly:
-    name = name.replace('.dev','~dev')
+def debianize_version(version):
+    "make version acceptable as a Debian package version"
+    from packaging.version import Version, InvalidVersion, _Version
+    try:
+        parsed = Version(version)
+    except InvalidVersion:
+        return version.lower()
 
-    name = name.lower()
-    return name
+    v = parsed._version._asdict()
+    if v['pre']:
+        # Hack version serialization: prepend '~' as pre version.
+        v['pre'] = ('~',) + v['pre']
+        parsed._version = _Version(**v)
+
+    debian_version = str(parsed)
+    # We can get two ~ in debian version, that's not a problem.
+    debian_version = debian_version.replace('.dev', '~dev')
+
+    return debian_version
+
 
 def dpkg_compare_versions(v1,op,v2):
     args = ['/usr/bin/dpkg','--compare-versions',v1,op,v2]
