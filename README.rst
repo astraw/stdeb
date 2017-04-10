@@ -4,6 +4,8 @@
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
+**Looking for maintainers.** See discussion `here <https://github.com/astraw/stdeb/issues/125>`_.
+
 `stdeb <http://github.com/astraw/stdeb>`_ produces Debian source
 packages from Python packages via a new distutils command,
 ``sdist_dsc``. Automatic defaults are provided for the Debian package,
