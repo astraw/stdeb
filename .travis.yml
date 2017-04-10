@@ -13,11 +13,13 @@ install:
     - which pip
     - pip --version
     - python -c "import sys; print(sys.version)"
+    - pip install --upgrade pytest "setuptools<18.5"
     # Build a .deb file and then install it.
     - python setup.py --command-packages=stdeb.command bdist_deb
     - for f in deb_dist/*.deb; do echo; echo $f; dpkg --contents $f; done
     - sudo dpkg -i deb_dist/*.deb
 script:
+    - pytest tests/unit/
     - sudo env "PATH=$PATH" bash -x ./test.sh
     - sudo env "PATH=$PATH" bash -x ./test-pypi-install.sh
     - sudo env "PATH=$PATH" bash -x ./test2and3.sh
