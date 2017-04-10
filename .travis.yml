@@ -13,7 +13,7 @@ install:
     - which pip
     - pip --version
     - python -c "import sys; print(sys.version)"
-    - pip install --upgrade pytest setuptools
+    - pip install --upgrade pytest "setuptools<18.5"
     # Build a .deb file and then install it.
     - python setup.py --command-packages=stdeb.command bdist_deb
     - for f in deb_dist/*.deb; do echo; echo $f; dpkg --contents $f; done
