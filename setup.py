@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 import codecs
 
 with codecs.open('README.rst', encoding='utf-8') as file:
@@ -29,7 +29,4 @@ setup(name='stdeb',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
     ],
-      install_requires=[
-          'setuptools',
-      ]
 )
