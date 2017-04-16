@@ -27,9 +27,10 @@ class common_debian_package_command(Command):
             assert sys.version_info[0]==3
             self.with_python2 = 'False'
             self.with_python3 = 'True'
+        self.with_pypy = 'False'
         self.no_python2_scripts = 'False'
         self.no_python3_scripts = 'False'
-        self.force_x_python3_version = False
+        self.no_pypy_scripts = 'False'
         self.allow_virtualenv_install_location = False
         self.sign_results = False
 
@@ -66,8 +67,10 @@ class common_debian_package_command(Command):
 
         self.with_python2 = str_to_bool(self.with_python2)
         self.with_python3 = str_to_bool(self.with_python3)
+        self.with_pypy = str_to_bool(self.with_pypy)
         self.no_python2_scripts = str_to_bool(self.no_python2_scripts)
         self.no_python3_scripts = str_to_bool(self.no_python3_scripts)
+        self.no_pypy_scripts = str_to_bool(self.no_pypy_scripts)
         if self.maintainer is not None:
             # Get the locale specifying the encoding in sys.argv
             import locale, codecs
@@ -92,7 +95,13 @@ class common_debian_package_command(Command):
 
         if 1:
             # set default maintainer
-            if (self.distribution.get_maintainer() != 'UNKNOWN' and
+            if os.environ.get('DEBEMAIL'):
+                if os.environ.get('DEBFULLNAME'):
+                    guess_maintainer = "%s <%s>" % (os.environ['DEBFULLNAME'],
+                                                    os.environ['DEBEMAIL'])
+                else:
+                    guess_maintainer = os.environ['DEBEMAIL']
+            elif (self.distribution.get_maintainer() != 'UNKNOWN' and
                 self.distribution.get_maintainer_email() != 'UNKNOWN'):
                 guess_maintainer = "%s <%s>"%(
                     self.distribution.get_maintainer(),
@@ -216,9 +225,10 @@ class common_debian_package_command(Command):
             sdist_dsc_command = self,
             with_python2 = self.with_python2,
             with_python3 = self.with_python3,
+            with_pypy = self.with_pypy,
             no_python2_scripts = self.no_python2_scripts,
             no_python3_scripts = self.no_python3_scripts,
-            force_x_python3_version=self.force_x_python3_version,
+            no_pypy_scripts = self.no_pypy_scripts,
             allow_virtualenv_install_location=self.allow_virtualenv_install_location,
         )
         return debinfo

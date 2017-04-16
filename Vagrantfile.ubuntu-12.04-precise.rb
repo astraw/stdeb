@@ -4,8 +4,8 @@
 # vi: set ft=ruby :
 
 Vagrant::Config.run do |config|
-  config.vm.box = "precise64"
-  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+  config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+  config.vm.box = "trusty-server-cloudimg-amd64-vagrant-disk1"
 
   # install prerequisites for stdeb and tests
   config.vm.provision :shell, :inline => "apt-get update"
