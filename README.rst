@@ -646,7 +646,7 @@ stdeb.cfg configuration file
 
 You may write config files of the format understood by `ConfigParser
 <http://docs.python.org/lib/module-ConfigParser.html>`_. When building
-each package, stdeb looks for the existance of a ``stdeb.cfg`` in the
+each package, stdeb looks for the existence of a ``stdeb.cfg`` in the
 directory with ``setup.py``. You may specify an additional config file
 with the command-line option --extra-cfg-file. The section should
 should either be [DEFAULT] or [package_name], which package_name is
