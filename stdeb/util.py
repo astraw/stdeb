@@ -1349,7 +1349,9 @@ def build_dsc(debinfo,
                   os.path.join(debian_dir,'%s.udev'%debinfo.package))
 
     #    J. debian/source/format
-    os.mkdir(os.path.join(debian_dir,'source'))
+    source_dir = os.path.join(debian_dir,'source')
+    if not os.path.exists(source_dir):
+        os.mkdir(source_dir)
     fd = open( os.path.join(debian_dir,'source','format'), mode='w')
     fd.write('3.0 (quilt)\n')
     fd.close()
