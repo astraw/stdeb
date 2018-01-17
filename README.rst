@@ -695,6 +695,8 @@ All available options:
   Dpkg-Shlibdeps-Params                parameters passed to dpkg-shlibdeps
   Conflicts                            debian/control Conflicts:
   Conflicts3                           debian/control Conflicts: for python3
+  Breaks                               debian/control Breaks:
+  Breaks3                              debian/control Breaks: for python3
   Provides                             debian/control Provides:
   Provides3                            debian/control Provides: for python3
   Replaces                             debian/control Replaces:

@@ -940,6 +940,8 @@ class DebianInfo:
 
         conflicts = parse_vals(cfg,module_name,'Conflicts')
         conflicts3 = parse_vals(cfg,module_name,'Conflicts3')
+        breaks = parse_vals(cfg,module_name,'Breaks')
+        breaks3 = parse_vals(cfg,module_name,'Breaks3')
         provides = parse_vals(cfg,module_name,'Provides')
         provides3 = parse_vals(cfg,module_name,'Provides3')
         replaces = parse_vals(cfg,module_name,'Replaces')
@@ -1002,6 +1004,12 @@ class DebianInfo:
             self.package_stanza_extras3 += ('Conflicts: '+
                                               ', '.join( conflicts3 )+'\n')
 
+        if len(breaks):
+            self.package_stanza_extras += ('Breaks: '+
+                                              ', '.join( breaks )+'\n')
+        if len(breaks3):
+            self.package_stanza_extras3 += ('Breaks: '+
+                                              ', '.join( breaks3 )+'\n')
         if len(provides):
             self.package_stanza_extras += ('Provides: '+
                                              ', '.join( provides  )+'\n')
