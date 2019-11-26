@@ -1155,6 +1155,7 @@ class DebianInfo:
         else:
             self.binary_target_lines = ''
 
+        self.changelog_distname = CHANGELOG_PY2_DISTNAME%self.__dict__
         if with_python2:
             self.control_py2_stanza = CONTROL_PY2_STANZA%self.__dict__
         else:
@@ -1162,6 +1163,10 @@ class DebianInfo:
 
         if with_python3:
             self.control_py3_stanza = CONTROL_PY3_STANZA%self.__dict__
+            if self.distname3:
+                if with_python2:
+                    raise ValueError("Suites are shared between versions. To use Suite3 run --with-python3 true --with-python2 false only.")
+                self.changelog_distname = CHANGELOG_PY3_DISTNAME%self.__dict__
         else:
             self.control_py3_stanza = ''
 
@@ -1443,8 +1448,10 @@ def build_dsc(debinfo,
         dpkg_source('-x',dsc_name,
                     cwd=dist_dir)
 
+CHANGELOG_PY2_DISTNAME = '%(distname)s'
+CHANGELOG_PY3_DISTNAME = '%(distname3)s'
 CHANGELOG_FILE = """\
-%(source)s (%(full_version)s) %(distname)s; urgency=low
+%(source)s (%(full_version)s) %(changelog_distname)s; urgency=low
 
   * source package automatically created by stdeb %(stdeb_version)s
 
