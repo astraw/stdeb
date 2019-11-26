@@ -130,6 +130,8 @@ stdeb_cfg_options = [
      'debian/control Package: (Default: python3-<debianized-setup-name>)'),
     ('suite=',None,
      'suite (e.g. stable, lucid) in changelog (Default: unstable)'),
+    ('suite3=',None,
+     'suite3 Suites used when building with python3 only. Will fallback to Suite if omitted.'),
     ('maintainer=',None,
      'debian/control Maintainer: (Default: <setup-maintainer-or-author>)'),
     ('debian-version=',None,'debian version (Default: 1)'),
@@ -791,6 +793,7 @@ class DebianInfo:
             self.upstream_version,
             self.packaging_version)
         self.distname = parse_val(cfg,module_name,'Suite')
+        self.distname3 = parse_val(cfg,module_name,'Suite3')
         self.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
         self.uploaders = parse_vals(cfg,module_name,'Uploaders')
         self.date822 = get_date_822()
