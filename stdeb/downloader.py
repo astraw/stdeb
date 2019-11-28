@@ -17,7 +17,7 @@ myprint=print
 
 USER_AGENT = 'pypi-install/%s ( https://github.com/astraw/stdeb )'%stdeb.__version__
 
-def find_tar_gz(package_name, pypi_url = 'https://pypi.python.org/pypi',
+def find_tar_gz(package_name, pypi_url = 'https://pypi.org',
                 verbose=0, release=None):
     transport = RequestsTransport()
     transport.user_agent = USER_AGENT
