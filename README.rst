@@ -666,6 +666,9 @@ All available options:
                                        <source-debianized-setup-name>)
   Package                              debian/control Package: (Default:
                                        python-<debianized-setup-name>)
+  Package3                             debian/control Package: for python3
+                                       (Default:
+                                       python3-<debianized-setup-name>)
   Suite                                suite (e.g. stable, lucid) in changelog
                                        (Default: unstable)
   Maintainer                           debian/control Maintainer: (Default:
