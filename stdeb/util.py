@@ -1163,9 +1163,9 @@ class DebianInfo:
 
         if with_python3:
             self.control_py3_stanza = CONTROL_PY3_STANZA%self.__dict__
-            if self.distname3:
-                if with_python2:
-                    raise ValueError("Suites are shared between versions. To use Suite3 run --with-python3 true --with-python2 false only.")
+            if self.distname3 and self.distname3 != self.distname:
+                if with_python2 :
+                    raise ValueError("Suites are shared between versions. To use a different value for Suite3 run --with-python3 true --with-python2 false only.")
                 self.changelog_distname = CHANGELOG_PY3_DISTNAME%self.__dict__
         else:
             self.control_py3_stanza = ''
