@@ -131,7 +131,7 @@ stdeb_cfg_options = [
     ('suite=',None,
      'suite (e.g. stable, lucid) in changelog (Default: unstable)'),
     ('suite3=',None,
-     'suite3 Suites used when building with python3 only. Will fallback to Suite if omitted.'),
+     'suite3 Suites used when building with python3 only (Default: <same-as-suite>)'),
     ('maintainer=',None,
      'debian/control Maintainer: (Default: <setup-maintainer-or-author>)'),
     ('debian-version=',None,'debian version (Default: 1)'),
@@ -1205,6 +1205,10 @@ class DebianInfo:
                 elif value == '<setup-maintainer-or-author>':
                     assert key=='maintainer'
                     value = guess_maintainer
+                elif value == '<same-as-suite>':
+                    assert key=='suite3'
+                    # Set to empty string so value of suite is used.
+                    value = '' 
                 if key=='suite':
                     if default_distribution is not None:
                         value = default_distribution
