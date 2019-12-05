@@ -130,6 +130,8 @@ stdeb_cfg_options = [
      'debian/control Package: (Default: python3-<debianized-setup-name>)'),
     ('suite=',None,
      'suite (e.g. stable, lucid) in changelog (Default: unstable)'),
+    ('suite3=',None,
+     'suite3 Suites used when building with python3 only (Default: <same-as-suite>)'),
     ('maintainer=',None,
      'debian/control Maintainer: (Default: <setup-maintainer-or-author>)'),
     ('debian-version=',None,'debian version (Default: 1)'),
@@ -791,6 +793,7 @@ class DebianInfo:
             self.upstream_version,
             self.packaging_version)
         self.distname = parse_val(cfg,module_name,'Suite')
+        self.distname3 = parse_val(cfg,module_name,'Suite3')
         self.maintainer = ', '.join(parse_vals(cfg,module_name,'Maintainer'))
         self.uploaders = parse_vals(cfg,module_name,'Uploaders')
         self.date822 = get_date_822()
@@ -1149,6 +1152,7 @@ class DebianInfo:
         else:
             self.binary_target_lines = ''
 
+        self.changelog_distname = CHANGELOG_PY2_DISTNAME%self.__dict__
         if with_python2:
             self.control_py2_stanza = CONTROL_PY2_STANZA%self.__dict__
         else:
@@ -1156,6 +1160,10 @@ class DebianInfo:
 
         if with_python3:
             self.control_py3_stanza = CONTROL_PY3_STANZA%self.__dict__
+            if self.distname3 and self.distname3 != self.distname:
+                if with_python2 :
+                    raise ValueError("Suites are shared between versions. To use a different value for Suite3 run --with-python3 true --with-python2 false only.")
+                self.changelog_distname = CHANGELOG_PY3_DISTNAME%self.__dict__
         else:
             self.control_py3_stanza = ''
 
@@ -1194,6 +1202,10 @@ class DebianInfo:
                 elif value == '<setup-maintainer-or-author>':
                     assert key=='maintainer'
                     value = guess_maintainer
+                elif value == '<same-as-suite>':
+                    assert key=='suite3'
+                    # Set to empty string so value of suite is used.
+                    value = '' 
                 if key=='suite':
                     if default_distribution is not None:
                         value = default_distribution
@@ -1437,8 +1449,10 @@ def build_dsc(debinfo,
         dpkg_source('-x',dsc_name,
                     cwd=dist_dir)
 
+CHANGELOG_PY2_DISTNAME = '%(distname)s'
+CHANGELOG_PY3_DISTNAME = '%(distname3)s'
 CHANGELOG_FILE = """\
-%(source)s (%(full_version)s) %(distname)s; urgency=low
+%(source)s (%(full_version)s) %(changelog_distname)s; urgency=low
 
   * source package automatically created by stdeb %(stdeb_version)s
 

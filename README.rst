@@ -671,6 +671,8 @@ All available options:
                                        python3-<debianized-setup-name>)
   Suite                                suite (e.g. stable, lucid) in changelog
                                        (Default: unstable)
+  Suite3                               suite (e.g. stable, lucid) for python3
+                                       (Default: uses value of Suite option)
   Maintainer                           debian/control Maintainer: (Default:
                                        <setup-maintainer-or-author>)
   Debian-Version                       debian version (Default: 1)
