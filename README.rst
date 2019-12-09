@@ -54,6 +54,25 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2019-12-09: **Version 0.9.0**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.9.0>`__.
+
+  * Bugfixes:
+
+    * fix applying patch files under Python 3
+
+  * Improvements:
+
+    * add ``--sign-results`` to sdist_dsc and bdist_deb command
+    * add ``--debian-version`` to CLI program options
+    * add support for ``Breaks`` / ``Breaks3`` in debian/control
+    * add support for ``Suite3`` option
+    * support zip files in pypi-install
+
+  * Breaking changes:
+
+    * remove deprecated ``dh_desktop`` call
+
  * 2015-02-18: **Version 0.8.5**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.8.5>`__. Bugfixes: reverted
    change that installed into virtualenv when built in
@@ -442,7 +461,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.8.5"
+  STDEB_VERSION="0.9.0"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
