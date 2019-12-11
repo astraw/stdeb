@@ -489,7 +489,7 @@ def expand_zip(zip_fname,cwd=None):
     )
     contents = []
     for line in res.stdout.readlines()[3:-2]:
-        contents.append(line.split()[-1])
+        contents.append(b' '.join(line.split()[3:]))
     commonprefix = os.path.commonprefix(contents)
     if not commonprefix:
         extdir = os.path.join(cwd, os.path.basename(zip_fname[:-4]))
