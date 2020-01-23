@@ -604,6 +604,9 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --remove-expanded-source-dir (-r)    remove the expanded source directory
   --ignore-install-requires (-i)       ignore the requirements from
                                        requires.txt in the egg-info directory
+  --ignore-source-changes              ignore all changes on source when
+                                       building source package (add -i.*
+                                       option to dpkg-source)
   --no-backwards-compatibility         This option has no effect, is here for
                                        backwards compatibility, and may be
                                        removed someday.

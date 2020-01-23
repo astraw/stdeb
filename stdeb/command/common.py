@@ -32,6 +32,7 @@ class common_debian_package_command(Command):
         self.force_x_python3_version = False
         self.allow_virtualenv_install_location = False
         self.sign_results = False
+        self.ignore_source_changes = False
 
         # deprecated options
         self.default_distribution = None
