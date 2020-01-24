@@ -20,7 +20,7 @@ def runit(cmd,usage):
     if cmd not in ['sdist_dsc','bdist_deb']:
         raise ValueError('unknown command %r'%cmd)
     # process command-line options
-    bool_opts = map(translate_longopt, stdeb_cmd_bool_opts)
+    bool_opts = list(map(translate_longopt, stdeb_cmd_bool_opts))
     parser = FancyGetopt(stdeb_cmdline_opts+[
         ('help', 'h', "show detailed help message"),
         ])
