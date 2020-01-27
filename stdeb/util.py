@@ -107,6 +107,10 @@ stdeb_cmdline_opts = [
      'x-python3-version'),
     ('allow-virtualenv-install-location',None,
      'Allow installing into /some/random/virtualenv-path'),
+    ('with-dh-virtualenv',None,
+     'Use dh_virtualenv to build the package instead of python_distutils. '
+     'This is useful to embed an application with all its dependencies '
+     'and dont touch to the system libraries.'),
     ('sign-results',None,
      'Use gpg to sign the resulting .dsc and .changes file'),
     ]
@@ -180,6 +184,7 @@ stdeb_cmd_bool_opts = [
     'no-backwards-compatibility',
     'force-x-python3-version',
     'allow-virtualenv-install-location',
+    'with-dh-virtualenv',
     'sign-results',
     ]
 
@@ -698,6 +703,7 @@ class DebianInfo:
                  no_python3_scripts = None,
                  force_x_python3_version=False,
                  allow_virtualenv_install_location=False,
+                 with_dh_virtualenv=False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -1113,7 +1119,12 @@ class DebianInfo:
             self.override_dh_python3 = ''
 
         sequencer_options = ['--with '+','.join(sequencer_with)]
-        sequencer_options.append('--buildsystem=python_distutils')
+
+        if with_dh_virtualenv:
+            sequencer_options.append('--with python-virtualenv')
+        else:
+            sequencer_options.append('--buildsystem=python_distutils')
+
         self.sequencer_options = ' '.join(sequencer_options)
 
         setup_env_vars = parse_vals(cfg,module_name,'Setup-Env-Vars')

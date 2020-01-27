@@ -579,6 +579,8 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        version
   --allow-virtualenv-install-location  Allow installing into
                                        /some/random/virtualenv-path
+  --with-dh-virtualenv                 Build the package using dh_virtualenv, so all dependencies
+                                       are embedded into the packages.
   --sign-results                       Use gpg to sign the resulting .dsc and
                                        .changes file
   --dist-dir (-d)                      directory to put final built
