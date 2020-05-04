@@ -29,6 +29,7 @@ DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
 DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
 
 PYTHON_ALL_MIN_VERS = '2.6.6-3'
+PYTHON3_ALL_MIN_VERS = '3.5.1-3'
 
 try:
     # Python 2.x
@@ -1399,18 +1400,28 @@ def build_dsc(debinfo,
                          'compatible with older versions of debhelper.'%(
                     DH_MIN_VERS,))
 
-        python_defaults_version_str = get_version_str('python-all')
-        if len(python_defaults_version_str)==0:
-            log.warn('This version of stdeb requires python-all >= %s, '
-                     'but you do not have this package installed. '
-                     'Could not check compatibility.'%PYTHON_ALL_MIN_VERS)
-        else:
-            if not dpkg_compare_versions(
-                python_defaults_version_str, 'ge', PYTHON_ALL_MIN_VERS):
-                log.warn('This version of stdeb requires python-all >= %s. '
-                         'Use stdeb 0.6.0 or older to generate source packages '
-                         'that use python-support.'%(
-                    PYTHON_ALL_MIN_VERS,))
+        if debinfo.with_python2:
+            python_defaults_version_str = get_version_str('python-all')
+
+            if len(python_defaults_version_str) == 0:
+                log.warn('This version of stdeb requires python-all >= %s, '
+                         'but you do not have this package installed. '
+                         'Could not check compatibility.' % PYTHON_ALL_MIN_VERS)
+            else:
+                if not dpkg_compare_versions(
+                        python_defaults_version_str, 'ge', PYTHON_ALL_MIN_VERS):
+                    log.warn('This version of stdeb requires python-all >= %s. '
+                             'Use stdeb 0.6.0 or older to generate source packages '
+                             'that use python-support.' % (
+                                 PYTHON_ALL_MIN_VERS,))
+
+        if debinfo.with_python3:
+            python3_defaults_version_str = get_version_str('python3-all')
+
+            if len(python3_defaults_version_str) == 0:
+                log.warn('This version of stdeb requires python3-all >= %s, '
+                         'but you do not have this package installed. '
+                         'Could not check compatibility.' % PYTHON3_ALL_MIN_VERS)
 
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
