@@ -246,15 +246,6 @@ def get_cmd_stdout(args):
         raise RuntimeError('returncode %d', returncode)
     return cmd.stdout.read()
 
-def normstr(s):
-    try:
-        # Python 3.x
-        result = str(s,'utf-8')
-    except TypeError:
-        # Python 2.x
-        result = s
-    return result
-
 def get_date_822():
     """return output of 822-date command"""
     t = time.localtime()
