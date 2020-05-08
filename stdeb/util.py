@@ -1,7 +1,7 @@
 #
 # This module contains most of the code of stdeb.
 #
-import re, sys, os, shutil, select, time
+import re, sys, os, shutil, select, time, calendar
 import codecs
 try:
     # Python 2.x
@@ -257,7 +257,8 @@ def normstr(s):
 
 def get_date_822():
     """return output of 822-date command"""
-    return time.strftime("%a, %e %b %Y %H:%M:%S %z")
+    t = time.localtime()
+    return time.strftime(calendar.day_abbr[t.tm_wday]+ ", %d " + calendar.month_abbr[t.tm_mon] + " %Y %H:%M:%S %z", t)
 
 def get_version_str(pkg):
     args = ['/usr/bin/dpkg-query','--show',
