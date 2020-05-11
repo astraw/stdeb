@@ -170,6 +170,7 @@ stdeb_cfg_options = [
     ('shared-mime-file=',None,'shared MIME file'),
     ('setup-env-vars=',None,'environment variables passed to setup.py'),
     ('udev-rules=',None,'file with rules to install to udev'),
+    ('python2-depends-name=',None,'Python 2 Debian package name used in ${python:Depends}'),
     ]
 
 stdeb_cmd_bool_opts = [
@@ -902,6 +903,8 @@ class DebianInfo:
             else:
                 self.patch_level = 0
 
+        python2_depends_name = parse_val(cfg,module_name,'Python2-Depends-Name')
+
         xs_python_version = parse_vals(cfg,module_name,'XS-Python-Version')
 
         if len(xs_python_version)!=0:
@@ -1096,8 +1099,14 @@ class DebianInfo:
         self.override_dh_auto_build = RULES_OVERRIDE_BUILD_TARGET%self.__dict__
         self.override_dh_auto_install = RULES_OVERRIDE_INSTALL_TARGET%self.__dict__
 
+        scripts = ''
+        if with_python2 and python2_depends_name:
+            scripts = (
+                '        sed -i ' +
+                '"s/\([ =]\)python[0-9]\?\(\(:any\)\? (\)/\\1%s\\2/g" ' +
+                'debian/%s.substvars') % (python2_depends_name, self.package)
         self.override_dh_python2 = RULES_OVERRIDE_PYTHON2%{
-            'scripts': ''
+            'scripts': scripts
         }
 
         if force_x_python3_version and with_python3 and x_python3_version and \

@@ -731,6 +731,8 @@ All available options:
   Setup-Env-Vars                       environment variables passed to
                                        setup.py
   Udev-Rules                           file with rules to install to udev
+  Python2-Depends-Name                 override Python 2 Debian package name in
+                                       ${python:Depends}
 ====================================== =========================================
 
 The option names in stdeb.cfg files are not case sensitive.
