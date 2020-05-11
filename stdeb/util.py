@@ -1096,6 +1096,10 @@ class DebianInfo:
         self.override_dh_auto_build = RULES_OVERRIDE_BUILD_TARGET%self.__dict__
         self.override_dh_auto_install = RULES_OVERRIDE_INSTALL_TARGET%self.__dict__
 
+        self.override_dh_python2 = RULES_OVERRIDE_PYTHON2%{
+            'scripts': ''
+        }
+
         if force_x_python3_version and with_python3 and x_python3_version and \
                 x_python3_version[0]:
             # override dh_python3 target to modify the dependencies
@@ -1489,8 +1493,7 @@ RULES_MAIN = """\
 
 %(override_dh_auto_install)s
 
-override_dh_python2:
-        dh_python2 --no-guessing-versions
+%(override_dh_python2)s
 
 %(override_dh_python3)s
 
@@ -1522,6 +1525,11 @@ override_dh_auto_install:
 %(scripts_cleanup)s
 """
 
+RULES_OVERRIDE_PYTHON2 = """
+override_dh_python2:
+        dh_python2 --no-guessing-versions
+%(scripts)s
+"""
 RULES_OVERRIDE_PYTHON3 = """
 override_dh_python3:
         dh_python3
