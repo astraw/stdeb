@@ -25,8 +25,7 @@ __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'apply_patch','repack_tarball_with_debianized_dirname',
            'expand_sdist_file','stdeb_cfg_options']
 
-DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
-DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
+DH_MIN_VERS = '9'  # Fundamental to stdeb >= 0.10
 
 PYTHON_ALL_MIN_VERS = '2.6.6-3'
 
@@ -698,7 +697,6 @@ class DebianInfo:
                  patch_level=None,
                  setup_requires=None,
                  debian_version=None,
-                 have_script_entry_points = None,
                  use_setuptools = False,
                  guess_conflicts_provides_replaces = False,
                  sdist_dsc_command = None,
@@ -871,10 +869,7 @@ class DebianInfo:
         else:
             self.long_description = ''
 
-        if have_script_entry_points:
-            build_deps.append( 'debhelper (>= %s)'%DH_IDEAL_VERS )
-        else:
-            build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS )
+        build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS )
 
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
         self.build_depends = ', '.join(build_deps)
@@ -1333,7 +1328,7 @@ def build_dsc(debinfo,
 
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
-    fd.write('7\n')
+    fd.write('9\n')
     fd.close()
 
     #    E. debian/package.mime
@@ -1424,7 +1419,7 @@ def build_dsc(debinfo,
             if not dpkg_compare_versions(
                 debhelper_version_str, 'ge', DH_MIN_VERS ):
                 log.warn('This version of stdeb requires debhelper >= %s. '
-                         'Use stdeb 0.3.x to generate source packages '
+                         'Use stdeb 0.9.x to generate source packages '
                          'compatible with older versions of debhelper.'%(
                     DH_MIN_VERS,))
 
