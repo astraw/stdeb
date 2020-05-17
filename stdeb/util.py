@@ -879,6 +879,15 @@ class DebianInfo:
         else:
             build_deps.append( 'debhelper (>= %s)'%DH_MIN_VERS )
 
+        try:
+            no_default_build_deps = \
+                cfg.get('DEFAULT', 'No-Default-Build-Deps')\
+                    .strip().lower() == "true"
+            if no_default_build_deps:
+                build_deps = []
+        except ConfigParser.NoOptionError:
+            pass
+
         build_deps.extend( parse_vals(cfg,module_name,'Build-Depends') )
         self.build_depends = ', '.join(build_deps)
 
