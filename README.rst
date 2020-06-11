@@ -54,6 +54,23 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2020-06-11: **Version 0.9.1**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.9.1>`__.
+
+  * Bugfixes:
+
+    * handle path with spaces in zip tarball (#150)
+    * fix map() iterator issue in Python 3 (#152)
+    * fix checking for python3-all (instead of python-all) when using only
+      Python 3 (#154)
+
+  * Improvements:
+
+    * get date in Python, avoiding requiring ``date`` on macOS (#115)
+    * add configuration file option ``Python2-Depends-Name`` (#156)
+    * add an option ``--with-dh-virtualenv`` (#155)
+    * add an option named ``ignore-source-changes`` (#151)
+
  * 2019-12-09: **Version 0.9.0**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.9.0>`__.
 
@@ -461,7 +478,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.9.0"
+  STDEB_VERSION="0.9.1"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
