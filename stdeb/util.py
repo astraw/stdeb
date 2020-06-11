@@ -1419,8 +1419,7 @@ def build_dsc(debinfo,
 
             if len(python3_defaults_version_str) == 0:
                 log.warn('This version of stdeb requires python3-all, '
-                         'but you do not have this package installed. '
-                         'Could not check compatibility.')
+                         'but you do not have this package installed.')
 
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
