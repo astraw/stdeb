@@ -29,7 +29,6 @@ DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
 DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
 
 PYTHON_ALL_MIN_VERS = '2.6.6-3'
-PYTHON3_ALL_MIN_VERS = '3.5.1-3'
 
 try:
     # Python 2.x
@@ -1419,9 +1418,9 @@ def build_dsc(debinfo,
             python3_defaults_version_str = get_version_str('python3-all')
 
             if len(python3_defaults_version_str) == 0:
-                log.warn('This version of stdeb requires python3-all >= %s, '
+                log.warn('This version of stdeb requires python3-all, '
                          'but you do not have this package installed. '
-                         'Could not check compatibility.' % PYTHON3_ALL_MIN_VERS)
+                         'Could not check compatibility.')
 
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
