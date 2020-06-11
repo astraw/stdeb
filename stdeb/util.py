@@ -538,7 +538,7 @@ def dpkg_buildpackage(*args,**kwargs):
     if len(kwargs)!=0:
         raise ValueError('only kwarg can be "cwd"')
     "call dpkg-buildpackage [arg1] [...] [argN]"
-    args = ['/usr/bin/dpkg-buildpackage'] + list(args)
+    args = ['/usr/bin/dpkg-buildpackage']+list(args)
     process_command(args, cwd=cwd)
 
 def dpkg_source(b_or_x,arg1,cwd=None):
