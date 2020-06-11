@@ -11,16 +11,22 @@ class bdist_deb(Command):
     user_options = [
         ('sign-results',None,
          'Use gpg to sign the resulting .dsc and .changes file'),
+        ('ignore-source-changes',None,
+         'Ignore all changes on source when building source package '
+         '(add -i.* option to dpkg-source'),
         ]
     boolean_options = [
         'sign-results',
+        'ignore-source-changes',
         ]
 
     def initialize_options (self):
         self.sign_results = False
+        self.ignore_source_changes = False
 
     def finalize_options (self):
         self.sign_results = bool(self.sign_results)
+        self.ignore_source_changes = bool(self.ignore_source_changes)
 
     def run(self):
         # generate .dsc source pkg
@@ -52,6 +58,9 @@ class bdist_deb(Command):
 
         if not self.sign_results:
             syscmd.append('-uc')
+
+        if self.ignore_source_changes:
+            syscmd.append('-i.*')
 
         util.process_command(syscmd,cwd=target_dirs[0])
 

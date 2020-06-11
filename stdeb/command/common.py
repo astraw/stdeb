@@ -33,6 +33,7 @@ class common_debian_package_command(Command):
         self.allow_virtualenv_install_location = False
         self.with_dh_virtualenv = False
         self.sign_results = False
+        self.ignore_source_changes = False
 
         # deprecated options
         self.default_distribution = None
