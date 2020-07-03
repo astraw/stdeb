@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 from optparse import OptionParser
 from stdeb.downloader import myprint, get_source_tarball

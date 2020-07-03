@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 USAGE = """\
 usage: py2dsc [options] distfile
    or: py2dsc --help
