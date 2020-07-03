@@ -1316,6 +1316,7 @@ def build_dsc(debinfo,
     else:
         debinfo.uploaders = ''
     control = CONTROL_FILE%debinfo.__dict__
+    control = re.sub('\n{3,}', '\n\n', control)
     with codecs.open( os.path.join(debian_dir,'control'),
                       mode='w', encoding='utf-8') as fd:
         fd.write(control)
@@ -1325,6 +1326,7 @@ def build_dsc(debinfo,
     rules = RULES_MAIN%debinfo.__dict__
 
     rules = rules.replace('        ','\t')
+    rules = re.sub('\n{3,}', '\n\n', rules)
     rules_fname = os.path.join(debian_dir,'rules')
     with codecs.open( rules_fname,
                       mode='w', encoding='utf-8') as fd:
