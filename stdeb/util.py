@@ -25,10 +25,10 @@ __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'apply_patch','repack_tarball_with_debianized_dirname',
            'expand_sdist_file','stdeb_cfg_options']
 
-DH_MIN_VERS = '7'       # Fundamental to stdeb >= 0.4
-DH_IDEAL_VERS = '7.4.3' # fixes Debian bug 548392
+DH_MIN_VERS = '9'             # Version in Jessie (oldoldstable as of 2020-07)
+DH_IDEAL_VERS = '9.20150101'  # latest 9.x version as of 2020.07
 
-PYTHON_ALL_MIN_VERS = '2.6.6-3'
+PYTHON_ALL_MIN_VERS = '2.7.9-1'
 
 try:
     # Python 2.x
@@ -1333,7 +1333,7 @@ def build_dsc(debinfo,
 
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
-    fd.write('7\n')
+    fd.write(DH_MIN_VERS+'\n')
     fd.close()
 
     #    E. debian/package.mime
