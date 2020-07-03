@@ -694,6 +694,7 @@ class DebianInfo:
                  has_ext_modules=NotGiven,
                  description=NotGiven,
                  long_description=NotGiven,
+                 homepage=NotGiven,
                  patch_file=None,
                  patch_level=None,
                  setup_requires=None,
@@ -927,6 +928,9 @@ class DebianInfo:
         if len(x_python3_version)!=0:
             self.source_stanza_extras += ('X-Python3-Version: '+
                                           ', '.join(x_python3_version)+'\n')
+
+        if homepage not in ('UNKNOWN', NotGiven):
+            self.source_stanza_extras += "Homepage: %s\n" % homepage
 
         dpkg_shlibdeps_params = parse_val(
             cfg,module_name,'dpkg-shlibdeps-params')
