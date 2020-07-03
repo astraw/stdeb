@@ -1346,6 +1346,14 @@ def build_dsc(debinfo,
     fd.write('3.0 (quilt)\n')
     fd.close()
 
+    #    K. debian/watch
+    with open(os.path.join(debian_dir, 'watch'), mode='w') as fd:
+        fd.write(('# please also check http://pypi.debian.net/{name}/watch\n'
+                  'version=3\n'
+                  'opts=uversionmangle=s/(rc|a|b|c)/~$1/ \\\n'
+                  'http://pypi.debian.net/{name}/{name}-(.+)\.(?:zip|tgz|tbz|txz|(?:tar\.(?:gz|bz2|xz)))').\
+                 format(name=debinfo.module_name))
+
     if debian_dir_only:
         return
 
