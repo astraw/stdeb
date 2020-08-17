@@ -111,6 +111,9 @@ stdeb_cmdline_opts = [
      'Use dh_virtualenv to build the package instead of python_distutils. '
      'This is useful to embed an application with all its dependencies '
      'and dont touch to the system libraries.'),
+    ('with-dh-systemd', None,
+     'Adds the systemd addon that will dh_systemd_enable and'
+     'dh_systemd_start helpers at the correct time during build.'),
     ('sign-results',None,
      'Use gpg to sign the resulting .dsc and .changes file'),
     ('ignore-source-changes',None,
@@ -189,6 +192,7 @@ stdeb_cmd_bool_opts = [
     'force-x-python3-version',
     'allow-virtualenv-install-location',
     'with-dh-virtualenv',
+    'with-dh-systemd',
     'sign-results',
     'ignore-source-changes',
     ]
@@ -709,6 +713,7 @@ class DebianInfo:
                  force_x_python3_version=False,
                  allow_virtualenv_install_location=False,
                  with_dh_virtualenv=False,
+                 with_dh_systemd=False,
                  ):
         if cfg_files is NotGiven: raise ValueError("cfg_files must be supplied")
         if module_name is NotGiven: raise ValueError(
@@ -1141,6 +1146,9 @@ class DebianInfo:
             sequencer_options.append('--with python-virtualenv')
         else:
             sequencer_options.append('--buildsystem=python_distutils')
+
+        if with_dh_systemd:
+            sequencer_options.append('--with systemd')
 
         self.sequencer_options = ' '.join(sequencer_options)
 
