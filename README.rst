@@ -605,6 +605,7 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
   --patch-already-applied (-a)         patch was already applied (used when
                                        py2dsc calls sdist_dsc)
   --default-distribution               deprecated (see --suite)
+  --compat                             debian compatibility level (default=9)
   --suite (-z)                         distribution name to use if not
                                        specified in .cfg (default='unstable')
   --default-maintainer                 deprecated (see --maintainer)

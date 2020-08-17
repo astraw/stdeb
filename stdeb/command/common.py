@@ -5,7 +5,7 @@ from distutils.core import Command
 from distutils.errors import DistutilsModuleError
 
 from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, \
-     stdeb_cmd_bool_opts, stdeb_cfg_options
+     stdeb_cmd_bool_opts, stdeb_cfg_options, DH_DEFAULT_VERS
 
 class common_debian_package_command(Command):
     def initialize_options (self):
@@ -35,6 +35,7 @@ class common_debian_package_command(Command):
         self.with_dh_systemd = False
         self.sign_results = False
         self.ignore_source_changes = False
+        self.compat = DH_DEFAULT_VERS
 
         # deprecated options
         self.default_distribution = None
@@ -209,6 +210,7 @@ class common_debian_package_command(Command):
             no_python3_scripts = self.no_python3_scripts,
             force_x_python3_version=self.force_x_python3_version,
             allow_virtualenv_install_location=self.allow_virtualenv_install_location,
+            compat=self.compat,
             with_dh_virtualenv=self.with_dh_virtualenv,
             with_dh_systemd=self.with_dh_systemd,
         )
