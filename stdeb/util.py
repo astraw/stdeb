@@ -1138,6 +1138,11 @@ class DebianInfo:
         sequencer_options = ['--with '+','.join(sequencer_with)]
 
         if with_dh_virtualenv:
+            if with_python2:
+                self.override_dh_virtualenv_py = RULES_OVERRIDE_DH_VIRTUALENV_PY2%self.__dict__
+            if with_python3:
+                self.override_dh_virtualenv_py = RULES_OVERRIDE_DH_VIRTUALENV_PY3%self.__dict__
+
             sequencer_options.append('--with python-virtualenv')
         else:
             sequencer_options.append('--buildsystem=python_distutils')
@@ -1219,7 +1224,7 @@ class DebianInfo:
                 elif value == '<same-as-suite>':
                     assert key=='suite3'
                     # Set to empty string so value of suite is used.
-                    value = '' 
+                    value = ''
                 if key=='suite':
                     if default_distribution is not None:
                         value = default_distribution
@@ -1534,6 +1539,8 @@ RULES_MAIN = """\
 
 %(override_dh_python3)s
 
+%(override_dh_virtualenv_py)s
+
 %(binary_target_lines)s
 """
 
@@ -1571,6 +1578,16 @@ RULES_OVERRIDE_PYTHON3 = """
 override_dh_python3:
         dh_python3
 %(scripts)s
+"""
+
+RULES_OVERRIDE_DH_VIRTUALENV_PY2 = """
+override_dh_virtualenv:
+        dh_virtualenv --python python2
+"""
+
+RULES_OVERRIDE_DH_VIRTUALENV_PY3 = """
+override_dh_virtualenv:
+        dh_virtualenv --python python3
 """
 
 RULES_BINARY_TARGET = """
