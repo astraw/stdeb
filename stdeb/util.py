@@ -1146,6 +1146,7 @@ class DebianInfo:
             sequencer_options.append('--with python-virtualenv')
         else:
             sequencer_options.append('--buildsystem=python_distutils')
+            self.override_dh_virtualenv_py = ''
 
         self.sequencer_options = ' '.join(sequencer_options)
 
