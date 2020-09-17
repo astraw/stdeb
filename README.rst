@@ -759,6 +759,20 @@ All available options:
 
 The option names in stdeb.cfg files are not case sensitive.
 
+Reproducible builds
+-------------------
+
+By default stdeb uses the current time for the the timestamp in the generated
+changelog file. This results in a non-reproducible build since every invocation
+generates a different changelog / ``.deb``.
+The environment variable ``SOURCE_DATE_EPOCH`` can be set to a fixed timestamp
+(e.g. when the version was tagged or of the last commit was made) which will be
+used in the changelog instead. This will ensure that the produced ``.deb`` is
+reproducible on repeated invocations.
+
+For more information about reproducible builds and this specific environment
+variable please see https://reproducible-builds.org/docs/source-date-epoch/
+
 Prerequisites
 -------------
 

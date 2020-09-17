@@ -263,7 +263,11 @@ def get_cmd_stdout(args):
 
 def get_date_822():
     """return output of 822-date command"""
-    t = time.localtime()
+    source_date_epoch = os.environ.get('SOURCE_DATE_EPOCH', None)
+    if source_date_epoch:
+        t = time.gmtime(int(source_date_epoch))
+    else:
+        t = time.localtime()
     return time.strftime(calendar.day_abbr[t.tm_wday]+ ", %d " + calendar.month_abbr[t.tm_mon] + " %Y %H:%M:%S %z", t)
 
 def get_version_str(pkg):
