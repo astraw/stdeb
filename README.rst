@@ -598,7 +598,7 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        /some/random/virtualenv-path
   --with-dh-virtualenv                 Build the package using dh_virtualenv, so all dependencies
                                        are embedded into the packages.
-  --with-dh-system                     Adds the systemd addon that will  dh_systemd_enable and
+  --with-dh-systemd                    Add the systemd addon that will add dh_systemd_enable and
                                        dh_systemd_start helpers at the correct time during build.
   --sign-results                       Use gpg to sign the resulting .dsc and
                                        .changes file
