@@ -1,63 +1,183 @@
 #!/usr/bin/env python
 import sys, os, shutil
-import subprocess
-import argparse
-from stdeb.downloader import myprint, get_source_tarball
+import xmlrpclib
+import urllib2
+import hashlib
+import warnings
+import glob
+from optparse import OptionParser
 import tempfile
+import subprocess
+
+def myprint(mystr,fd=None):
+    if fd is None:
+        print mystr
+    else:
+        print >> fd, mystr
+
+USER_AGENT = 'pypi-install/0.6.0+git ( http://github.com/astraw/stdeb )'
+
+def find_tar_gz(package_name, pypi_url = 'http://python.org/pypi',verbose=0):
+    transport = xmlrpclib.Transport()
+    transport.user_agent = USER_AGENT
+    pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
+
+    download_url = None
+    expected_md5_digest = None
+
+    if verbose >= 2:
+        myprint( 'querying PyPI (%s) for package name "%s"' % (pypi_url,
+                                                               package_name) )
+    releases = pypi.package_releases(package_name)
+    if not releases:
+        print package_name, "not found, trying search:"
+        matches = pypi.search(dict(name=package_name))
+        if not matches:
+            raise ValueError("No pypi search results for %s, try google" % package_name)
+        for match in matches:
+            print match["name"], match["version"]
+            print match["summary"]
+        if len(matches) > 1:
+            raise ValueError("Multiple options, pick one and try again")
+        package_name = matches[0]["name"]
+        releases = pypi.package_releases(package_name)
+        if not releases:
+            raise ValueError("%s found, but no releases found" % package_name)
+        print "Assuming you meant", package_name
+
+    if verbose >= 2:
+        myprint( 'found releases: %s' % (', '.join(releases),) )
+    if len(releases) > 1:
+        # XXX how to sort versions?
+        raise NotImplementedError('no ability to handle more than one release')
+    for version in releases:
+
+        urls = pypi.release_urls( package_name,version)
+        for url in urls:
+            if url['packagetype']=='sdist':
+                assert url['python_version']=='source', 'how can an sdist not be a source?'
+                if url['url'].endswith('.tar.gz'):
+                    download_url = url['url']
+                    if 'md5_digest' in url:
+                        expected_md5_digest = url['md5_digest']
+                    break
+
+        if download_url is None:
+            # PyPI doesn't have package. Is download URL provided?
+            result = pypi.release_data(package_name,version)
+            if result['download_url'] != 'UNKNOWN':
+                download_url = result['download_url']
+                # no download URL provided, see if PyPI itself has download
+                urls = pypi.release_urls( result['name'], result['version'] )
+    if download_url is None:
+        raise ValueError('no package "%s" was found'%package_name)
+    return download_url, expected_md5_digest
+
+def get_source_tarball(package_name,verbose=0):
+    download_url, expected_md5_digest = find_tar_gz(package_name,
+                                                    verbose=verbose)
+    if verbose >= 1:
+        myprint( 'downloading %s' % download_url )
+    request = urllib2.Request(download_url)
+    request.add_header('User-Agent', USER_AGENT )
+    opener = urllib2.build_opener()
+    package_tar_gz = opener.open(request).read()
+    if verbose >= 1:
+        myprint( 'done downloading %d bytes.' % ( len(package_tar_gz), ) )
+    if expected_md5_digest is not None:
+        m = hashlib.md5()
+        m.update(package_tar_gz)
+        actual_md5_digest = m.hexdigest()
+        if verbose >= 2:
+            myprint( 'md5:   actual %s\n     expected %s' % (actual_md5_digest,
+                                                             expected_md5_digest))
+        if actual_md5_digest != expected_md5_digest:
+            raise ValueError('actual and expected md5 digests do not match')
+    else:
+        warnings.warn('no md5 digest found -- cannot verify source file')
+    fname = download_url.split('/')[-1]
+    fd = open(fname,mode='wb')
+    fd.write( package_tar_gz )
+    fd.close()
+    return fname
 
 def main():
-    parser = argparse.ArgumentParser(usage='%(prog)s PACKAGE_NAME [options] [py2dsc-deb options]')
-    parser.add_argument('--verbose', type=int,
+    usage = '%prog PACKAGE_NAME [options]'
+    parser = OptionParser(usage)
+    parser.add_option('--verbose', type='int',
                       help='verbosity level',
                       default=0)
-    parser.add_argument('--release', type=str,
+    parser.add_option('--build-here', action='store_true',
+                      help='build the pieces in this dir, skip install')
+    parser.add_option('--release', type=str,
                       help='specify a particular release',
                       default=None)
-    parser.add_argument('--keep', action='store_true',
+    parser.add_option('--keep', action='store_true',
                       default=False,
                       help='do not remove temporary files')
-    parser.add_argument('--allow-unsafe-download', action='store_true',
+    parser.add_option('--allow-unsafe-download', action='store_true',
                       default=False,
                       help='allow unsafe downloads')
-    (options, args) = parser.parse_known_args()
+    (options, args) = parser.parse_args()
 
     if os.geteuid() != 0:
-        myprint('%s must be run as root'%os.path.basename(sys.argv[0]),file=sys.stderr)
+        myprint('%s must be run as root'%os.path.basename(sys.argv[0]),fd=sys.stderr)
         sys.exit(1)
 
-    if len(args) < 1:
-        myprint('need exactly one PACKAGE_NAME',file=sys.stderr)
+    if len(args) != 1:
+        myprint('need exactly one PACKAGE_NAME',fd=sys.stderr)
         parser.print_help()
         sys.exit(1)
+
+    if options.build_here:
+        options.keep = True
 
     package_name = args[0]
     py2dsc_args = args[1:]
     if package_name.startswith('-'):
-        myprint('PACKAGE_NAME must be first argument',file=sys.stderr)
+        myprint('PACKAGE_NAME must be first argument',fd=sys.stderr)
         parser.print_help()
         sys.exit(1)
 
     orig_dir = os.path.abspath( os.curdir )
-    tmpdir = os.path.abspath(tempfile.mkdtemp())
+    if options.build_here:
+        tmpdir = os.path.abspath(package_name)
+        if not os.path.isdir(tmpdir):
+            os.mkdir(tmpdir)
+    else:
+        tmpdir = os.path.abspath(tempfile.mkdtemp())
     try:
         if options.verbose >= 2:
             myprint('downloading to %s'%tmpdir)
         os.chdir( tmpdir )
-        tarball_fname = get_source_tarball(package_name,verbose=options.verbose,
-                                           release=options.release,
-                                           allow_unsafe_download=options.allow_unsafe_download)
-
-        cmd = ' '.join(['py2dsc-deb'] + py2dsc_args + [tarball_fname])
+        tarball_fname = get_source_tarball(package_name,verbose=options.verbose)
+        cmd = 'tar xzf %s' % tarball_fname
         if options.verbose >= 2:
             myprint('executing: %s'%cmd)
         subprocess.check_call(cmd, shell=True)
 
-        os.chdir( 'deb_dist' )
-        cmd = 'dpkg -i *.deb'
+        expanded_dir = None
+        for entry in os.listdir(os.curdir):
+            if os.path.isdir(entry):
+                assert expanded_dir is None, "only expected one directory"
+                expanded_dir = entry
+
+        os.chdir( expanded_dir )
+        cmd = ('%s setup.py --command-packages=stdeb.command sdist_dsc '
+               '--guess-conflicts-provides-replaces=True bdist_deb' %
+               (sys.executable, ) )
         if options.verbose >= 2:
             myprint('executing: %s'%cmd)
         subprocess.check_call(cmd, shell=True)
 
+        if not options.build_here:
+            os.chdir( 'deb_dist' )
+            cmd = 'sudo dpkg -i *.deb'
+            if options.verbose >= 2:
+                myprint('executing: %s'%cmd)
+            subprocess.check_call(cmd, shell=True)
+        else:
+            print "Now dpkg -i", " ".join(glob.glob(os.path.join(tmpdir, expanded_dir, "deb_dist/*.deb")))
     finally:
         os.chdir( orig_dir )
         if not options.keep:
