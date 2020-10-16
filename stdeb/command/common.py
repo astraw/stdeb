@@ -126,8 +126,6 @@ class common_debian_package_command(Command):
         except DistutilsModuleError as err:
             use_setuptools = False
 
-        have_script_entry_points = None
-
         config_fname = 'stdeb.cfg'
         # Distutils fails if not run from setup.py dir, so this is OK.
         if os.path.exists(config_fname):
@@ -147,19 +145,6 @@ class common_debian_package_command(Command):
 
             egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
             egg_module_name = egg_module_name.split(os.sep)[-1]
-
-            if 1:
-                # determine whether script specifies setuptools entry_points
-                ep_fname = os.path.join(egg_info_dirname,'entry_points.txt')
-                if os.path.exists(ep_fname):
-                    entry_points = open(ep_fname,'rU').readlines()
-                else:
-                    entry_points = ''
-                entry_points = [ep.strip() for ep in entry_points]
-
-                if ('[console_scripts]' in entry_points or
-                    '[gui_scripts]' in entry_points):
-                    have_script_entry_points = True
         else:
             # We don't have setuptools, so guess egg_info_dirname to
             # find old stdeb.cfg.
@@ -175,9 +160,6 @@ class common_debian_package_command(Command):
                              'stdeb.cfg in %s. This file will be used, but you '
                              'should move it alongside setup.py.' % entry)
                     cfg_files.append(config_fname)
-
-        if have_script_entry_points is None:
-            have_script_entry_points = self.distribution.has_scripts()
 
         upstream_version = self.distribution.get_version()
         bad_chars = ':_'
@@ -211,7 +193,6 @@ class common_debian_package_command(Command):
             patch_file = self.patch_file,
             patch_level = self.patch_level,
             debian_version = self.debian_version,
-            have_script_entry_points = have_script_entry_points,
             setup_requires = (), # XXX How do we get the setup_requires?
             use_setuptools = use_setuptools,
             guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
