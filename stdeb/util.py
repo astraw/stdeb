@@ -1225,7 +1225,7 @@ class DebianInfo:
                 elif value == '<same-as-suite>':
                     assert key=='suite3'
                     # Set to empty string so value of suite is used.
-                    value = ''
+                    value = '' 
                 if key=='suite':
                     if default_distribution is not None:
                         value = default_distribution
