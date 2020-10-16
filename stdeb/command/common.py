@@ -195,6 +195,7 @@ class common_debian_package_command(Command):
             has_ext_modules = self.distribution.has_ext_modules(),
             description = description,
             long_description = long_description,
+            homepage = self.distribution.get_url(),
             patch_file = self.patch_file,
             patch_level = self.patch_level,
             debian_version = self.debian_version,
