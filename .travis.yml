@@ -21,3 +21,5 @@ script:
     - sudo env "PATH=$PATH" bash -x ./test.sh
     - sudo env "PATH=$PATH" bash -x ./test-pypi-install.sh
     - sudo env "PATH=$PATH" bash -x ./test2and3.sh
+    - pip install flake8
+    - flake8 --extend-ignore D scripts/* stdeb/ test_data/
