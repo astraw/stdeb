@@ -26,6 +26,7 @@ __all__ = ['DebianInfo','build_dsc','expand_tarball','expand_zip',
            'expand_sdist_file','stdeb_cfg_options']
 
 DH_MIN_VERS = '9'  # Fundamental to stdeb >= 0.10
+DH_DEFAULT_VERS = 9
 
 PYTHON_ALL_MIN_VERS = '2.6.6-3'
 
@@ -106,6 +107,8 @@ stdeb_cmdline_opts = [
      'x-python3-version'),
     ('allow-virtualenv-install-location',None,
      'Allow installing into /some/random/virtualenv-path'),
+    ('compat=', 'c',
+     'Debian compatibility level (Default={})'.format(DH_DEFAULT_VERS)),
     ('with-dh-virtualenv',None,
      'Use dh_virtualenv to build the package instead of python_distutils. '
      'This is useful to embed an application with all its dependencies '
@@ -715,6 +718,7 @@ class DebianInfo:
                  no_python3_scripts = None,
                  force_x_python3_version=False,
                  allow_virtualenv_install_location=False,
+                 compat=DH_DEFAULT_VERS,
                  with_dh_virtualenv=False,
                  with_dh_systemd=False,
                  ):
@@ -764,6 +768,7 @@ class DebianInfo:
 
         self.stdeb_version = __stdeb_version__
         self.module_name = module_name
+        self.compat = compat
         self.source = parse_val(cfg,module_name,'Source')
         self.package = parse_val(cfg,module_name,'Package')
         self.package3 = parse_val(cfg,module_name,'Package3')
@@ -1354,7 +1359,7 @@ def build_dsc(debinfo,
 
     #    D. debian/compat
     fd = open( os.path.join(debian_dir,'compat'), mode='w')
-    fd.write('9\n')
+    fd.write('{}\n'.format(str(debinfo.compat)))
     fd.close()
 
     #    E. debian/package.mime
