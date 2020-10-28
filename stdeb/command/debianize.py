@@ -1,8 +1,9 @@
-from distutils.core import Command
+from distutils.core import Command  # noqa: F401
 from stdeb.command.common import common_debian_package_command
 
 from stdeb.util import build_dsc, stdeb_cmdline_opts, \
      stdeb_cmd_bool_opts, stdeb_cfg_options
+
 
 class debianize(common_debian_package_command):
     description = "distutils command to create a debian directory"
@@ -13,7 +14,8 @@ class debianize(common_debian_package_command):
     def run(self):
         debinfo = self.get_debinfo()
         if debinfo.patch_file != '':
-            raise RuntimeError('Patches cannot be applied in debianize command')
+            raise RuntimeError(
+                'Patches cannot be applied in debianize command')
 
         dist_dir = None
         repackaged_dirname = None

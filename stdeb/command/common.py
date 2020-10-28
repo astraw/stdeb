@@ -1,14 +1,15 @@
-import sys, os, shutil
+import os
+import sys
 
 from stdeb import log
 from distutils.core import Command
 from distutils.errors import DistutilsModuleError
 
-from stdeb.util import DebianInfo, build_dsc, stdeb_cmdline_opts, \
-     stdeb_cmd_bool_opts, stdeb_cfg_options, DH_DEFAULT_VERS
+from stdeb.util import DebianInfo, DH_DEFAULT_VERS, stdeb_cfg_options
+
 
 class common_debian_package_command(Command):
-    def initialize_options (self):
+    def initialize_options(self):
         self.patch_already_applied = 0
         self.remove_expanded_source_dir = 0
         self.patch_posix = 0
@@ -20,11 +21,11 @@ class common_debian_package_command(Command):
         self.debian_version = None
         self.no_backwards_compatibility = None
         self.guess_conflicts_provides_replaces = None
-        if sys.version_info[0]==2:
+        if sys.version_info[0] == 2:
             self.with_python2 = 'True'
             self.with_python3 = 'False'
         else:
-            assert sys.version_info[0]==3
+            assert sys.version_info[0] == 3
             self.with_python2 = 'False'
             self.with_python3 = 'True'
         self.no_python2_scripts = 'False'
@@ -45,8 +46,8 @@ class common_debian_package_command(Command):
         for longopt, shortopt, description in stdeb_cfg_options:
             assert longopt.endswith('=')
             name = longopt[:-1]
-            name = name.replace('-','_')
-            setattr( self, name, None )
+            name = name.replace('-', '_')
+            setattr(self, name, None)
 
     def finalize_options(self):
         def str_to_bool(mystr):
@@ -55,7 +56,8 @@ class common_debian_package_command(Command):
             elif mystr.lower() == 'true':
                 return True
             else:
-                raise ValueError('bool string "%s" is not "true" or "false"'%mystr)
+                raise ValueError(
+                    'bool string "%s" is not "true" or "false"' % mystr)
         if self.dist_dir is None:
             self.dist_dir = 'deb_dist'
         if self.patch_level is not None:
@@ -74,18 +76,19 @@ class common_debian_package_command(Command):
         self.no_python3_scripts = str_to_bool(self.no_python3_scripts)
         if self.maintainer is not None:
             # Get the locale specifying the encoding in sys.argv
-            import locale, codecs
+            import codecs
+            import locale
             fs_enc = codecs.lookup(locale.getpreferredencoding()).name
-            if hasattr(os,'fsencode'): # this exists only in Python 3
-                m = os.fsencode(self.maintainer) # convert to original raw bytes
+            if hasattr(os, 'fsencode'):  # this exists only in Python 3
+                m = os.fsencode(self.maintainer)  # convert to orig raw bytes
 
                 # Now, convert these raw bytes into unicode.
-                m = m.decode(fs_enc) # Set your locale if you get errors here
+                m = m.decode(fs_enc)  # Set your locale if you get errors here
 
                 self.maintainer = m
             else:
                 # Python 2
-                if hasattr(self.maintainer,'decode'):
+                if hasattr(self.maintainer, 'decode'):
                     self.maintainer = self.maintainer.decode(fs_enc)
 
     def get_debinfo(self):
@@ -97,17 +100,19 @@ class common_debian_package_command(Command):
         if 1:
             # set default maintainer
             if os.environ.get('DEBEMAIL'):
-                guess_maintainer = "%s <%s>" % (os.environ.get('DEBFULLNAME',
-                                                               os.environ['DEBEMAIL']),
-                                                os.environ['DEBEMAIL'])
-            elif (self.distribution.get_maintainer() != 'UNKNOWN' and
-                self.distribution.get_maintainer_email() != 'UNKNOWN'):
-                guess_maintainer = "%s <%s>"%(
+                guess_maintainer = "%s <%s>" % (
+                    os.environ.get('DEBFULLNAME', os.environ['DEBEMAIL']),
+                    os.environ['DEBEMAIL'])
+            elif (
+                self.distribution.get_maintainer() != 'UNKNOWN' and
+                self.distribution.get_maintainer_email() != 'UNKNOWN'
+            ):
+                guess_maintainer = "%s <%s>" % (
                     self.distribution.get_maintainer(),
                     self.distribution.get_maintainer_email())
             elif (self.distribution.get_author() != 'UNKNOWN' and
                   self.distribution.get_author_email() != 'UNKNOWN'):
-                guess_maintainer = "%s <%s>"%(
+                guess_maintainer = "%s <%s>" % (
                     self.distribution.get_author(),
                     self.distribution.get_author_email())
             else:
@@ -117,7 +122,7 @@ class common_debian_package_command(Command):
                      '--default-maintainer option. '
                      'Switch to the --maintainer option.')
             guess_maintainer = self.default_maintainer
-        if hasattr(guess_maintainer,'decode'):
+        if hasattr(guess_maintainer, 'decode'):
             # python 2 : convert (back to) unicode
             guess_maintainer = guess_maintainer.decode('utf-8')
 
@@ -129,7 +134,7 @@ class common_debian_package_command(Command):
         use_setuptools = True
         try:
             ei_cmd = self.distribution.get_command_obj('egg_info')
-        except DistutilsModuleError as err:
+        except DistutilsModuleError:
             use_setuptools = False
 
         config_fname = 'stdeb.cfg'
@@ -142,14 +147,16 @@ class common_debian_package_command(Command):
             egg_info_dirname = ei_cmd.egg_info
 
             # Pickup old location of stdeb.cfg
-            config_fname = os.path.join(egg_info_dirname,'stdeb.cfg')
+            config_fname = os.path.join(egg_info_dirname, 'stdeb.cfg')
             if os.path.exists(config_fname):
                 log.warn('Deprecation warning: stdeb detected old location of '
                          'stdeb.cfg in %s. This file will be used, but you '
-                         'should move it alongside setup.py.' %egg_info_dirname)
+                         'should move it alongside setup.py.' %
+                         egg_info_dirname)
                 cfg_files.append(config_fname)
 
-            egg_module_name = egg_info_dirname[:egg_info_dirname.index('.egg-info')]
+            egg_module_name = egg_info_dirname[
+                :egg_info_dirname.index('.egg-info')]
             egg_module_name = egg_module_name.split(os.sep)[-1]
         else:
             # We don't have setuptools, so guess egg_info_dirname to
@@ -160,11 +167,11 @@ class common_debian_package_command(Command):
                 if not (entry.endswith('.egg-info') and os.path.isdir(entry)):
                     continue
                 # Pickup old location of stdeb.cfg
-                config_fname = os.path.join(entry,'stdeb.cfg')
+                config_fname = os.path.join(entry, 'stdeb.cfg')
                 if os.path.exists(config_fname):
                     log.warn('Deprecation warning: stdeb detected '
-                             'stdeb.cfg in %s. This file will be used, but you '
-                             'should move it alongside setup.py.' % entry)
+                             'stdeb.cfg in %s. This file will be used, but '
+                             'you should move it alongside setup.py.' % entry)
                     cfg_files.append(config_fname)
 
         upstream_version = self.distribution.get_version()
@@ -172,44 +179,46 @@ class common_debian_package_command(Command):
         for bad_char in bad_chars:
             if bad_char in upstream_version:
                 raise ValueError("Illegal character (%r) detected in version. "
-                                 "This will break the debian tools."%bad_char)
+                                 "This will break the debian tools." %
+                                 bad_char)
 
         description = self.distribution.get_description()
-        if hasattr(description,'decode'):
+        if hasattr(description, 'decode'):
             # python 2 : convert (back to) unicode
             description = description.decode('utf-8')
         description = description[:60]
 
         long_description = self.distribution.get_long_description()
-        if hasattr(long_description,'decode'):
+        if hasattr(long_description, 'decode'):
             # python 2 : convert (back to) unicode
             long_description = long_description.decode('utf-8')
         long_description = long_description
 
-
         debinfo = DebianInfo(
             cfg_files=cfg_files,
-            module_name = module_name,
+            module_name=module_name,
             default_distribution=self.default_distribution,
             guess_maintainer=guess_maintainer,
-            upstream_version = upstream_version,
-            has_ext_modules = self.distribution.has_ext_modules(),
-            description = description,
-            long_description = long_description,
-            homepage = self.distribution.get_url(),
-            patch_file = self.patch_file,
-            patch_level = self.patch_level,
-            debian_version = self.debian_version,
-            setup_requires = (), # XXX How do we get the setup_requires?
-            use_setuptools = use_setuptools,
-            guess_conflicts_provides_replaces=self.guess_conflicts_provides_replaces,
-            sdist_dsc_command = self,
-            with_python2 = self.with_python2,
-            with_python3 = self.with_python3,
-            no_python2_scripts = self.no_python2_scripts,
-            no_python3_scripts = self.no_python3_scripts,
+            upstream_version=upstream_version,
+            has_ext_modules=self.distribution.has_ext_modules(),
+            description=description,
+            long_description=long_description,
+            homepage=self.distribution.get_url(),
+            patch_file=self.patch_file,
+            patch_level=self.patch_level,
+            debian_version=self.debian_version,
+            setup_requires=(),  # XXX How do we get the setup_requires?
+            use_setuptools=use_setuptools,
+            guess_conflicts_provides_replaces=(
+                self.guess_conflicts_provides_replaces),
+            sdist_dsc_command=self,
+            with_python2=self.with_python2,
+            with_python3=self.with_python3,
+            no_python2_scripts=self.no_python2_scripts,
+            no_python3_scripts=self.no_python3_scripts,
             force_x_python3_version=self.force_x_python3_version,
-            allow_virtualenv_install_location=self.allow_virtualenv_install_location,
+            allow_virtualenv_install_location=(
+                self.allow_virtualenv_install_location),
             compat=self.compat,
             with_dh_virtualenv=self.with_dh_virtualenv,
             with_dh_systemd=self.with_dh_systemd,
