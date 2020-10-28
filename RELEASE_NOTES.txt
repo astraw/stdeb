@@ -1,5 +1,11 @@
 See the News section in the README for more details.
 
+Release 0.10.0
+==============
+
+The default Debian compat version has been changed from 7 to 9 as well as new
+options and features.
+
 Release 0.9.1
 =============
 
