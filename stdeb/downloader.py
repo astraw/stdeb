@@ -12,6 +12,7 @@ import hashlib
 import warnings
 import stdeb
 from stdeb.transport import RequestsTransport
+import time
 
 myprint = print
 
@@ -35,7 +36,7 @@ def find_tar_gz(package_name, pypi_url='https://pypi.org',
                                                               package_name))
 
     show_hidden = True
-    all_releases = pypi.package_releases(package_name, show_hidden)
+    all_releases = _call(pypi.package_releases, package_name, show_hidden)
     if release is not None:
         # A specific release is requested.
         if verbose >= 2:
@@ -48,7 +49,7 @@ def find_tar_gz(package_name, pypi_url='https://pypi.org',
                              'releases %r' % (release, all_releases))
         version = release
     else:
-        default_releases = pypi.package_releases(package_name)
+        default_releases = _call(pypi.package_releases, package_name)
         if len(default_releases) != 1:
             raise RuntimeError('Expected one and only one release. '
                                'Non-hidden: %r. All: %r' %
@@ -60,7 +61,7 @@ def find_tar_gz(package_name, pypi_url='https://pypi.org',
 
         version = default_release
 
-    urls = pypi.release_urls(package_name, version)
+    urls = _call(pypi.release_urls, package_name, version)
     for url in urls:
         if url['packagetype'] == 'sdist':
             assert url['python_version'] == 'source', \
@@ -73,14 +74,24 @@ def find_tar_gz(package_name, pypi_url='https://pypi.org',
 
     if download_url is None:
         # PyPI doesn't have package. Is download URL provided?
-        result = pypi.release_data(package_name, version)
+        result = _call(pypi.release_data, package_name, version)
         if result['download_url'] != 'UNKNOWN':
             download_url = result['download_url']
             # no download URL provided, see if PyPI itself has download
-            urls = pypi.release_urls(result['name'], result['version'])
+            urls = _call(pypi.release_urls, result['name'], result['version'])
     if download_url is None:
         raise ValueError('no package "%s" was found' % package_name)
     return download_url, expected_md5_digest
+
+
+def _call(callable_, *args, **kwargs):
+    try:
+        return callable_(*args, **kwargs)
+    except xmlrpclib.Fault as e:
+        if not e.faultString.startswith('HTTPTooManyRequests'):
+            raise
+        time.sleep(1)  # try again after rate limit
+        return callable_(*args, **kwargs)
 
 
 def md5sum(filename):
