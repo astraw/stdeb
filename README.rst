@@ -52,6 +52,28 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2020-10-28: **Version 0.10.0**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.10.0>`__.
+
+  * Bugfixes:
+
+    * add sleep between PyPI API calls to avoid rate limit (#173)
+
+  * Improvements:
+
+    * use SOURCE_DATE_EPOCH if set for timestamp in generated changelog to
+      generate reproducbile artifacts (#166)
+    * update debhelper compat version from 7 to 9 (#158)
+    * added flag --with-dh-systemd (#162)
+    * add support for DEBEMAIL envvar (#168)
+    * use setuptools "url" field for "Homepage" field in debian/control (#169)
+    * dh_virtualenv: specify Python version (#165)
+    * added compat flag to modify Debian compatibility level (#163)
+
+  * Cosmetic:
+    * remove excess newlines from debian/control and rules file (#167)
+    * use flake8 to check style in Travis CI, update code to comply (#171)
+
  * 2020-06-11: **Version 0.9.1**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.9.1>`__.
 
@@ -476,7 +498,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.9.1"
+  STDEB_VERSION="0.10.0"
 
   # Download stdeb
   wget http://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
