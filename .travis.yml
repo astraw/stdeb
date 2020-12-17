@@ -1,5 +1,8 @@
 # http://travis-ci.org/#!/astraw/stdeb
 language: python
+arch:
+    - amd64
+    - ppc64le
 python:
     - "2.7_with_system_site_packages"
     - "3.5_with_system_site_packages"
