@@ -1468,8 +1468,12 @@ def build_dsc(debinfo,
         fname = debinfo.udev_rules
         if not os.path.exists(fname):
             raise ValueError('udev rules file specified, but does not exist')
-        link_func(fname,
-                  os.path.join(debian_dir, '%s.udev' % debinfo.package))
+        if debinfo.with_python2:
+            link_func(fname,
+                      os.path.join(debian_dir, '%s.udev' % debinfo.package))
+        if debinfo.with_python3:
+            link_func(fname,
+                      os.path.join(debian_dir, '%s.udev' % debinfo.package3))
 
     #    J. debian/source/format
     os.mkdir(os.path.join(debian_dir, 'source'))
