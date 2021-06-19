@@ -501,7 +501,7 @@ to install a more recent stdeb.
   STDEB_VERSION="0.10.0"
 
   # Download stdeb
-  wget httpd://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
+  wget https://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
 
   # Extract it
   tar xzf stdeb-$STDEB_VERSION.tar.gz
