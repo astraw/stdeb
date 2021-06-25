@@ -1011,6 +1011,8 @@ class DebianInfo:
             self.dh_binary_arch_lines = '\tdh binary-arch'
         self.dh_binary_indep_lines = '\tdh binary-indep'
 
+        dh_python3_params = parse_val(cfg, module_name, 'dh-python3-params')
+
         conflicts = parse_vals(cfg, module_name, 'Conflicts')
         conflicts3 = parse_vals(cfg, module_name, 'Conflicts3')
         breaks = parse_vals(cfg, module_name, 'Breaks')
@@ -1206,6 +1208,7 @@ class DebianInfo:
             'scripts': scripts
         }
 
+        scripts = ''
         if force_x_python3_version and with_python3 and x_python3_version and \
                 x_python3_version[0]:
             # override dh_python3 target to modify the dependencies
@@ -1213,11 +1216,14 @@ class DebianInfo:
             version = x_python3_version[0]
             if not version.endswith('~'):
                 version += '~'
-            self.override_dh_python3 = RULES_OVERRIDE_PYTHON3 % {
-                'scripts': (
+                scripts = (
                     '        sed -i ' +
                     r'"s/\([ =]python3:any (\)>= [^)]*\()\)/\\1%s\\2/g" ' +
                     'debian/%s.substvars') % (version, self.package3)
+        if len(scripts) or len(dh_python3_params):
+            self.override_dh_python3 = RULES_OVERRIDE_PYTHON3 % {
+                'scripts': scripts,
+                'dh_python3_params': dh_python3_params,
             }
         else:
             self.override_dh_python3 = ''
@@ -1696,7 +1702,7 @@ override_dh_python2:
 """
 RULES_OVERRIDE_PYTHON3 = """
 override_dh_python3:
-        dh_python3
+        dh_python3 %(dh_python3_params)s
 %(scripts)s
 """
 
