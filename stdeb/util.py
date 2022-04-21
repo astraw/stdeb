@@ -199,6 +199,7 @@ stdeb_cfg_options = [
     ('udev-rules=', None, 'file with rules to install to udev'),
     ('python2-depends-name=', None,
      'Python 2 Debian package name used in ${python:Depends}'),
+    ('dh-python3-params=', None, 'parameters passed to dh_python3'),
     ]
 
 stdeb_cmd_bool_opts = [
