@@ -141,6 +141,7 @@ class sdist_dsc(common_debian_package_command):
                   patch_posix=self.patch_posix,
                   remove_expanded_source_dir=self.remove_expanded_source_dir,
                   sign_dsc=self.sign_results,
+                  sign_key=self.sign_key,
                   ignore_source_changes=self.ignore_source_changes,
                   )
 

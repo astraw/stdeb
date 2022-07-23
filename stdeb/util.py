@@ -132,6 +132,8 @@ stdeb_cmdline_opts = [
      'dh_systemd_start helpers at the correct time during build.'),
     ('sign-results', None,
      'Use gpg to sign the resulting .dsc and .changes file'),
+    ('sign-key=', None,
+     'Specify signing key'),
     ('ignore-source-changes', None,
      'Ignore all changes on source when building source package (add -i.* '
      'option to dpkg-source)'),
@@ -1336,6 +1338,7 @@ def build_dsc(debinfo,
               remove_expanded_source_dir=0,
               debian_dir_only=False,
               sign_dsc=False,
+              sign_key=None,
               ignore_source_changes=False,
               ):
     """make debian source package"""
@@ -1562,6 +1565,8 @@ def build_dsc(debinfo,
 
     if not sign_dsc:
         args += ['-uc', '-us']
+    elif sign_key is not None:
+        args += ['--sign-key={}'.format(sign_key)]
 
     if ignore_source_changes:
         args.append('-i.*')

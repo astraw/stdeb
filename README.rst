@@ -622,6 +622,7 @@ To pass these commands to sdist_dsc when calling bdist_deb, do this::
                                        dh_systemd_start helpers at the correct time during build.
   --sign-results                       Use gpg to sign the resulting .dsc and
                                        .changes file
+  --sign-key                           Specify signing key
   --dist-dir (-d)                      directory to put final built
                                        distributions in (default='deb_dist')
   --patch-already-applied (-a)         patch was already applied (used when

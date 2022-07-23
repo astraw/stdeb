@@ -35,6 +35,7 @@ class common_debian_package_command(Command):
         self.with_dh_virtualenv = False
         self.with_dh_systemd = False
         self.sign_results = False
+        self.sign_key = None
         self.ignore_source_changes = False
         self.compat = DH_DEFAULT_VERS
 
