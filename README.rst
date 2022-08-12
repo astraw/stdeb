@@ -1,6 +1,3 @@
-.. image:: https://travis-ci.org/astraw/stdeb.png?branch=master
-        :target: https://travis-ci.org/astraw/stdeb
-
 stdeb - Python to Debian source package conversion utility
 ==========================================================
 
@@ -51,6 +48,11 @@ interpreter (and only the Python3 package installs scripts)::
 
 News
 ----
+ * 2022-08-12: **Version 0.11.0**.
+
+  * Improvements:
+
+    * add support for debian folder containing postinst and other scripts for bdist_deb
 
  * 2020-10-28: **Version 0.10.0**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.10.0>`__.
