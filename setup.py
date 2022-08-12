@@ -9,13 +9,13 @@ setup(
     name='stdeb',
     # Keep version in sync with stdeb/__init__.py and install section
     # of README.rst.
-    version='0.10.0',
-    author='Andrew Straw',
-    author_email='strawman@astraw.com',
+    version='0.11.0',
+    author='Daniel Bisar',
+    author_email='3024016+danielbisar@users.noreply.github.com',
     description='Python to Debian source package conversion utility',
     long_description=long_description,
     license='MIT',
-    url='http://github.com/astraw/stdeb',
+    url='http://github.com/daniel.bisar/stdeb',
     packages=['stdeb', 'stdeb.command'],
     scripts=[
         'scripts/py2dsc',
