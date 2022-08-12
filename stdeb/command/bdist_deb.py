@@ -1,4 +1,5 @@
 import os
+import shutil
 import stdeb.util as util
 
 from distutils.core import Command
@@ -55,6 +56,18 @@ class bdist_deb(Command):
         if len(target_dirs) == 0:
             raise ValueError('could not find debian source directory')
 
+        target_dir = target_dirs[0]
+        self.check_for_and_copy_custom_debian_scripts(target_dir)
+        self.generate_debian_pkg(target_dir)
+
+    def check_for_and_copy_custom_debian_scripts(self, target_dir: str):
+        custom_debian_folder = os.path.join(os.getcwd(), 'debian')
+
+        if os.path.exists(custom_debian_folder):
+            print("STDEB: Found custom debian folder, copying to target directory " + target_dir)
+            shutil.copytree(custom_debian_folder, os.path.join(target_dir, 'debian'), dirs_exist_ok=True)
+
+    def generate_debian_pkg(self, target_dir: str):
         # define system command to execute (gen .deb binary pkg)
         syscmd = ['dpkg-buildpackage', '-rfakeroot', '-b']
 
@@ -64,4 +77,5 @@ class bdist_deb(Command):
         if self.ignore_source_changes:
             syscmd.append('-i.*')
 
-        util.process_command(syscmd, cwd=target_dirs[0])
+        print('CALLING ' + ' '.join(syscmd))
+        util.process_command(syscmd, cwd=target_dir)
