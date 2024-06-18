@@ -9,12 +9,7 @@ import shutil
 import sys
 import time
 import codecs
-try:
-    # Python 2.x
-    import ConfigParser
-except ImportError:
-    # Python 3.x
-    import configparser as ConfigParser
+import configparser as ConfigParser
 import subprocess
 import tempfile
 import stdeb  # noqa: F401
@@ -730,7 +725,7 @@ def check_cfg_files(cfg_files, module_name):
     example.
     """
 
-    cfg = ConfigParser.SafeConfigParser()
+    cfg = ConfigParser.ConfigParser()
     cfg.read(cfg_files)
     if cfg.has_section(module_name):
         section_items = cfg.items(module_name)
@@ -801,7 +796,7 @@ class DebianInfo:
         if len(cfg_files):
             check_cfg_files(cfg_files, module_name)
 
-        cfg = ConfigParser.SafeConfigParser(cfg_defaults)
+        cfg = ConfigParser.ConfigParser(cfg_defaults)
         for cfg_file in cfg_files:
             with codecs.open(cfg_file, mode='r', encoding='utf-8') as fd:
                 cfg.readfp(fd)
