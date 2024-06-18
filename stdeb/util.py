@@ -801,7 +801,7 @@ class DebianInfo:
         cfg = ConfigParser.ConfigParser(cfg_defaults)
         for cfg_file in cfg_files:
             with codecs.open(cfg_file, mode='r', encoding='utf-8') as fd:
-                cfg.readfp(fd)
+                cfg.read_file(fd)
 
         if sdist_dsc_command is not None:
             # Allow distutils commands to override config files (this lets
