@@ -412,7 +412,7 @@ Quickstart 3: I read the warning, so show me how to make a source package, then 
 
 This generates a source package::
 
-  wget http://pypi.python.org/packages/source/R/Reindent/Reindent-0.1.0.tar.gz
+  pypi-download Reindent --release=0.1.0
   py2dsc Reindent-0.1.0.tar.gz
 
 This turns it into a .deb using the standard Debian tools. (Do *this*
@@ -449,7 +449,7 @@ illustration, we do download such a tarball, but immediately unpack it
 (alternatively, use a version control system to grab the unpacked
 source of a package)::
 
-  wget http://pypi.python.org/packages/source/R/Reindent/Reindent-0.1.0.tar.gz
+  pypi-download Reindent --release=0.1.0
   tar xzf Reindent-0.1.0.tar.gz
   cd Reindent-0.1.0
 
@@ -501,7 +501,7 @@ to install a more recent stdeb.
   STDEB_VERSION="0.10.0"
 
   # Download stdeb
-  wget https://pypi.python.org/packages/source/s/stdeb/stdeb-$STDEB_VERSION.tar.gz
+  pypi-download stdeb --release=$STDEB_VERSION
 
   # Extract it
   tar xzf stdeb-$STDEB_VERSION.tar.gz
