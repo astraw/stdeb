@@ -1615,7 +1615,7 @@ Maintainer: %(maintainer)s
 %(uploaders)sSection: %(debian_section)s
 Priority: optional
 Build-Depends: %(build_depends)s
-Standards-Version: 3.9.1
+Standards-Version: 4.7.0
 %(source_stanza_extras)s
 
 %(control_py2_stanza)s
