@@ -29,7 +29,8 @@ __all__ = ['DebianInfo', 'build_dsc', 'expand_tarball', 'expand_zip',
 DH_MIN_VERS = '9'  # Fundamental to stdeb >= 0.10
 DH_DEFAULT_VERS = 9
 
-PYTHON_ALL_MIN_VERS = '2.6.6-3'
+# Choose the oldest from Debian oldoldstable and currently supported Ubuntu LTS
+PYTHON3_ALL_MIN_VERS = '3.7.3-1'
 
 try:
     # Python 2.x
@@ -861,6 +862,10 @@ class DebianInfo:
         self.maintainer = ', '.join(parse_vals(cfg, module_name, 'Maintainer'))
         self.uploaders = parse_vals(cfg, module_name, 'Uploaders')
         self.date822 = get_date_822()
+
+        if with_python2:
+            log.error("Python 2 is no longer supported. Use stdeb <= 0.10.0 for Python 2")
+            sys.exit(1)
 
         build_deps = []
         if use_setuptools:
