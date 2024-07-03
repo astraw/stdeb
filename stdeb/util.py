@@ -26,8 +26,8 @@ __all__ = ['DebianInfo', 'build_dsc', 'expand_tarball', 'expand_zip',
            'apply_patch', 'repack_tarball_with_debianized_dirname',
            'expand_sdist_file', 'stdeb_cfg_options']
 
-DH_MIN_VERS = '9'  # Fundamental to stdeb >= 0.10
-DH_DEFAULT_VERS = 9
+DH_MIN_VERS = '12'  # Fundamental to stdeb >= 0.10
+DH_DEFAULT_VERS = 12
 
 # Choose the oldest from Debian oldoldstable and currently supported Ubuntu LTS
 PYTHON_ALL_MIN_VERS = '2.7.16-1'
@@ -1233,7 +1233,7 @@ class DebianInfo:
 
             sequencer_options.append('--with python-virtualenv')
         else:
-            sequencer_options.append('--buildsystem=python_distutils')
+            sequencer_options.append('--buildsystem=pybuild')
             self.override_dh_virtualenv_py = ''
 
         if with_dh_systemd:
@@ -1562,6 +1562,14 @@ def build_dsc(debinfo,
             if len(python3_defaults_version_str) == 0:
                 log.warn('This version of stdeb requires python3-all, '
                          'but you do not have this package installed.')
+            else:
+                if not dpkg_compare_versions(
+                    python3_defaults_version_str, 'ge', PYTHON3_ALL_MIN_VERS
+                ):
+                    log.warn('This version of stdeb requires python-all >= '
+                             '%s. Use stdeb 0.6.0 or older to generate source '
+                             'packages that use python-support.' % (
+                                 PYTHON_ALL_MIN_VERS,))
 
     #    D. restore debianized tree
     os.rename(fullpath_repackaged_dirname+'.debianized',
