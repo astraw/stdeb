@@ -1,18 +1,11 @@
 from __future__ import print_function
 import os
-try:
-    # Python 2.x
-    import xmlrpclib
-except ImportError:
-    # Python 3.x
-    import xmlrpc.client as xmlrpclib
 from functools import partial
 import requests
 import hashlib
 import warnings
 import stdeb
-from stdeb.transport import RequestsTransport
-import time
+from stdeb.pypi_simple import PyPIClient
 
 myprint = print
 
@@ -22,11 +15,7 @@ USER_AGENT = 'pypi-install/%s ( https://github.com/astraw/stdeb )' % \
 
 def find_tar_gz(package_name, pypi_url='https://pypi.org',
                 verbose=0, release=None):
-    transport = RequestsTransport()
-    transport.user_agent = USER_AGENT
-    if pypi_url.startswith('https://'):
-        transport.use_https = True
-    pypi = xmlrpclib.ServerProxy(pypi_url, transport=transport)
+    pypi_client = PyPIClient(pypi_url, USER_AGENT)
 
     download_url = None
     expected_md5_digest = None
@@ -35,8 +24,7 @@ def find_tar_gz(package_name, pypi_url='https://pypi.org',
         myprint('querying PyPI (%s) for package name "%s"' % (pypi_url,
                                                               package_name))
 
-    show_hidden = True
-    all_releases = _call(pypi.package_releases, package_name, show_hidden)
+    all_releases = pypi_client.release_versions(package_name)
     if release is not None:
         # A specific release is requested.
         if verbose >= 2:
@@ -49,49 +37,18 @@ def find_tar_gz(package_name, pypi_url='https://pypi.org',
                              'releases %r' % (release, all_releases))
         version = release
     else:
-        default_releases = _call(pypi.package_releases, package_name)
-        if len(default_releases) != 1:
-            raise RuntimeError('Expected one and only one release. '
-                               'Non-hidden: %r. All: %r' %
-                               (default_releases, all_releases))
-        default_release = default_releases[0]
+        default_release = pypi_client.release_versions(package_name, current_only=True)
         if verbose >= 2:
             myprint(
-                'found default release: %s' % (', '.join(default_releases),))
+                'found default release: %s' % (', '.join(default_release),))
 
         version = default_release
 
-    urls = _call(pypi.release_urls, package_name, version)
-    for url in urls:
-        if url['packagetype'] == 'sdist':
-            assert url['python_version'] == 'source', \
-                'how can an sdist not be a source?'
-            if url['url'].endswith(('.tar.gz', '.zip')):
-                download_url = url['url']
-                if 'md5_digest' in url:
-                    expected_md5_digest = url['md5_digest']
-                break
+    download_url, expected_md5_digest = pypi_client.download_url(package_name, version)
 
-    if download_url is None:
-        # PyPI doesn't have package. Is download URL provided?
-        result = _call(pypi.release_data, package_name, version)
-        if result['download_url'] != 'UNKNOWN':
-            download_url = result['download_url']
-            # no download URL provided, see if PyPI itself has download
-            urls = _call(pypi.release_urls, result['name'], result['version'])
     if download_url is None:
         raise ValueError('no package "%s" was found' % package_name)
     return download_url, expected_md5_digest
-
-
-def _call(callable_, *args, **kwargs):
-    try:
-        return callable_(*args, **kwargs)
-    except xmlrpclib.Fault as e:
-        if not e.faultString.startswith('HTTPTooManyRequests'):
-            raise
-        time.sleep(1)  # try again after rate limit
-        return callable_(*args, **kwargs)
 
 
 def md5sum(filename):
