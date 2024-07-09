@@ -37,7 +37,7 @@ def find_tar_gz(package_name, pypi_url='https://pypi.org',
                              'releases %r' % (release, all_releases))
         version = release
     else:
-        default_release = pypi_client.release_versions(package_name, current_only=True)
+        default_release = pypi_client.release_version(package_name)
         if verbose >= 2:
             myprint(
                 'found default release: %s' % (', '.join(default_release),))

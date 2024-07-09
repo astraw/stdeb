@@ -16,18 +16,19 @@ class PyPIClient(object):
         self._http_session = requests.Session()
         self._http_session.headers["User-Agent"] = user_agent
 
-    def release_versions(self, package_name, current_only=False):
+    def release_version(self, package_name):
         package_name = normalize_package_name(package_name)
-        if current_only:
-            response = self._http_session.get("%s/pypi/%s/json" % (self.pypi_url, package_name))
-            data = response.json()
-            return data['info']['version']
-        else:
-            response = self._http_session.get(
-                "%s/simple/%s" % (self.pypi_url, package_name),
-                headers={"Accept": "application/vnd.pypi.simple.latest+json"})
-            data = response.json()
-            return data["versions"]
+        response = self._http_session.get("%s/pypi/%s/json" % (self.pypi_url, package_name))
+        data = response.json()
+        return data["info"]["version"]
+
+    def release_versions(self, package_name):
+        package_name = normalize_package_name(package_name)
+        response = self._http_session.get(
+            "%s/simple/%s" % (self.pypi_url, package_name),
+            headers={"Accept": "application/vnd.pypi.simple.latest+json"})
+        data = response.json()
+        return data["versions"]
 
     def download_url(self, package_name, version):
         download_url = None
