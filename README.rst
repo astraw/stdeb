@@ -779,6 +779,7 @@ All available options:
   Udev-Rules                           file with rules to install to udev
   Python2-Depends-Name                 override Python 2 Debian package name in
                                        ${python:Depends}
+  Dh-python3-params                    parameters passed to dh_python3
 ====================================== =========================================
 
 The option names in stdeb.cfg files are not case sensitive.
