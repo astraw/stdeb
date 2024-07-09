@@ -1,6 +1,9 @@
 import re
 import requests
-from stdeb.downloader import USER_AGENT
+import stdeb
+
+USER_AGENT = 'pypi-install/%s ( https://github.com/astraw/stdeb )' % \
+    stdeb.__version__
 
 
 def normalize_package_name(package_name):
