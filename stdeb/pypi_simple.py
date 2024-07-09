@@ -42,5 +42,6 @@ class PyPIClient(object):
                     url["url"].endswith((".tar.gz", ".zip")):
                 download_url = url["url"]
                 md5_digest = url["digests"]["md5"]
+                break
 
         return download_url, md5_digest
