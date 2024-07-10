@@ -4,6 +4,4 @@ include *.sh
 include stdeb.cfg
 include MANIFEST.in
 include .gitignore
-include .travis.yml
-include Vagrantfile*
 recursive-include test_data *

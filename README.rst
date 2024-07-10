@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/astraw/stdeb.png?branch=master
-        :target: https://travis-ci.org/astraw/stdeb
+.. image:: https://github.com/astraw/stdeb/actions/workflows/ci.yaml/badge.svg
+        :target: https://github.com/astraw/stdeb/actions/workflows/ci.yaml
 
 stdeb - Python to Debian source package conversion utility
 ==========================================================
@@ -883,7 +883,7 @@ Additional Credits
 * kzwin for interop with virtualenv
 * GitHub_ for hosting services.
 * WebFaction_ (aka `python-hosting`_) for previous hosting services.
-* TravisCI_ for continuous integration
+* TravisCI_ for previous continuous integration support
 
 .. _GitHub: http://github.com/
 .. _WebFaction: http://webfaction.com/
