@@ -1,5 +1,14 @@
 VERSION 0.8
 
+
+SRC:
+	FUNCTION
+	COPY --dir scripts stdeb test_data \
+		test*.sh *.txt *.py *.cfg *.toml *.rst \
+		MANIFEST.in \
+		/src/stdeb
+	WORKDIR /src/stdeb
+
 BUILD:
 	FUNCTION
 	ENV DEBIAN_FRONTEND=noninteractive
@@ -10,8 +19,7 @@ BUILD:
 	# Test deps
 	RUN apt-get update; apt-get install -y libpq-dev python3-all-dev
 
-	COPY . /src/stdeb
-	WORKDIR /src/stdeb
+	DO +SRC
 	RUN python3 setup.py --command-packages=stdeb.command bdist_deb
 	RUN for f in deb_dist/*.deb; do echo; echo $f; dpkg --contents $f; done
 
@@ -22,8 +30,7 @@ INSTALL:
 
 lint:
 	FROM docker.io/library/python:3.10-alpine
-	COPY . /src/stdeb
-	WORKDIR /src/stdeb
+	DO +SRC
 	RUN python3 -m pip install -r requirements.txt
 	RUN ruff format --check || true
 	RUN ruff check || true
