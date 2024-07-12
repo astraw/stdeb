@@ -1116,6 +1116,14 @@ class DebianInfo:
 
         if not (with_python2 or with_python3):
             raise RuntimeError('nothing to do - neither Python 2 or 3.')
+
+        if with_python2:
+            if shutil.which("python"):
+                self.python2_binname = "python"
+            elif shutil.which("python2"):
+                self.python2_binname = "python2"
+            else:
+                raise RuntimeError("Python 2 binary not found on path as either `python` or `python2`")
         sequencer_with = []
         if with_python2:
             sequencer_with.append('python2')
@@ -1650,7 +1658,7 @@ RULES_MAIN = """\
 %(binary_target_lines)s
 """
 
-RULES_OVERRIDE_CLEAN_TARGET_PY2 = "        python setup.py clean -a"
+RULES_OVERRIDE_CLEAN_TARGET_PY2 = "        %(python2_binname)s setup.py clean -a"
 RULES_OVERRIDE_CLEAN_TARGET_PY3 = "        python3 setup.py clean -a"
 RULES_OVERRIDE_CLEAN_TARGET = r"""
 override_dh_auto_clean:
@@ -1658,14 +1666,14 @@ override_dh_auto_clean:
         find . -name \*.pyc -exec rm {} \;
 """
 
-RULES_OVERRIDE_BUILD_TARGET_PY2 = "        python setup.py build --force"
+RULES_OVERRIDE_BUILD_TARGET_PY2 = "        %(python2_binname)s setup.py build --force"
 RULES_OVERRIDE_BUILD_TARGET_PY3 = "        python3 setup.py build --force"
 RULES_OVERRIDE_BUILD_TARGET = """
 override_dh_auto_build:
 %(rules_override_build_target_pythons)s
 """
 
-RULES_OVERRIDE_INSTALL_TARGET_PY2 = "        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python2_scripts_cli_args)s"  # noqa: E501
+RULES_OVERRIDE_INSTALL_TARGET_PY2 = "        %(python2_binname)s setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python2_scripts_cli_args)s"  # noqa: E501
 
 RULES_OVERRIDE_INSTALL_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python3_scripts_cli_args)s"  # noqa: E501
 

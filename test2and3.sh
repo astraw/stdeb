@@ -116,6 +116,11 @@ if [ "$DO_PY3" = true ]; then
       # test the "sdist_dsc" and "bdist_deb" commands
       ${PY3EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python3=true --with-python2=false bdist_deb
       cd ../..
+
+      echo "using Python 3 to test 2 and 3 generation"
+      cd test_data/simple_pkg
+      ${PY3EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python3=true --with-python2=true bdist_deb
+      cd ../..
     else
       echo "skipping Python >= 3.2 test"
     fi
