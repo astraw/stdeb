@@ -34,7 +34,9 @@ __all__ = ['DebianInfo', 'build_dsc', 'expand_tarball', 'expand_zip',
 DH_MIN_VERS = '9'  # Fundamental to stdeb >= 0.10
 DH_DEFAULT_VERS = 9
 
-PYTHON_ALL_MIN_VERS = '2.6.6-3'
+# Choose the oldest from Debian oldoldstable and currently supported Ubuntu LTS
+PYTHON_ALL_MIN_VERS = '2.7.16-1'
+PYTHON3_ALL_MIN_VERS = '3.7.3-1'
 
 try:
     # Python 2.x
