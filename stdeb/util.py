@@ -732,7 +732,7 @@ def check_cfg_files(cfg_files, module_name):
     example.
     """
 
-    cfg = ConfigParser.SafeConfigParser()
+    cfg = ConfigParser.ConfigParser()
     cfg.read(cfg_files)
     if cfg.has_section(module_name):
         section_items = cfg.items(module_name)
@@ -803,7 +803,7 @@ class DebianInfo:
         if len(cfg_files):
             check_cfg_files(cfg_files, module_name)
 
-        cfg = ConfigParser.SafeConfigParser(cfg_defaults)
+        cfg = ConfigParser.ConfigParser(cfg_defaults)
         for cfg_file in cfg_files:
             with codecs.open(cfg_file, mode='r', encoding='utf-8') as fd:
                 cfg.readfp(fd)
@@ -931,7 +931,9 @@ class DebianInfo:
         self.debian_section = parse_val(cfg, module_name, 'Section')
 
         self.description = re.sub(r'\s+', ' ', description).strip()
-        if long_description != 'UNKNOWN':
+        if long_description == None:
+            self.long_description = ''
+        elif long_description != 'UNKNOWN':
             ld2 = []
             for line in long_description.split('\n'):
                 ls = line.strip()
