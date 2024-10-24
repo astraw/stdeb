@@ -132,8 +132,6 @@ stdeb_cmdline_opts = [
      'dh_systemd_start helpers at the correct time during build.'),
     ('sign-results', None,
      'Use gpg to sign the resulting .dsc and .changes file'),
-    ('sign-key=', None,
-     'Specify signing key'),
     ('ignore-source-changes', None,
      'Ignore all changes on source when building source package (add -i.* '
      'option to dpkg-source)'),
@@ -803,7 +801,7 @@ class DebianInfo:
         if len(cfg_files):
             check_cfg_files(cfg_files, module_name)
 
-        cfg = ConfigParser.SafeConfigParser(cfg_defaults)
+        cfg = ConfigParser.ConfigParser(cfg_defaults)
         for cfg_file in cfg_files:
             with codecs.open(cfg_file, mode='r', encoding='utf-8') as fd:
                 cfg.readfp(fd)
@@ -1116,14 +1114,6 @@ class DebianInfo:
 
         if not (with_python2 or with_python3):
             raise RuntimeError('nothing to do - neither Python 2 or 3.')
-
-        if with_python2:
-            if shutil.which("python"):
-                self.python2_binname = "python"
-            elif shutil.which("python2"):
-                self.python2_binname = "python2"
-            else:
-                raise RuntimeError("Python 2 binary not found on path as either `python` or `python2`")
         sequencer_with = []
         if with_python2:
             sequencer_with.append('python2')
@@ -1346,7 +1336,6 @@ def build_dsc(debinfo,
               remove_expanded_source_dir=0,
               debian_dir_only=False,
               sign_dsc=False,
-              sign_key=None,
               ignore_source_changes=False,
               ):
     """make debian source package"""
@@ -1479,12 +1468,8 @@ def build_dsc(debinfo,
         fname = debinfo.udev_rules
         if not os.path.exists(fname):
             raise ValueError('udev rules file specified, but does not exist')
-        if debinfo.with_python2:
-            link_func(fname,
-                      os.path.join(debian_dir, '%s.udev' % debinfo.package))
-        if debinfo.with_python3:
-            link_func(fname,
-                      os.path.join(debian_dir, '%s.udev' % debinfo.package3))
+        link_func(fname,
+                  os.path.join(debian_dir, '%s.udev' % debinfo.package))
 
     #    J. debian/source/format
     os.mkdir(os.path.join(debian_dir, 'source'))
@@ -1577,8 +1562,6 @@ def build_dsc(debinfo,
 
     if not sign_dsc:
         args += ['-uc', '-us']
-    elif sign_key is not None:
-        args += ['--sign-key={}'.format(sign_key)]
 
     if ignore_source_changes:
         args.append('-i.*')
@@ -1658,7 +1641,7 @@ RULES_MAIN = """\
 %(binary_target_lines)s
 """
 
-RULES_OVERRIDE_CLEAN_TARGET_PY2 = "        %(python2_binname)s setup.py clean -a"
+RULES_OVERRIDE_CLEAN_TARGET_PY2 = "        python setup.py clean -a"
 RULES_OVERRIDE_CLEAN_TARGET_PY3 = "        python3 setup.py clean -a"
 RULES_OVERRIDE_CLEAN_TARGET = r"""
 override_dh_auto_clean:
@@ -1666,14 +1649,14 @@ override_dh_auto_clean:
         find . -name \*.pyc -exec rm {} \;
 """
 
-RULES_OVERRIDE_BUILD_TARGET_PY2 = "        %(python2_binname)s setup.py build --force"
+RULES_OVERRIDE_BUILD_TARGET_PY2 = "        python setup.py build --force"
 RULES_OVERRIDE_BUILD_TARGET_PY3 = "        python3 setup.py build --force"
 RULES_OVERRIDE_BUILD_TARGET = """
 override_dh_auto_build:
 %(rules_override_build_target_pythons)s
 """
 
-RULES_OVERRIDE_INSTALL_TARGET_PY2 = "        %(python2_binname)s setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python2_scripts_cli_args)s"  # noqa: E501
+RULES_OVERRIDE_INSTALL_TARGET_PY2 = "        python setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python2_scripts_cli_args)s"  # noqa: E501
 
 RULES_OVERRIDE_INSTALL_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python3_scripts_cli_args)s"  # noqa: E501
 
