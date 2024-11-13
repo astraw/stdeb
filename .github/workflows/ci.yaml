@@ -43,6 +43,6 @@ jobs:
           earthly --ci +test-pypi-install --OS=${{matrix.os}}
       - name: Run 2and3 tests
         # This test can only be run on platforms that have Python 2 and Python 3 packages.
-        if: ${{contains(["ubuntu:focal", "debian:bullseye", "ubuntu:jammy"], matrix.os)}}
+        if: ${{contains(fromJSON('["ubuntu:focal", "debian:bullseye", "ubuntu:jammy"]'), matrix.os)}}
         run: |
           earthly --ci +test-2and3 --OS=${{matrix.os}}
