@@ -52,6 +52,36 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2024-11-14: **Version 0.10.1**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.10.1>`__.
+   This is the last planned release of stdeb which supports running stdeb
+   scripts with Python 2.7. Generating Python 2 packages with future releases
+   will be maintained on a best-effort basis. Users of stdeb's Python 2 support
+   are encouraged to report issues and provide test cases which can be added to
+   CI.
+
+  * Bugfixes:
+
+    * Fix udev rule filenames for automatic dh_installudev recognition. (#180)
+
+  * Improvements:
+
+    * The ``--sign-key`` argument can now be used to provide an alternative key
+      rather than always signing with the default key. (#187)
+
+    * Switch PyPI API usage to JSON and "Simple" APIs now that the XML-RPC API is deprecated. (#201, #202)
+
+    * Detect and use the current binary name for Python 2. (#203)
+      Ubuntu Focal and Ubuntu Jammy install a `python2` binary when the
+      `python-all-dev` package is installed. Rather than assuming that the
+      `python` binary is available and is Python 2, check for a `python` or
+      `python2` binary and use what is found. 
+
+  * Development changes:
+
+    * Continuous Integration is now run on GitHub Actions using Earthly. (#199)
+    * Use ruff for style and lint checks (currently not enforced). (#199)
+
  * 2020-10-28: **Version 0.10.0**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.10.0>`__.
 
@@ -498,7 +528,7 @@ to install a more recent stdeb.
 
 ::
 
-  STDEB_VERSION="0.10.0"
+  STDEB_VERSION="0.10.1"
 
   # Download stdeb
   pypi-download stdeb --release=$STDEB_VERSION
