@@ -12,12 +12,13 @@ SRC:
 BUILD:
 	FUNCTION
 	ENV DEBIAN_FRONTEND=noninteractive
-	# Build deps
-	RUN apt-get update; apt-get install -y debhelper dh-python python3-all python3-pip
-	# Install deps
-	RUN apt-get update; apt-get install -y python3-requests apt-file
-	# Test deps
-	RUN apt-get update; apt-get install -y libpq-dev python3-all-dev
+	RUN apt-get update; apt-get install -y \
+		# Build deps \
+		debhelper dh-python python3-all python3-pip \
+		# Install deps \
+		python3-requests apt-file \
+		# Test deps \
+		libpq-dev python3-all-dev
 
 	DO +SRC
 	RUN python3 setup.py --command-packages=stdeb.command bdist_deb
