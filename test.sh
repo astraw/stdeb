@@ -54,7 +54,7 @@ SOURCE_TARBALL=${SOURCE_TARBALL_DIR}.tar.gz
 DEBSOURCE=reindent-${SOURCE_RELEASE}
 elif [ $i -eq "3" ]; then
 SOURCE_PACKAGE=psycopg2
-SOURCE_RELEASE=2.7
+SOURCE_RELEASE=2.9.9
 SOURCE_TARBALL_DIR=${SOURCE_PACKAGE}-${SOURCE_RELEASE}
 SOURCE_TARBALL=${SOURCE_TARBALL_DIR}.tar.gz
 DEBSOURCE=${SOURCE_TARBALL_DIR}
@@ -95,9 +95,9 @@ rm -rf deb_dist
 # ==============================================================
 tar xzf $SOURCE_TARBALL
 cd $SOURCE_TARBALL_DIR
-which python
-python -c "import sys; print('sys.version',sys.version)"
-python setup.py --command-packages=stdeb.command sdist_dsc
+which python3
+python3 -c "import sys; print('sys.version',sys.version)"
+python3 setup.py --command-packages=stdeb.command sdist_dsc
 cd deb_dist/$DEBSOURCE
 dpkg-buildpackage -rfakeroot -uc -us
 cd ../..

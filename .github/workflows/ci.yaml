@@ -1,0 +1,48 @@
+---
+name: CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Earthly
+        uses: earthly/actions-setup@v1
+      - name: Lint
+        run: |
+          earthly --ci +lint
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu:focal"
+          - "debian:bullseye"
+          - "ubuntu:jammy"
+          - "debian:bookworm"
+          # TODO(astraw/stdeb#195)
+          # - "ubuntu:noble"
+          # - "debian:trixie"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Earthly
+        uses: earthly/actions-setup@v1
+      - name: Run tests
+        run: |
+          earthly --ci +test --OS=${{matrix.os}}
+      - name: Run pypi-install tests --
+        run: |
+          earthly --ci +test-pypi-install --OS=${{matrix.os}}
+      - name: Run 2and3 tests
+        # This test can only be run on platforms that have Python 2 and Python 3 packages.
+        if: ${{contains(fromJSON('["ubuntu:focal", "debian:bullseye", "ubuntu:jammy"]'), matrix.os)}}
+        run: |
+          earthly --ci +test-2and3 --OS=${{matrix.os}}

@@ -1,0 +1,59 @@
+VERSION 0.8
+
+
+SRC:
+	FUNCTION
+	COPY --dir scripts stdeb test_data \
+		test*.sh *.txt *.py *.cfg *.toml *.rst \
+		MANIFEST.in \
+		/src/stdeb
+	WORKDIR /src/stdeb
+
+BUILD:
+	FUNCTION
+	ENV DEBIAN_FRONTEND=noninteractive
+	RUN apt-get update; apt-get install -y \
+		# Build deps \
+		debhelper dh-python python3-all python3-pip \
+		# Install deps \
+		python3-requests apt-file \
+		# Test deps \
+		libpq-dev python3-all-dev
+
+	DO +SRC
+	RUN python3 setup.py --command-packages=stdeb.command bdist_deb
+	RUN for f in deb_dist/*.deb; do echo; echo $f; dpkg --contents $f; done
+
+INSTALL:
+	FUNCTION
+	# Install stdeb
+	RUN dpkg -i deb_dist/*.deb
+
+lint:
+	FROM docker.io/library/python:3.10-alpine
+	DO +SRC
+	RUN python3 -m pip install -r requirements.txt
+	RUN ruff format --check || true
+	RUN ruff check || true
+
+build:
+	ARG OS=debian:bookworm
+	FROM $OS
+	DO +BUILD
+
+test:
+	FROM +build
+	DO +INSTALL
+	RUN env PYEXE=/usr/bin/python3 bash -x  ./test.sh
+
+test-pypi-install:
+	FROM +build
+	DO +INSTALL
+	RUN bash -x ./test-pypi-install.sh
+
+test-2and3:
+	FROM +build
+	DO +INSTALL
+	# Not all platforms provide python2
+	RUN apt-get update; apt-get install -y python-all-dev || true
+	RUN bash -x ./test2and3.sh
