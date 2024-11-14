@@ -1680,7 +1680,7 @@ override_dh_auto_build:
 
 RULES_OVERRIDE_INSTALL_TARGET_PY2 = "        %(python2_binname)s setup.py install --force --root=debian/%(package)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python2_scripts_cli_args)s"  # noqa: E501
 
-RULES_OVERRIDE_INSTALL_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 %(install_prefix)s %(no_python3_scripts_cli_args)s"  # noqa: E501
+RULES_OVERRIDE_INSTALL_TARGET_PY3 = "        python3 setup.py install --force --root=debian/%(package3)s --no-compile -O0 --install-layout=deb %(install_prefix)s %(no_python3_scripts_cli_args)s"  # noqa: E501
 
 RULES_OVERRIDE_INSTALL_TARGET = """
 override_dh_auto_install:
