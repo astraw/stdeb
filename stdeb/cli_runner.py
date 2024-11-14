@@ -3,12 +3,7 @@ import os
 import shutil
 import subprocess
 import sys
-try:
-    # python 2.x
-    from ConfigParser import SafeConfigParser  # noqa: F401
-except ImportError:
-    # python 3.x
-    from configparser import SafeConfigParser  # noqa: F401
+from configparser import ConfigParser  # noqa: F401
 from distutils.util import strtobool
 from distutils.fancy_getopt import FancyGetopt, translate_longopt
 from stdeb.util import stdeb_cmdline_opts, stdeb_cmd_bool_opts
