@@ -926,7 +926,9 @@ class DebianInfo:
         self.debian_section = parse_val(cfg, module_name, 'Section')
 
         self.description = re.sub(r'\s+', ' ', description).strip()
-        if long_description != 'UNKNOWN':
+        if long_description == None:
+            self.long_description = ''
+        elif long_description != 'UNKNOWN':
             ld2 = []
             for line in long_description.split('\n'):
                 ls = line.strip()
