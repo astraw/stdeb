@@ -52,6 +52,13 @@ interpreter (and only the Python3 package installs scripts)::
 News
 ----
 
+ * 2024-07-03: **Version 0.11.0**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.11.0>`__.
+
+  * Breaking changes:
+
+    * remove support for running stdeb using Python 2.
+
  * 2024-11-14: **Version 0.10.1**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.10.1>`__.
    This is the last planned release of stdeb which supports running stdeb
