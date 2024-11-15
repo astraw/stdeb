@@ -27,9 +27,8 @@ jobs:
           - "debian:bullseye"
           - "ubuntu:jammy"
           - "debian:bookworm"
-          # TODO(astraw/stdeb#195)
-          # - "ubuntu:noble"
-          # - "debian:trixie"
+          - "ubuntu:noble"
+          - "debian:trixie"
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
