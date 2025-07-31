@@ -14,7 +14,7 @@ BUILD:
 	ENV DEBIAN_FRONTEND=noninteractive
 	RUN apt-get update; apt-get install -y \
 		# Build deps \
-		debhelper dh-python python3-all python3-pip \
+		debhelper dh-python python3-all python3-pip python3-setuptools \
 		# Install deps \
 		python3-requests apt-file \
 		# Test deps \
