@@ -51,6 +51,14 @@ interpreter (and only the Python3 package installs scripts)::
 
 News
 ----
+ * 2025-07-31: **Version 0.10.2**. See the `download page
+   <https://pypi.python.org/pypi/stdeb/0.10.2>`__.
+   This is a bugfix release for 0.10.1 which fixes a regression.
+
+  * Bugfixes:
+
+    * Add a shim function for which on python2. (#215)
+      * Fixes a regression introduced in  #203.
 
  * 2024-11-14: **Version 0.10.1**. See the `download page
    <https://pypi.python.org/pypi/stdeb/0.10.1>`__.
