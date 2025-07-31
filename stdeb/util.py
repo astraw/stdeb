@@ -26,6 +26,12 @@ else:
     # matplotlib deletes link from os namespace, expected distutils workaround
     link_func = shutil.copyfile
 
+if hasattr(shutil, 'which'):
+    which = shutil.which
+else:
+    from stdeb.which import which
+
+
 __all__ = ['DebianInfo', 'build_dsc', 'expand_tarball', 'expand_zip',
            'stdeb_cmdline_opts', 'stdeb_cmd_bool_opts', 'recursive_hardlink',
            'apply_patch', 'repack_tarball_with_debianized_dirname',
@@ -1118,9 +1124,9 @@ class DebianInfo:
             raise RuntimeError('nothing to do - neither Python 2 or 3.')
 
         if with_python2:
-            if shutil.which("python"):
+            if which("python"):
                 self.python2_binname = "python"
-            elif shutil.which("python2"):
+            elif which("python2"):
                 self.python2_binname = "python2"
             else:
                 raise RuntimeError("Python 2 binary not found on path as either `python` or `python2`")
