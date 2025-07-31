@@ -7,7 +7,8 @@ if [ "$UID" -ne "0" ]; then
 fi
 
 # Package with source tarball on PyPI:
-pypi-install pyflakes --verbose=2
+# Later versions of pyflakes fail to build on Ubuntu Focal
+pypi-install pyflakes --verbose=2 --release=3.2.0
 dpkg --purge python-pyflakes
 
 # This test fails on Ubuntu 12.04 due to what looks like a bug with
