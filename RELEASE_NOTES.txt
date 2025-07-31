@@ -1,5 +1,16 @@
 See the News section in the README for more details.
 
+Release 0.10.2
+==============
+
+Bugfix release addressing a regression in 0.10.1.
+
+Release 0.10.1
+==============
+
+This is the last planned release of stdeb which supports running stdeb scripts
+with Python 2.7.
+
 Release 0.10.0
 ==============
 
