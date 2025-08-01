@@ -31,6 +31,12 @@ INSTALL:
 	# Install stdeb
 	RUN dpkg -i deb_dist/*.deb
 
+TEST:
+	FUNCTION
+	ARG SCRIPT=./test.sh
+	RUN bash -x $SCRIPT
+
+
 PIP_INSTALL:
 	FUNCTION
   RUN python3 -m venv venv
@@ -62,7 +68,12 @@ test:
 test-pypi-install:
 	FROM +build
 	DO +INSTALL
-	RUN bash -x ./test-pypi-install.sh
+	DO +TEST --SCRIPT=./test-pypi-install.sh
+
+test-ros-pypi-installs:
+	FROM +build
+	DO +INSTALL
+	RUN bash -x ./test-ros-pypi-installs.sh
 
 test-2and3:
 	FROM +build

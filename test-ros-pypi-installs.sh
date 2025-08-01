@@ -8,8 +8,16 @@ fi
 
 # Package with source tarball on PyPI:
 # Later versions of pyflakes fail to build on Ubuntu Focal
-pypi-install pyflakes --verbose=2 --release=3.2.0
-dpkg --purge python-pyflakes
+
+ROS_PKG_DEPS=(python3-{dateutil,distro,docutils,pyparsing,vcstools,yaml})
+
+apt-get install -y ${ROS_PKG_DEPS[@]} --no-install-recommends 
+pypi-install catkin_pkg --verbose=2
+pypi-install rospkg --verbose=2
+pypi-install rosdistro --verbose=2
+pypi-install rosdep --verbose=2
+env DEB_BUILD_OPTIONS=nocheck pypi-install bloom --verbose=2 --release=0.13.0
+dpkg --purge ${ROS_PKG_DEPS[@]} python3-{catkin-pkg,rosdistro,rospkg,rosdep,bloom}
 
 # This test fails on Ubuntu 12.04 due to what looks like a bug with
 # "dh_auto_clean -O--buildsystem=python_distutils" not changing into the
