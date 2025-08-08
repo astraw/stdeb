@@ -17,7 +17,7 @@ BUILD:
 		debhelper dh-python python3-all python3-pip python3-setuptools \
 		# Install deps \
 		python3-requests apt-file \
-    # Pip install deps \
+		# Pip install deps \
 		python3-venv \
 		# Test deps \
 		libpq-dev python3-all-dev
@@ -33,7 +33,7 @@ INSTALL:
 
 PIP_INSTALL:
 	FUNCTION
-  RUN python3 -m venv venv
+	RUN python3 -m venv venv
 	RUN . venv/bin/activate && pip install .
 
 lint:
