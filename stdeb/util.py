@@ -26,7 +26,7 @@ __all__ = ['DebianInfo', 'build_dsc', 'expand_tarball', 'expand_zip',
            'apply_patch', 'repack_tarball_with_debianized_dirname',
            'expand_sdist_file', 'stdeb_cfg_options']
 
-DH_MIN_VERS = '12'  # Fundamental to stdeb >= 0.10
+DH_MIN_VERS = '12'  # Fundamental to stdeb >= 0.11
 DH_DEFAULT_VERS = 12
 
 # Choose the oldest from Debian oldoldstable and currently supported Ubuntu LTS
