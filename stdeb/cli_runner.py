@@ -116,8 +116,8 @@ def runit(cmd, usage):
     if cmd == 'bdist_deb':
         extra_args.append('bdist_deb')
 
-    args = [sys.executable, 'setup.py', '--command-packages', 'stdeb.command',
-            'sdist_dsc', '--dist-dir=%s' % abs_dist_dir,
+    args = [sys.executable, 'setup.py', 'sdist_dsc',
+            '--dist-dir=%s' % abs_dist_dir,
             '--use-premade-distfile=%s' % os.path.abspath(sdist_file)
             ] + extra_args
 

@@ -23,7 +23,7 @@ BUILD:
 		libpq-dev python3-all-dev
 
 	DO +SRC
-	RUN python3 setup.py --command-packages=stdeb.command bdist_deb
+	RUN python3 setup.py bdist_deb
 	RUN for f in deb_dist/*.deb; do echo; echo $f; dpkg --contents $f; done
 
 INSTALL:
