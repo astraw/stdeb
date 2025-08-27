@@ -14,7 +14,7 @@ BUILD:
 	ENV DEBIAN_FRONTEND=noninteractive
 	RUN apt-get update; apt-get install -y \
 		# Build deps \
-		debhelper dh-python python3-all python3-pip python3-setuptools \
+		debhelper dh-python python3-all python3-pip python3-setuptools python3-venv \
 		# Install deps \
 		python3-requests apt-file \
 		# Pip install deps \
@@ -23,7 +23,10 @@ BUILD:
 		libpq-dev python3-all-dev
 
 	DO +SRC
-	RUN python3 setup.py bdist_deb
+	RUN python3 -m venv venv
+	RUN . venv/bin/activate && python3 -m pip install .
+	RUN . venv/bin/activate && python3 setup.py bdist_deb
+	RUN rm -r venv
 	RUN for f in deb_dist/*.deb; do echo; echo $f; dpkg --contents $f; done
 
 INSTALL:
