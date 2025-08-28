@@ -15,7 +15,10 @@ setup(
     long_description=long_description,
     license='MIT',
     url='http://github.com/astraw/stdeb',
-    install_requires=['setuptools>=59'],
+    install_requires=[
+        'requests',
+        'setuptools>=59',
+    ],
     packages=['stdeb', 'stdeb.command'],
     entry_points={'distutils.commands': ["%(cmd)s = stdeb.command.%(cmd)s:%(cmd)s" % {'cmd': x}
                                          for x in ('bdist_deb', 'debianize', 'install_deb', 'sdist_dsc', )], },
