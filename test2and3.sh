@@ -1,6 +1,14 @@
 #!/bin/bash
 set -e
 
+assert_dh_python3_params() {
+
+  if [ -f deb_dist/python3-simple-pkg_0.1-1_all.deb ]; then
+    dpkg -I deb_dist/python3-simple-pkg_0.1-1_all.deb | grep '^ Depends: .*python3-packaging' || return 1
+    #dpkg -I deb_dist/python3-simple-pkg_0.1-1_all.deb | grep -v '^ Depends: .*python3-' || return 1
+  fi
+}
+
 stdeb_test() {
   ## Test very basic package creation based on a given package directory
   if [ -d "$1" -a -x "$1" ]; then
@@ -42,7 +50,9 @@ stdeb_test() {
 
         # test the "sdist_dsc" and "bdist_deb" commands
         ${PY3EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python3=true --with-python2=false bdist_deb
-        cd ../..
+        if [ -n "$2" ]; then
+          eval "$2"
+        fi
 
         if [ "$DO_PY2" = true ]; then
           echo "using Python 3 to test 2 and 3 generation"
@@ -195,4 +205,4 @@ else
 fi
 
 stdeb_test "test_data/setuptools_pkg"
-stdeb_test "test_data/configured_pkg"
+stdeb_test "test_data/configured_pkg" assert_dh_python3_params
