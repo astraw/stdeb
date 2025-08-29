@@ -22,7 +22,6 @@ stdeb_test() {
 
     # test the "sdist_dsc" and "bdist_deb" commands
     ${PY2EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python2=true --with-python3=false bdist_deb
-    cd ../..
   else
     echo "skipping Python 2 test"
   fi
