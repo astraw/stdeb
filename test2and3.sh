@@ -1,6 +1,68 @@
 #!/bin/bash
 set -e
 
+stdeb_test() {
+  ## Test very basic package creation based on a given package directory
+  if [ -d "$1" -a -x "$1" ]; then
+    pushd "$1"
+  else
+    echo "Unable to see directory '$1' does it exist?"
+    exit 1
+  fi
+
+  trap popd ERR
+
+  if [ "$DO_PY2" = true ]; then
+    echo "using Python 2 at ${PY2EXE}"
+
+    # test the "debianize" command
+    rm -rf debian
+    ${PY2EXE} setup.py --command-packages stdeb.command debianize
+    rm -rf debian
+
+    # test the "sdist_dsc" and "bdist_deb" commands
+    ${PY2EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python2=true --with-python3=false bdist_deb
+    cd ../..
+  else
+    echo "skipping Python 2 test"
+  fi
+
+  if [ "$DO_PY3" = true ]; then
+      # Due to http://bugs.python.org/issue9561 (fixed in Py 3.2) we skip this test in 3.0 and 3.1.
+      ${PY3EXE} -c "import sys; ec=0 if sys.version_info[1]>=2 else 1; sys.exit(ec)"  && rc=$? || rc=$?
+
+      if [ "$rc" == 0 ]; then
+
+        echo "using Python 3 at ${PY3EXE}"
+
+        # test the "debianize" command
+        rm -rf debian
+        ${PY3EXE} setup.py --command-packages stdeb.command debianize
+        rm -rf debian
+
+        # test the "sdist_dsc" and "bdist_deb" commands
+        ${PY3EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python3=true --with-python2=false bdist_deb
+        cd ../..
+
+        if [ "$DO_PY2" = true ]; then
+          echo "using Python 3 to test 2 and 3 generation"
+          cd test_data/simple_pkg
+          ${PY3EXE} setup.py --command-packages stdeb.command sdist_dsc --with-python3=true --with-python2=true bdist_deb
+          cd ../..
+        else
+          echo "No Python2 binary to test 2 and 3 generation"
+        fi
+      else
+        echo "skipping Python >= 3.2 test"
+      fi
+  else
+      echo "skipping Python 3 test"
+  fi
+
+  popd
+  return 0
+}
+
 export DO_PY2=true
 export DO_PY3=true
 
@@ -127,3 +189,6 @@ if [ "$DO_PY3" = true ]; then
 else
     echo "skipping Python 3 test"
 fi
+
+stdeb_test "test_data/setuptools_pkg"
+stdeb_test "test_data/configured_pkg"
