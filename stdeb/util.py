@@ -1220,7 +1220,7 @@ class DebianInfo:
                     '        sed -i ' +
                     r'"s/\([ =]python3:any (\)>= [^)]*\()\)/\\1%s\\2/g" ' +
                     'debian/%s.substvars') % (version, self.package3)
-        if len(scripts) or len(dh_python3_params):
+        if scripts or dh_python3_params:
             self.override_dh_python3 = RULES_OVERRIDE_PYTHON3 % {
                 'scripts': scripts,
                 'dh_python3_params': dh_python3_params,
