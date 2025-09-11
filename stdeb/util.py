@@ -1208,7 +1208,7 @@ class DebianInfo:
             'scripts': scripts
         }
 
-        scripts = ''
+        scripts = ()
         if force_x_python3_version and with_python3 and x_python3_version and \
                 x_python3_version[0]:
             # override dh_python3 target to modify the dependencies
