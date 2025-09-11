@@ -9,7 +9,7 @@ setup(
     name='stdeb',
     # Keep version in sync with stdeb/__init__.py and install section
     # of README.rst.
-    version='0.10.1',
+    version='0.11.0',
     author='Andrew Straw',
     author_email='strawman@astraw.com',
     description='Python to Debian source package conversion utility',
@@ -29,7 +29,6 @@ setup(
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
     ],
 )
