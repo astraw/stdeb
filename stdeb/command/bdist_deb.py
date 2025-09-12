@@ -1,7 +1,7 @@
 import os
 import stdeb.util as util
 
-from distutils.core import Command
+from setuptools import Command
 
 __all__ = ['bdist_deb']
 

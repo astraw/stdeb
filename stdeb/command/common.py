@@ -2,8 +2,8 @@ import os
 import sys
 
 from stdeb import log
-from distutils.core import Command
-from distutils.errors import DistutilsModuleError
+from setuptools import Command
+from setuptools.errors import ModuleError
 
 from stdeb.util import DebianInfo, DH_DEFAULT_VERS, stdeb_cfg_options
 
@@ -135,7 +135,7 @@ class common_debian_package_command(Command):
         use_setuptools = True
         try:
             ei_cmd = self.distribution.get_command_obj('egg_info')
-        except DistutilsModuleError:
+        except ModuleError:
             use_setuptools = False
 
         config_fname = 'stdeb.cfg'

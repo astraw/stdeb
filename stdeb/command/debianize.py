@@ -1,4 +1,3 @@
-from distutils.core import Command  # noqa: F401
 from stdeb.command.common import common_debian_package_command
 
 from stdeb.util import build_dsc, stdeb_cmdline_opts, \
