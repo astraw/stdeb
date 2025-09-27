@@ -1,11 +1,11 @@
 build
 deb_dist
+__pycache__/
 *.pyc
-stdeb.egg-info/PKG-INFO
-stdeb.egg-info/SOURCES.txt
-stdeb.egg-info/dependency_links.txt
-stdeb.egg-info/entry_points.txt
-stdeb.egg-info/top_level.txt
+*.egg-info
 dist
 *~
 MANIFEST
+venv
+*.tar.gz
+.ruff_cache
